@@ -1,118 +1,265 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import HomePage from './src/Pages/HomePage';
+import PujaPage from './src/Pages/PujaPage';
+import PrasadPage from './src/Pages/PrasadPage';
+import Explore from './src/Pages/Explore';
+import Mandir from './src/Pages/Mandir';
+// import PujaDetail from './src/Pages/PujaDetail';
+// import CardBox from './src/Components/CardBox';
+import {Image} from 'react-native';
+import PujaDetail from './src/Component/PujaDetail';
+import Detailing from './src/Component/Detailing';
+import PujaDetailPage from './src/Component/PujaDetailPage';
+import View_Puja_Booking from './src/Component/View_Puja_Booking';
+import Congratulation from './src/Component/Congratulation';
+import SelectPrasadPackage from './src/Component/SelectPrasadPackage';
+import Cart from './src/Cart/Cart';
+import Address from './src/Cart/Address';
+import Blog from './src/Component/Blog';
+import BlogCardDetail from './src/Component/BlogCardDetail';
+import Libreary from './src/Component/Libreary';
+import Arti from './src/Component/Arti';
+import Chalisa from './src/Component/Chalisa';
+import ArtiDetail from './src/Component/ArtiDetail';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+// Create Bottom Tab Navigator
+const Tab = createBottomTabNavigator();
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+// Create Stack Navigator
+const Stack = createNativeStackNavigator();
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+const TabNavigator = () => {
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <Tab.Navigator
+      initialRouteName="Explore"
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: '#FF5704',
+        tabBarInactiveTintColor: 'gray',
+      }}>
+      <Tab.Screen
+        name="Puja"
+        component={PujaPage}
+        options={{
+          tabBarIcon: ({color, size}) => (
+            <Image
+              source={{
+                uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/Fire.png',
+              }}
+              style={{width: size, height: size, tintColor: color}}
+            />
+          ),
+        }}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      <Tab.Screen
+        name="Prasad"
+        component={PrasadPage}
+        options={{
+          tabBarIcon: ({color, size}) => (
+            <Image
+              source={{
+                uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/laddoo.png',
+              }}
+              style={{width: size, height: size, tintColor: color}}
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Home"
+        component={HomePage}
+        options={{
+          tabBarLabel: '',
+          tabBarIcon: ({color}) => (
+            <Image
+              source={{
+                uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/home.png',
+              }}
+              style={{width: 55, height: 55, tintColor: undefined}}
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Explore"
+        component={Explore}
+        options={{
+          tabBarIcon: ({color, size}) => (
+            <Image
+              source={{
+                uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/Compass.png',
+              }}
+              style={{width: size, height: size, tintColor: color}}
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Mandir"
+        component={Mandir}
+        options={{
+          tabBarIcon: ({color, size}) => (
+            <Image
+              source={{
+                uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/mandir.png',
+              }}
+              style={{width: size, height: size, tintColor: color}}
+            />
+          ),
+        }}
+      />
+    </Tab.Navigator>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+const App = () => {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator
+        initialRouteName="ArtiDetail"
+        screenOptions={{
+          headerShown: false,
+        }}>
+        {/* Main Tab Navigator */}
+        <Stack.Screen
+          name="TabNavigator"
+          component={TabNavigator}
+          options={{headerShown: false}}
+        />
+
+        {/* PujaDetail Screen */}
+        <Stack.Screen
+          name="PujaDetail"
+          component={PujaDetail}
+          options={{
+            title: 'Puja Details',
+            headerStyle: {backgroundColor: '#FF5704'},
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="Details"
+          component={Detailing}
+          options={{
+            title: 'Puja Details',
+            headerStyle: {backgroundColor: '#FF5704'},
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="PreviewPuja"
+          component={View_Puja_Booking}
+          options={{
+            title: 'Puja Details',
+            headerStyle: {backgroundColor: '#FF5704'},
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="FormPage"
+          component={PujaDetailPage}
+          options={{
+            title: 'Puja Details',
+            headerStyle: {backgroundColor: '#FF5704'},
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="Congratulation"
+          component={Congratulation}
+          options={{
+            title: 'Puja Details',
+            headerStyle: {backgroundColor: '#FF5704'},
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="SelectPrasadPackage"
+          component={SelectPrasadPackage}
+          options={{
+            title: 'Puja Details',
+            headerStyle: {backgroundColor: '#FF5704'},
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="Cart"
+          component={Cart}
+          options={{
+            title: 'Puja Details',
+            headerStyle: {backgroundColor: '#FF5704'},
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="Address"
+          component={Address}
+          options={{
+            title: 'Puja Details',
+            headerStyle: {backgroundColor: '#FF5704'},
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="Blog"
+          component={Blog}
+          options={{
+            title: 'Puja Details',
+            headerStyle: {backgroundColor: '#FF5704'},
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="BlogDetailPage"
+          component={BlogCardDetail}
+          options={{
+            title: 'Puja Details',
+            headerStyle: {backgroundColor: '#FF5704'},
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="Libreary"
+          component={Libreary}
+          options={{
+            title: 'Puja Details',
+            headerStyle: {backgroundColor: '#FF5704'},
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="Arti"
+          component={Arti}
+          options={{
+            title: 'Puja Details',
+            headerStyle: {backgroundColor: '#FF5704'},
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="Chalisa"
+          component={Chalisa}
+          options={{
+            title: 'Puja Details',
+            headerStyle: {backgroundColor: '#FF5704'},
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="ArtiDetail"
+          component={ArtiDetail}
+          options={{
+            title: 'Puja Details',
+            headerStyle: {backgroundColor: '#FF5704'},
+            headerTintColor: '#fff',
+          }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
 
 export default App;
