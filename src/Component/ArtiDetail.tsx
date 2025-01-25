@@ -8,6 +8,11 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+type StackParamList = {
+  ArtiDetail: undefined;
+};
+
 const ArtiDetail = () => {
   const [isHindi, setIsHindi] = useState(false);
 
@@ -15,6 +20,10 @@ const ArtiDetail = () => {
     setIsHindi(!isHindi);
   };
 
+ const navigation = useNavigation<NavigationProp<StackParamList>>(); 
+  const handleGoBack = () => {
+    navigation.goBack(); // Navigate back to the previous screen
+  };
   return (
     <View style={styles.container}>
       {/* Image */}

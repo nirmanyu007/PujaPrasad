@@ -9,8 +9,10 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import CardBox from './CardBox';
+import {useNavigation} from '@react-navigation/native';
 
 const PujaPage = () => {
+  const navigation = useNavigation();
   const [activeFilter, setActiveFilter] = useState('All Puja');
 
   const filters = [
@@ -34,6 +36,21 @@ const PujaPage = () => {
       label: 'Sringar',
       icon: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/shngar.png',
     },
+  ];
+
+  const samplePujaData = [
+    {
+      id: '1',
+      title: 'Rudrabhishek (5 Shastri)',
+      description:
+        'The Mahamrityunjay Jaap offers protection from negative forces and aids in healing and recovery from...',
+      location: 'Kashi Vishwanath Temple, Varanasi, Uttar Pradesh, India',
+      date: '17 December, Tuesday',
+      price: '₹850/-',
+      imageUri:
+        'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/rudra-min.png',
+    },
+    // Add more puja items if needed
   ];
 
   return (
@@ -79,8 +96,19 @@ const PujaPage = () => {
           </TouchableOpacity>
         ))}
       </View>
-      <View style={{width:'100%', paddingTop:'4%'}}>
-        <CardBox />
+      <View style={{width: '100%', paddingTop: '4%'}}>
+        {samplePujaData.map(puja => (
+          <CardBox
+            key={puja.id}
+            title={puja.title}
+            description={puja.description}
+            location={puja.location}
+            date={puja.date}
+            price={puja.price}
+            imageUri={puja.imageUri}
+            // onPress={() => navigation.navigate('PujaDetail', {puja})}
+          />
+        ))}
       </View>
     </View>
   );

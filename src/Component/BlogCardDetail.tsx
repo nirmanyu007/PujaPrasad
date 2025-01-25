@@ -8,16 +8,28 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+
+type StackParamList = {
+  Arti: undefined;
+  Chalisa: undefined;
+};
 
 
 
 const BlogCardDetail = () => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
+
+  const handleGoBack = () => {
+    navigation.goBack(); // Navigate back to the previous screen
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
               <AntDesign
-                // onPress={handleGoBack}
+                onPress={handleGoBack}
                 name="arrowleft"
                 size={23}
                 color="white"

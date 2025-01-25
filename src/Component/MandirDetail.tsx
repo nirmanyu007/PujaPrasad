@@ -5,13 +5,28 @@ import MandirInstruction from './MandirInstruction';
 import MandirIntro from './MandirIntro';
 import MandirHistory from './MandirHistory';
 import MandirPuja from './MandirPuja';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+
+type StackParamList = {
+  ChalisaDetail: undefined;
+};
 
 const MandirDetail = () => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
+   const handleGoBack = () => {
+     navigation.goBack(); // Navigate back to the previous screen
+   };
+  
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <AntDesign name="arrowleft" size={23} color="black" />
+        <AntDesign
+          onPress={handleGoBack}
+          name="arrowleft"
+          size={23}
+          color="black"
+        />
         <Text style={styles.headerText}>Mandir</Text>
       </View>
 

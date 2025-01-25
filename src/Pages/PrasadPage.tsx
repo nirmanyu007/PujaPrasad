@@ -8,6 +8,7 @@ import {useNavigation, NavigationProp} from '@react-navigation/native';
 
 type StackParamList = {
   Cart: undefined;
+  SelectPrasadPackage: undefined;
 };
 
 const PrasadPage = () => {
@@ -15,6 +16,23 @@ const PrasadPage = () => {
             const handleClick = () => {
               navigation.navigate('Cart'); // Navigate to PreviewPuja screen
             };
+
+             const prasadData = [
+               {
+                 id: '1',
+                 name: 'Kashi Vishwanath Temple Prasad',
+                 price: '₹501/-',
+                 imageUri:
+                   'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/kashi_prasad.png',
+               },
+               {
+                 id: '2',
+                 name: 'Vaishno Devi Temple Prasad',
+                 price: '₹651/-',
+                 imageUri:
+                   'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/vaishno_prasad.png',
+               },
+             ];
   return (
     <View style={{paddingHorizontal: 15}}>
       <PrasadNavbar />
@@ -58,10 +76,25 @@ const PrasadPage = () => {
             borderRadius: 10,
             marginLeft: 10,
           }}>
-          <Iconn name="shopping-cart" size={24} color="#000" onPress={handleClick}/>
+          <Iconn
+            name="shopping-cart"
+            size={24}
+            color="#000"
+            onPress={handleClick}
+          />
         </View>
       </View>
-      <View><PrasadBox/></View>
+      <View>
+        {prasadData.map(prasad => (
+          <PrasadBox
+            key={prasad.id}
+            name={prasad.name}
+            price={prasad.price}
+            imageUri={prasad.imageUri}
+            onPress={() => navigation.navigate('SelectPrasadPackage')}
+          />
+        ))}
+      </View>
     </View>
   );
 }

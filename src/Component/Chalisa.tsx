@@ -12,6 +12,9 @@ const Chalisa = () => {
           const handleClick = () => {
             navigation.navigate('ChalisaDetail'); // Navigate to PreviewPuja screen
           };
+          const handleGoBack = () => {
+            navigation.goBack(); // Navigate back to the previous screen
+          };
      const chalisaData = [
        {
          id: 1,
@@ -41,7 +44,12 @@ const Chalisa = () => {
   return (
     <View>
       <View style={{backgroundColor: '#7F2A04'}}>
-        <AntDesign name="arrowleft" size={23} color="black" />
+        <AntDesign
+          onPress={handleGoBack}
+          name="arrowleft"
+          size={23}
+          color="black"
+        />
       </View>
       <View style={styles.imageContainer}>
         <Text style={{color: 'white', fontSize: 64, paddingLeft: '5%'}}>

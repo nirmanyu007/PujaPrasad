@@ -2,7 +2,25 @@ import React from 'react';
 import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-const CardBox = () => {
+type CardBoxProps = {
+  title: string;
+  description: string;
+  location: string;
+  date: string;
+  price: string;
+  imageUri: string;
+  // onPress: () => void;
+};
+
+const CardBox: React.FC<CardBoxProps> = ({
+  title,
+  description,
+  location,
+  date,
+  price,
+  imageUri,
+  // onPress,
+}) => {
   const navigation = useNavigation();
 
   const handlePress = () => {
@@ -13,21 +31,13 @@ const CardBox = () => {
     <View style={styles.cardContainer}>
       {/* Top Section with Image */}
       <View style={styles.imageContainer}>
-        <Image
-          source={{
-            uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/rudra-min.png',
-          }}
-          style={styles.cardImage}
-        />
+        <Image source={{uri: imageUri}} style={styles.cardImage} />
       </View>
 
       {/* Text Content */}
       <View style={styles.contentContainer}>
-        <Text style={styles.title}>Rudrabhishek (5 Shastri)</Text>
-        <Text style={styles.description}>
-          The Mahamrityunjay Jaap offers protection from negative forces and
-          aids in healing and recovery from...
-        </Text>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.description}>{description}</Text>
 
         {/* Location Section */}
         <View style={styles.infoRow}>
@@ -37,9 +47,7 @@ const CardBox = () => {
             }}
             style={styles.icon}
           />
-          <Text style={styles.infoText}>
-            Kashi Vishwanath Temple, Varanasi, Uttar Pradesh, India
-          </Text>
+          <Text style={styles.infoText}>{location}</Text>
         </View>
 
         {/* Date Section */}
@@ -50,12 +58,12 @@ const CardBox = () => {
             }}
             style={styles.icon}
           />
-          <Text style={styles.infoText}>17 December, Tuesday</Text>
+          <Text style={styles.infoText}>{date}</Text>
         </View>
 
         {/* Footer Section */}
         <View style={styles.footer}>
-          <Text style={styles.startingPrice}>*Starting from ₹850/-</Text>
+          <Text style={styles.startingPrice}>*Starting from {price}</Text>
           <TouchableOpacity style={styles.button} onPress={handlePress}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <Text style={styles.buttonText10}> |</Text>

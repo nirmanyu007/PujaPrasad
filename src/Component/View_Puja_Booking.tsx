@@ -11,6 +11,7 @@ import {
   TextInput,
 } from 'react-native';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 type StackParamList = {
   PujaDetailPage: undefined;
@@ -67,6 +68,9 @@ const View_Puja_Booking = () => {
         'https://img.icons8.com/external-flat-juicy-fish/64/000000/external-meal-volunteer-flat-flat-juicy-fish.png',
     },
   ];
+  const handleGoBack = () => {
+    navigation.goBack(); // Navigate back to the previous screen
+  };
 
   const openModal = (item: string) => {
     setModalVisible(item);
@@ -266,7 +270,16 @@ const View_Puja_Booking = () => {
     <View style={styles.wrapper}>
       <ScrollView contentContainerStyle={styles.container}>
         {/* Puja Booking Preview */}
-        <Text style={styles.headerText}>Preview Puja Booking</Text>
+        <View
+          style={{display: 'flex', flexDirection: 'row', alignItems: 'center',paddingBottom:'3%'}}>
+          <AntDesign
+            onPress={handleGoBack}
+            name="arrowleft"
+            size={23}
+            color="black"
+          />
+          <Text style={styles.headerText}>Preview Puja Booking</Text>
+        </View>
         <View style={styles.card}>
           <Text style={styles.title}>{data.title}</Text>
           <Text style={styles.description}>{data.description}</Text>
@@ -345,9 +358,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   headerText: {
+    paddingLeft:'2%',
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
+    // marginBottom: 16,
   },
   card: {
     backgroundColor: '#fff',

@@ -16,11 +16,19 @@ const Library = () => {
       const handleClick2 = () => {
         navigation.navigate('Chalisa'); // Navigate to PreviewPuja screen
       };
+      const handleGoBack = () => {
+        navigation.goBack(); // Navigate back to the previous screen
+      };
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <AntDesign name="arrowleft" size={23} color="black" />
+        <AntDesign
+          onPress={handleGoBack}
+          name="arrowleft"
+          size={23}
+          color="black"
+        />
         <Text style={styles.headerText}>Library</Text>
       </View>
 

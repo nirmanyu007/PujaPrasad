@@ -19,6 +19,9 @@ const Arti = () => {
         const handleClick = () => {
           navigation.navigate('ArtiDetail'); // Navigate to PreviewPuja screen
         };
+        const handleGoBack = () => {
+          navigation.goBack(); // Navigate back to the previous screen
+        };
   const artiData = [
     {
       id: 1,
@@ -58,13 +61,20 @@ const Arti = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <AntDesign name="arrowleft" size={23} color="black" />
+        <AntDesign
+          name="arrowleft"
+          onPress={handleGoBack}
+          size={23}
+          color="black"
+        />
         {/* <Text style={styles.headerText}>Aarti</Text> */}
       </View>
 
       {/* Image and Title */}
       <View style={styles.imageContainer}>
-        <Text style={{color:'white',fontSize:64, paddingLeft:'5%'}}>Aarti</Text>
+        <Text style={{color: 'white', fontSize: 64, paddingLeft: '5%'}}>
+          Aarti
+        </Text>
         <Image
           source={{
             uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/arti.png', // Replace with the actual image URL
@@ -77,7 +87,7 @@ const Arti = () => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {artiData.map(item => (
           <TouchableOpacity
-          onPress={handleClick}
+            onPress={handleClick}
             key={item.id}
             style={[styles.card, {backgroundColor: item.backgroundColor}]}>
             <Image source={{uri: item.image}} style={styles.cardImage} />

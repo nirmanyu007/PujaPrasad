@@ -8,6 +8,13 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+
+type StackParamList = {
+  PujaDetailPage: undefined;
+};
+
 
 const PujaDetailPage: React.FC = () => {
   const [whatsAppNumber, setWhatsAppNumber] = useState('');
@@ -28,13 +35,27 @@ const PujaDetailPage: React.FC = () => {
   });
   const [confirmAddress, setConfirmAddress] = useState(false);
 
+  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
+  
+
   const handlePayment = () => {
     Alert.alert('Payment', 'Proceeding to payment...');
+  };
+  const handleGoBack = () => {
+    navigation.goBack(); // Navigate back to the previous screen
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.heading}>Fill Your Details</Text>
+      <View
+                style={{display: 'flex', flexDirection: 'row', alignItems: 'center',paddingBottom:'5%'}}>
+                <AntDesign
+                  onPress={handleGoBack}
+                  name="arrowleft"
+                  size={23}
+                  color="black"
+                />
+      <Text style={styles.heading}>Fill Your Details</Text></View>
 
       <Text style={styles.label}>Your WhatsApp Number</Text>
       <TextInput
@@ -185,8 +206,9 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 20,
+    // marginBottom: 20,
     textAlign: 'center',
+    paddingLeft:'3%'
   },
   label: {
     fontSize: 16,

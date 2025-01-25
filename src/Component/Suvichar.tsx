@@ -2,13 +2,26 @@ import React from 'react';
 import {View, Text, StyleSheet, Image} from 'react-native';
 // import { Image } from 'react-native-reanimated/lib/typescript/Animated';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
 
+type StackParamList = {
+  ChalisaDetail: undefined;
+};
 const Suvichar = () => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
+  const handleGoBack = () => {
+    navigation.goBack(); // Navigate back to the previous screen
+  };
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <AntDesign name="arrowleft" size={23} color="black" />
+        <AntDesign
+          name="arrowleft"
+          onPress={handleGoBack}
+          size={23}
+          color="black"
+        />
         <Text style={styles.headerText}>Suvichar</Text>
       </View>
 
@@ -21,8 +34,8 @@ const Suvichar = () => {
           style={{width: 137, height: 37}}
         />
         <Text style={styles.quoteText}>
-          जो हुआ, वह अच्छा हुआ  जो हो रहा है, वह भी अच्छा हो रहा है 
-          जो होगा, वह भी अच्छा ही होगा
+          जो हुआ, वह अच्छा हुआ जो हो रहा है, वह भी अच्छा हो रहा है जो होगा, वह
+          भी अच्छा ही होगा
         </Text>
         <Image
           source={{
