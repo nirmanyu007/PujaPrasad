@@ -2,6 +2,8 @@ import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {createDrawerNavigator} from '@react-navigation/drawer';
+
 import HomePage from './src/Pages/HomePage';
 import PujaPage from './src/Pages/PujaPage';
 import PrasadPage from './src/Pages/PrasadPage';
@@ -24,17 +26,41 @@ import Libreary from './src/Component/Libreary';
 import Arti from './src/Component/Arti';
 import Chalisa from './src/Component/Chalisa';
 import ArtiDetail from './src/Component/ArtiDetail';
+import ChalisaDetail from './src/Component/ChalisaDetail';
+import Suvichar from './src/Component/Suvichar';
+import MandirDetail from './src/Component/MandirDetail';
+import Profile from './src/Component/Profile';
+// import HomeNavBAr from './src/Component/HomeNavBAr';
+import HomeNavBar from './src/Component/HomeNavBAr';
+import MyBooking from './src/Component/MyBooking';
+import ContactUs from './src/Component/ContactUs';
+import About from './src/Component/About';
+import Otp from './src/Component/Otp';
+
+export type RootStackParamList = {
+  Otp: undefined;
+  TabNavigator: undefined;
+  ContactUs: undefined;
+  About: undefined;
+  PujaDetail:undefined;
+  PreviewPuja:undefined;
+};
 
 // Create Bottom Tab Navigator
 const Tab = createBottomTabNavigator();
 
 // Create Stack Navigator
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
+const Drawer = createDrawerNavigator();
+
+
+
 
 const TabNavigator = () => {
   return (
     <Tab.Navigator
-      initialRouteName="Explore"
+      initialRouteName="Home"
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: '#FF5704',
@@ -119,144 +145,16 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="ArtiDetail"
+        initialRouteName="Otp"
         screenOptions={{
           headerShown: false,
         }}>
-        {/* Main Tab Navigator */}
-        <Stack.Screen
-          name="TabNavigator"
-          component={TabNavigator}
-          options={{headerShown: false}}
-        />
-
-        {/* PujaDetail Screen */}
-        <Stack.Screen
-          name="PujaDetail"
-          component={PujaDetail}
-          options={{
-            title: 'Puja Details',
-            headerStyle: {backgroundColor: '#FF5704'},
-            headerTintColor: '#fff',
-          }}
-        />
-        <Stack.Screen
-          name="Details"
-          component={Detailing}
-          options={{
-            title: 'Puja Details',
-            headerStyle: {backgroundColor: '#FF5704'},
-            headerTintColor: '#fff',
-          }}
-        />
-        <Stack.Screen
-          name="PreviewPuja"
-          component={View_Puja_Booking}
-          options={{
-            title: 'Puja Details',
-            headerStyle: {backgroundColor: '#FF5704'},
-            headerTintColor: '#fff',
-          }}
-        />
-        <Stack.Screen
-          name="FormPage"
-          component={PujaDetailPage}
-          options={{
-            title: 'Puja Details',
-            headerStyle: {backgroundColor: '#FF5704'},
-            headerTintColor: '#fff',
-          }}
-        />
-        <Stack.Screen
-          name="Congratulation"
-          component={Congratulation}
-          options={{
-            title: 'Puja Details',
-            headerStyle: {backgroundColor: '#FF5704'},
-            headerTintColor: '#fff',
-          }}
-        />
-        <Stack.Screen
-          name="SelectPrasadPackage"
-          component={SelectPrasadPackage}
-          options={{
-            title: 'Puja Details',
-            headerStyle: {backgroundColor: '#FF5704'},
-            headerTintColor: '#fff',
-          }}
-        />
-        <Stack.Screen
-          name="Cart"
-          component={Cart}
-          options={{
-            title: 'Puja Details',
-            headerStyle: {backgroundColor: '#FF5704'},
-            headerTintColor: '#fff',
-          }}
-        />
-        <Stack.Screen
-          name="Address"
-          component={Address}
-          options={{
-            title: 'Puja Details',
-            headerStyle: {backgroundColor: '#FF5704'},
-            headerTintColor: '#fff',
-          }}
-        />
-        <Stack.Screen
-          name="Blog"
-          component={Blog}
-          options={{
-            title: 'Puja Details',
-            headerStyle: {backgroundColor: '#FF5704'},
-            headerTintColor: '#fff',
-          }}
-        />
-        <Stack.Screen
-          name="BlogDetailPage"
-          component={BlogCardDetail}
-          options={{
-            title: 'Puja Details',
-            headerStyle: {backgroundColor: '#FF5704'},
-            headerTintColor: '#fff',
-          }}
-        />
-        <Stack.Screen
-          name="Libreary"
-          component={Libreary}
-          options={{
-            title: 'Puja Details',
-            headerStyle: {backgroundColor: '#FF5704'},
-            headerTintColor: '#fff',
-          }}
-        />
-        <Stack.Screen
-          name="Arti"
-          component={Arti}
-          options={{
-            title: 'Puja Details',
-            headerStyle: {backgroundColor: '#FF5704'},
-            headerTintColor: '#fff',
-          }}
-        />
-        <Stack.Screen
-          name="Chalisa"
-          component={Chalisa}
-          options={{
-            title: 'Puja Details',
-            headerStyle: {backgroundColor: '#FF5704'},
-            headerTintColor: '#fff',
-          }}
-        />
-        <Stack.Screen
-          name="ArtiDetail"
-          component={ArtiDetail}
-          options={{
-            title: 'Puja Details',
-            headerStyle: {backgroundColor: '#FF5704'},
-            headerTintColor: '#fff',
-          }}
-        />
+        <Stack.Screen name="TabNavigator" component={TabNavigator} />
+        <Stack.Screen name="Otp" component={Otp} />
+        <Stack.Screen name="ContactUs" component={ContactUs} />
+        <Stack.Screen name="About" component={About} />
+        <Stack.Screen name="PujaDetail" component={PujaDetail} />
+        <Stack.Screen name="PreviewPuja" component={} />
       </Stack.Navigator>
     </NavigationContainer>
   );

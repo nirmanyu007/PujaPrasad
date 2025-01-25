@@ -7,27 +7,30 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+// import React from 'react';
 
-const ArtiDetail = () => {
-  const [isHindi, setIsHindi] = useState(false);
+const ChalisaDetail = () => {
 
-  const handleLanguageToggle = () => {
-    setIsHindi(!isHindi);
-  };
+    
+      const [isHindi, setIsHindi] = useState(false);
+    
+      const handleLanguageToggle = () => {
+        setIsHindi(!isHindi);
+      };
 
   return (
     <View style={styles.container}>
       {/* Image */}
       <Image
         source={{
-          uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/krishna.png', // Replace with actual image URL
+          uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/hanuman.png', // Replace with actual image URL
         }}
         style={styles.image}
       />
 
       {/* Title */}
       <Text style={styles.title}>
-        {isHindi ? 'आरती कुंज बिहारी जी' : 'Aarti Kunj Bihari Ji'}
+        {isHindi ? 'आरती कुंज बिहारी जी' : 'Hanuman Chalisa'}
       </Text>
 
       {/* Toggle Button */}
@@ -135,7 +138,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     padding: 15,
-    paddingLeft:25
+    paddingLeft: 25,
   },
   verse: {
     fontSize: 16,
@@ -145,4 +148,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ArtiDetail;
+
+export default ChalisaDetail;
+
+

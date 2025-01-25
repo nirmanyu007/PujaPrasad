@@ -1,8 +1,12 @@
-import { View, Text, Image } from 'react-native'
-import React from 'react'
-import Antdesign from 'react-native-vector-icons/AntDesign'
+import React from 'react';
+import {View, Text, Image, TouchableOpacity} from 'react-native';
+import Antdesign from 'react-native-vector-icons/AntDesign';
+import {useNavigation} from '@react-navigation/native';
+import {DrawerNavigationProp} from '@react-navigation/drawer';
 
-const HomeNavBAr = () => {
+const HomeNavBar = () => {
+  const navigation = useNavigation<DrawerNavigationProp<any>>(); // Access drawer navigation
+
   return (
     <View>
       <View
@@ -12,23 +16,26 @@ const HomeNavBAr = () => {
           justifyContent: 'space-between',
           width: '100%',
         }}>
-        <View
+        {/* Bars Icon to Open Drawer */}
+        <TouchableOpacity
           style={{
             backgroundColor: 'white',
             borderRadius: 1000,
-            // borderColor: '#666161',
-            // borderWidth:2,
             padding: 5,
             shadowColor: 'rgba(0, 0, 0, 0.25)', // Color of the shadow
             shadowOffset: {width: 0, height: 0}, // Horizontal and vertical offset
             shadowOpacity: 1, // Opacity of the shadow
             shadowRadius: 4, // Blur radius
             elevation: 4, // For Android
-          }}>
+          }}
+          onPress={() => navigation.openDrawer()} // Open drawer on press
+        >
           <Antdesign name="bars" size={30} color="#666161" />
-        </View>
-        <View style={{display: 'flex', alignItems:'center'}}>
-          <Text style={{color: '#FE6505', fontSize: 20, fontWeight: 600}}>
+        </TouchableOpacity>
+
+        {/* Center Text and Image */}
+        <View style={{display: 'flex', alignItems: 'center'}}>
+          <Text style={{color: '#FE6505', fontSize: 20, fontWeight: '600'}}>
             जय श्री राम
           </Text>
           <Image
@@ -38,12 +45,12 @@ const HomeNavBAr = () => {
             style={{width: 150, height: 10}}
           />
         </View>
+
+        {/* Bell Icon */}
         <View
           style={{
             backgroundColor: 'white',
             borderRadius: 1000,
-            // borderColor: '#666161',
-            // borderWidth:2,
             padding: 5,
             shadowColor: 'rgba(0, 0, 0, 0.25)', // Color of the shadow
             shadowOffset: {width: 0, height: 0}, // Horizontal and vertical offset
@@ -65,6 +72,6 @@ const HomeNavBAr = () => {
       </View>
     </View>
   );
-}
+};
 
-export default HomeNavBAr
+export default HomeNavBar;
