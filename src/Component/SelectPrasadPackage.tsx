@@ -6,7 +6,7 @@ import {useNavigation, NavigationProp} from '@react-navigation/native';
 
 type StackParamList = {
   PujaDetail: undefined;
-  PreviewPuja: undefined; // Define any params if required, e.g., { id: number }
+  Congratulation: undefined; // Define any params if required, e.g., { id: number }
 };
 
 const SelectPrasadPackage = () => {
@@ -44,6 +44,8 @@ const navigation = useNavigation<NavigationProp<StackParamList>>();
   const handlePress = (id: string) => {
     setSelectedPackage(id);
   };
+
+  
 
   const handleAddToCart = () => {
     if (selectedPackage) {

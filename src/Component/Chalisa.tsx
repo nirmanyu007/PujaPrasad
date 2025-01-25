@@ -1,8 +1,17 @@
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
 import React from 'react'
 import AntDesign from 'react-native-vector-icons/AntDesign'
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+
+type StackParamList = {
+  ChalisaDetail: undefined;
+};
 
 const Chalisa = () => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
+          const handleClick = () => {
+            navigation.navigate('ChalisaDetail'); // Navigate to PreviewPuja screen
+          };
      const chalisaData = [
        {
          id: 1,
@@ -46,19 +55,20 @@ const Chalisa = () => {
         />
       </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-              {chalisaData.map(item => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[styles.card, {backgroundColor: item.backgroundColor}]}>
-                  <Image source={{uri: item.image}} style={styles.cardImage} />
-                  <View style={styles.cardContent}>
-                    <Text style={styles.cardTitle}>{item.title}</Text>
-                    <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
-                  </View>
-                  <AntDesign name="right" size={18} color="#fff" />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+        {chalisaData.map(item => (
+          <TouchableOpacity
+            onPress={handleClick}
+            key={item.id}
+            style={[styles.card, {backgroundColor: item.backgroundColor}]}>
+            <Image source={{uri: item.image}} style={styles.cardImage} />
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>{item.title}</Text>
+              <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
+            </View>
+            <AntDesign name="right" size={18} color="#fff" />
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
     </View>
   );
 }

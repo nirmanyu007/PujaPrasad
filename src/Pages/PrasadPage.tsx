@@ -4,8 +4,17 @@ import PrasadNavbar from '../Component/PrasadNavbar'
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Iconn from 'react-native-vector-icons/FontAwesome5';
 import PrasadBox from '../widgets/PrasadBox';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+
+type StackParamList = {
+  Cart: undefined;
+};
 
 const PrasadPage = () => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
+            const handleClick = () => {
+              navigation.navigate('Cart'); // Navigate to PreviewPuja screen
+            };
   return (
     <View style={{paddingHorizontal: 15}}>
       <PrasadNavbar />
@@ -49,7 +58,7 @@ const PrasadPage = () => {
             borderRadius: 10,
             marginLeft: 10,
           }}>
-          <Iconn name="shopping-cart" size={24} color="#000" />
+          <Iconn name="shopping-cart" size={24} color="#000" onPress={handleClick}/>
         </View>
       </View>
       <View><PrasadBox/></View>

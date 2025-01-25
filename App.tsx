@@ -36,6 +36,7 @@ import MyBooking from './src/Component/MyBooking';
 import ContactUs from './src/Component/ContactUs';
 import About from './src/Component/About';
 import Otp from './src/Component/Otp';
+import Library from './src/Component/Libreary';
 
 export type RootStackParamList = {
   Otp: undefined;
@@ -43,7 +44,21 @@ export type RootStackParamList = {
   ContactUs: undefined;
   About: undefined;
   PujaDetail:undefined;
-  PreviewPuja:undefined;
+  ViewPujaBooking:undefined;
+  Congratulation:undefined;
+  SelectPrasadPackage:undefined;
+  Blogs:undefined;
+  Libreary:undefined;
+  Suvichar:undefined;
+  BlogDetail:undefined;
+Arti:undefined;
+Chalisa:undefined;
+ArtiDetail:undefined;
+ChalisaDetail:undefined;
+MandirDetail:undefined;
+Cart:undefined;
+Address:undefined;
+PujaDetailPage:undefined;
 };
 
 // Create Bottom Tab Navigator
@@ -154,7 +169,24 @@ const App = () => {
         <Stack.Screen name="ContactUs" component={ContactUs} />
         <Stack.Screen name="About" component={About} />
         <Stack.Screen name="PujaDetail" component={PujaDetail} />
-        <Stack.Screen name="PreviewPuja" component={} />
+        <Stack.Screen name="Congratulation" component={Congratulation} />
+        <Stack.Screen name="ViewPujaBooking" component={View_Puja_Booking} />
+        <Stack.Screen name="Blogs" component={Blog} />
+        <Stack.Screen name="Libreary" component={Library} />
+        <Stack.Screen name="Suvichar" component={Suvichar} />
+        <Stack.Screen name="BlogDetail" component={BlogCardDetail} />
+        <Stack.Screen name="Arti" component={Arti} />
+        <Stack.Screen name="Chalisa" component={Chalisa} />
+        <Stack.Screen name="ArtiDetail" component={ArtiDetail} />
+        <Stack.Screen name="ChalisaDetail" component={ChalisaDetail} />
+        <Stack.Screen name="MandirDetail" component={MandirDetail} />
+        <Stack.Screen name="Cart" component={Cart} />
+        <Stack.Screen name="Address" component={Address} />
+        <Stack.Screen name="PujaDetailPage" component={PujaDetailPage} />
+        <Stack.Screen
+          name="SelectPrasadPackage"
+          component={SelectPrasadPackage}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -9,7 +9,12 @@ import {
   ScrollView,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+
+type StackParamList = {
+  PujaDetail: undefined;
+  Congratulation: undefined; // Define any params if required, e.g., { id: number }
+};
 
 const PersonalizedPuja = () => {
   const [formData, setFormData] = useState({
@@ -49,10 +54,10 @@ const PersonalizedPuja = () => {
       setCurrentBhakta({name: '', gotra: ''}); // Reset current Bhakta fields
     }
   };
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<StackParamList>>();
 
   const handlePress = () => {
-    navigation.navigate('Congratulation' as never); // TypeScript compatibility
+    navigation.navigate('Congratulation'); // TypeScript compatibility
   };
 
   return (

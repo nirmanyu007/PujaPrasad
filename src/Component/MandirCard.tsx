@@ -1,10 +1,19 @@
 import React from 'react';
 import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+
+type StackParamList = {
+  MandirDetail: undefined;
+};
 
 const MandirCard = () => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
+            const handleClick = () => {
+              navigation.navigate('MandirDetail'); // Navigate to PreviewPuja screen
+            };
   return (
-    <TouchableOpacity style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={handleClick}>
       {/* Image */}
       <Image
         source={{

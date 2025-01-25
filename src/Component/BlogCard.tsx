@@ -1,9 +1,19 @@
 import React from 'react';
-import {View, Text, StyleSheet, Image} from 'react-native';
+import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+
+type StackParamList = {
+  BlogDetail: undefined;
+};
+
 
 const BlogCard: React.FC = () => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
+    const handleClick = () => {
+      navigation.navigate('BlogDetail'); // Navigate to PreviewPuja screen
+    };
   return (
-    <View style={styles.card}>
+    <TouchableOpacity onPress={handleClick} style={styles.card}>
       <Image
         source={{
           uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/Blog1.png',
@@ -24,7 +34,7 @@ const BlogCard: React.FC = () => {
           <Text style={styles.date}>01 Jan, 2025</Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

@@ -8,8 +8,17 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+type StackParamList = {
+  ArtiDetail: undefined;
+  
+};
 
 const Arti = () => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
+        const handleClick = () => {
+          navigation.navigate('ArtiDetail'); // Navigate to PreviewPuja screen
+        };
   const artiData = [
     {
       id: 1,
@@ -68,6 +77,7 @@ const Arti = () => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {artiData.map(item => (
           <TouchableOpacity
+          onPress={handleClick}
             key={item.id}
             style={[styles.card, {backgroundColor: item.backgroundColor}]}>
             <Image source={{uri: item.image}} style={styles.cardImage} />

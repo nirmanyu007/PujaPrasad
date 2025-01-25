@@ -9,18 +9,17 @@ import {
 } from 'react-native';
 import CartBox from './CartBox';
 import Entypo from 'react-native-vector-icons/Entypo';
-import {useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
 
-
-type RootStackParamList = {
-  Cart: undefined;
+type StackParamList = {
   Address: undefined;
 };
 
 const Cart = () => {
-   const navigation =
-     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+   const navigation = useNavigation<NavigationProp<StackParamList>>(); 
+               const handleClick = () => {
+                 navigation.navigate('Address'); // Navigate to PreviewPuja screen
+               };
   const [cartItems, setCartItems] = useState([
     {
       id: '1',
@@ -147,7 +146,7 @@ const Cart = () => {
 
       {/* Checkout Button */}
       <TouchableOpacity
-        onPress={() => navigation.navigate('Address')}
+        onPress={handleClick}
         style={styles.checkoutButton}>
         <Text style={styles.checkoutText}>Checkout</Text>
       </TouchableOpacity>

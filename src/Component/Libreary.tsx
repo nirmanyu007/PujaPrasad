@@ -1,8 +1,21 @@
 import React from 'react';
 import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+
+type StackParamList = {
+  Arti: undefined;
+  Chalisa: undefined;
+};
 
 const Library = () => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
+      const handleClick = () => {
+        navigation.navigate('Arti'); // Navigate to PreviewPuja screen
+      };
+      const handleClick2 = () => {
+        navigation.navigate('Chalisa'); // Navigate to PreviewPuja screen
+      };
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -14,7 +27,9 @@ const Library = () => {
       {/* Boxes */}
       <View style={styles.boxContainer}>
         {/* Aarti Box */}
-        <TouchableOpacity style={[styles.box, styles.aartiBox]}>
+        <TouchableOpacity
+          onPress={handleClick}
+          style={[styles.box, styles.aartiBox]}>
           <Image
             source={{
               uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/arti.png', // Replace with Aarti image URL
@@ -25,7 +40,9 @@ const Library = () => {
         </TouchableOpacity>
 
         {/* Chalisa Box */}
-        <TouchableOpacity style={[styles.box, styles.chalisaBox]}>
+        <TouchableOpacity
+          onPress={handleClick2}
+          style={[styles.box, styles.chalisaBox]}>
           <Image
             source={{
               uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/boxPrasad.png', // Replace with Chalisa image URL

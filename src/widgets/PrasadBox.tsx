@@ -1,7 +1,17 @@
 import React from 'react';
 import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+
+type StackParamList = {
+  PujaDetail: undefined;
+  SelectPrasadPackage: undefined; // Define any params if required, e.g., { id: number }
+};
 
 const PrasadBox: React.FC = () => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>();
+  const handleSelectPackage = () => {
+    navigation.navigate('SelectPrasadPackage'); // Navigate to PreviewPuja screen
+  };
   return (
     <View style={styles.cardContainer}>
       <Image
@@ -13,7 +23,7 @@ const PrasadBox: React.FC = () => {
       <Text style={styles.name}>Kashi Vishwanath Temple Prasad</Text>
       <Text style={styles.priceText}>Starting from ₹501/-</Text>
 
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={handleSelectPackage}>
         <Text style={styles.buttonText}>Get Prasad</Text>
       </TouchableOpacity>
     </View>

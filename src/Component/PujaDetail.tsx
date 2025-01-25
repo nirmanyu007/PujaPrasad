@@ -15,7 +15,7 @@ import {useNavigation, NavigationProp} from '@react-navigation/native';
 
 type StackParamList = {
   PujaDetail: undefined;
-  PreviewPuja: undefined; // Define any params if required, e.g., { id: number }
+  ViewPujaBooking: undefined; // Define any params if required, e.g., { id: number }
 };
 
 interface PujaDetails {
@@ -64,7 +64,7 @@ const PujaDetail: React.FC = () => {
      navigation.goBack(); // Navigate back to the previous screen
    };
     const handleSelectPackage = () => {
-      navigation.navigate('PreviewPuja'); // Navigate to PreviewPuja screen
+      navigation.navigate('ViewPujaBooking'); // Navigate to PreviewPuja screen
     };
 
   const renderCarouselItem = ({item}: {item: string}) => {

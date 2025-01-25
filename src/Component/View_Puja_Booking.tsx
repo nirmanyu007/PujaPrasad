@@ -12,8 +12,16 @@ import {
 } from 'react-native';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
 
+type StackParamList = {
+  PujaDetailPage: undefined;
+};
+
 
 const View_Puja_Booking = () => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
+                 const handleClick = () => {
+                   navigation.navigate('PujaDetailPage'); // Navigate to PreviewPuja screen
+                 };
 //   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState<string | null>(null);
@@ -316,8 +324,8 @@ const View_Puja_Booking = () => {
         {renderBrahmanBhojModal()}
       </ScrollView>
       <View style={styles.bottomSection}>
-        <Text style={styles.totalText}>Total  ₹{calculateTotalPrice()}</Text>
-        <TouchableOpacity style={styles.proceedButton}>
+        <Text style={styles.totalText}>Total ₹{calculateTotalPrice()}</Text>
+        <TouchableOpacity onPress={handleClick} style={styles.proceedButton}>
           <Text style={styles.proceedText}>Proceed &gt;&gt;&gt;</Text>
         </TouchableOpacity>
       </View>
