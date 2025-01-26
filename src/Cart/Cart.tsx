@@ -9,35 +9,46 @@ import {
 } from 'react-native';
 import CartBox from './CartBox';
 import Entypo from 'react-native-vector-icons/Entypo';
-import {useNavigation, NavigationProp} from '@react-navigation/native';
+import {
+  useNavigation,
+  NavigationProp,
+  RouteProp,
+  useRoute,
+} from '@react-navigation/native';
+
+type CartItem = {
+  id: string;
+  title: string;
+  description: string;
+  price: number | string;
+  quantity: number;
+  image: string;
+};
 
 type StackParamList = {
+  Cart: CartItem[];
   Address: undefined;
 };
 
-const Cart = () => {
-   const navigation = useNavigation<NavigationProp<StackParamList>>(); 
-               const handleClick = () => {
-                 navigation.navigate('Address'); // Navigate to PreviewPuja screen
-               };
-  const [cartItems, setCartItems] = useState([
-    {
-      id: '1',
-      title: 'Banke Bihari Prasadam',
-      description: 'A Divine Offering of Blessings',
-      price: 701,
-      quantity: 1,
-      image: 'https://via.placeholder.com/100', // Replace with your image URL
-    },
-    {
-      id: '2',
-      title: 'Banke Bihari Prasadam',
-      description: 'A Divine Offering of Blessings',
-      price: 701,
-      quantity: 1,
-      image: 'https://via.placeholder.com/100', // Replace with your image URL
-    },
-  ]);
+const Cart: React.FC = () => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>();
+  const route = useRoute<RouteProp<StackParamList, 'Cart'>>();
+  const initialCartItems = [...(route.params || [])];
+
+  const handleGoBack = () => {
+    navigation.goBack(); // Navigate back to the previous screen
+  };
+
+  // Ensure `price` is always treated as a number
+  const [cartItems, setCartItems] = useState<CartItem[]>(
+    initialCartItems.map(item => ({
+      ...item,
+      price:
+        typeof item.price === 'string'
+          ? parseFloat(item.price.replace(/[^0-9.]/g, ''))
+          : item.price,
+    })),
+  );
 
   const incrementQuantity = (id: string) => {
     setCartItems(prevItems =>
@@ -48,18 +59,23 @@ const Cart = () => {
   };
 
   const decrementQuantity = (id: string) => {
-    setCartItems(prevItems =>
-      prevItems.map(item =>
-        item.id === id && item.quantity > 1
-          ? {...item, quantity: item.quantity - 1}
-          : item,
-      ),
+    setCartItems(
+      prevItems =>
+        prevItems
+          .map(item =>
+            item.id === id && item.quantity > 1
+              ? {...item, quantity: item.quantity - 1}
+              : item,
+          )
+          .filter(item => item.quantity > 0), // Remove items with quantity 0
     );
   };
 
   const getTotalAmount = () => {
     return cartItems.reduce(
-      (total, item) => total + item.price * item.quantity,
+      (total, item) =>
+        total +
+        (typeof item.price === 'number' ? item.price : 0) * item.quantity,
       0,
     );
   };
@@ -74,10 +90,10 @@ const Cart = () => {
       <View style={styles.header}>
         <View
           style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
-          <Entypo name="cross" size={24} color="#000" />
+          <Entypo onPress={handleGoBack} name="cross" size={24} color="#000" />
           <Text style={styles.headerText}>Cart</Text>
         </View>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => setCartItems([])}>
           <Text style={styles.clearButton}>Clear</Text>
         </TouchableOpacity>
       </View>
@@ -90,66 +106,75 @@ const Cart = () => {
         />
       </View>
 
-      {/* Cart Summary */}
-      <View style={styles.cartSummary}>
-        <Text style={styles.cartSummaryText}>
-          Total Item ({getTotalItems()})
-        </Text>
-      </View>
+      {/* Cart Items or Empty Cart Message */}
+      {cartItems.length > 0 ? (
+        <>
+          {/* Cart Summary */}
+          <View style={styles.cartSummary}>
+            <Text style={styles.cartSummaryText}>
+              Total Items ({getTotalItems()})
+            </Text>
+          </View>
 
-      {/* Cart Items */}
-      <FlatList
-        data={cartItems}
-        keyExtractor={item => item.id}
-        renderItem={({item}) => (
-          <CartBox
-            item={item}
-            incrementQuantity={incrementQuantity}
-            decrementQuantity={decrementQuantity}
+          {/* Cart Items */}
+          <FlatList
+            data={cartItems}
+            keyExtractor={item => item.id}
+            renderItem={({item}) => (
+              <CartBox
+                item={item}
+                incrementQuantity={incrementQuantity}
+                decrementQuantity={decrementQuantity}
+              />
+            )}
           />
-        )}
-      />
 
-      {/* Bill Details */}
-      <View style={styles.billDetails}>
-        <Text style={styles.billText}>Bill details</Text>
-        <View style={styles.billRow}>
-          <Text style={styles.billLabel}>Item total</Text>
-          <Text style={styles.billValue}>₹{getTotalAmount()}</Text>
-        </View>
-        <View style={styles.billRow}>
-          <Text style={styles.billLabel}>Platform Convenience Fee</Text>
-          <Text style={styles.billValue}>₹25 FREE</Text>
-        </View>
-        <View style={styles.billRow}>
-          <Text style={styles.billLabel}>Delivery Charge</Text>
-          <Text style={styles.billValue}>₹25 FREE</Text>
-        </View>
-        <View style={styles.billRow}>
-          <Text style={styles.billLabel}>Sub Total</Text>
-          <Text style={styles.billValue}>₹{getTotalAmount()}</Text>
-        </View>
-        <View style={styles.billRow2}>
-          <Text style={styles.billLabel}>Total Amount</Text>
-          <Text style={styles.totalAmount}>₹{getTotalAmount()}</Text>
-        </View>
-        <Text style={styles.savings}>Your total savings ₹50</Text>
-        {/* Bottom Image */}
-        <Image
-          source={{
-            uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/bottom.png',
-          }}
-          style={styles.bottomImage}
-          resizeMode="cover"
-        />
-      </View>
+          {/* Bill Details */}
+          <View style={styles.billDetails}>
+            <Text style={styles.billText}>Bill details</Text>
+            <View style={styles.billRow}>
+              <Text style={styles.billLabel}>Item total</Text>
+              <Text style={styles.billValue}>₹{getTotalAmount()}</Text>
+            </View>
+            <View style={styles.billRow}>
+              <Text style={styles.billLabel}>Platform Convenience Fee</Text>
+              <Text style={styles.billValue}>₹25 FREE</Text>
+            </View>
+            <View style={styles.billRow}>
+              <Text style={styles.billLabel}>Delivery Charge</Text>
+              <Text style={styles.billValue}>₹25 FREE</Text>
+            </View>
+            <View style={styles.billRow}>
+              <Text style={styles.billLabel}>Sub Total</Text>
+              <Text style={styles.billValue}>₹{getTotalAmount()}</Text>
+            </View>
+            <View style={styles.billRow2}>
+              <Text style={styles.billLabel}>Total Amount</Text>
+              <Text style={styles.totalAmount}>₹{getTotalAmount()}</Text>
+            </View>
+            <Text style={styles.savings}>Your total savings ₹50</Text>
+            {/* Bottom Image */}
+            <Image
+              source={{
+                uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/bottom.png',
+              }}
+              style={styles.bottomImage}
+              resizeMode="cover"
+            />
+          </View>
 
-      {/* Checkout Button */}
-      <TouchableOpacity
-        onPress={handleClick}
-        style={styles.checkoutButton}>
-        <Text style={styles.checkoutText}>Checkout</Text>
-      </TouchableOpacity>
+          {/* Checkout Button */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Address')}
+            style={styles.checkoutButton}>
+            <Text style={styles.checkoutText}>Checkout</Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <View style={styles.emptyCart}>
+          <Text style={styles.emptyCartText}>Add Products</Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -191,18 +216,15 @@ const styles = StyleSheet.create({
   },
   billDetails: {
     position: 'relative',
-    // padding: 16,
     backgroundColor: '#f9f9f9',
     marginVertical: 8,
-    shadowColor: 'rgba(0, 0, 0, 0.5)', // Color of the shadow
-    shadowOffset: {width: 0, height: 0}, // Horizontal and vertical offset
-    shadowOpacity: 1, // Opacity of the shadow
-    shadowRadius: 4, // Blur radius
-    elevation: 4, // For Android
+    shadowColor: 'rgba(0, 0, 0, 0.5)',
+    shadowOffset: {width: 0, height: 0},
+    shadowOpacity: 1,
+    shadowRadius: 4,
+    elevation: 4,
     borderRadius: 15,
-    // marginHorizontal: 16,
-    overflow: 'hidden', // Ensures the image doesn't exceed the container
-    width: '100%', // Full width
+    width: '100%',
   },
   billText: {
     fontSize: 16,
@@ -214,7 +236,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     left: 0,
-    // objectFit: 'fill',
     width: '100%',
     height: 50,
   },
@@ -263,6 +284,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  emptyCart: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyCartText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#666',
   },
 });
 

@@ -1,17 +1,31 @@
 import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
 import React, {useState} from 'react';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import {useNavigation, NavigationProp} from '@react-navigation/native';
+import {
+  useNavigation,
+  NavigationProp,
+  RouteProp,
+  useRoute,
+} from '@react-navigation/native';
 
 
 type StackParamList = {
-  PujaDetail: undefined;
-  Congratulation: undefined; // Define any params if required, e.g., { id: number }
+  SelectPrasadPackage: {imageUri: string; templeName: string};
+  Cart: {
+    title: string;
+    description: string;
+    price: string;
+    quantity: number;
+    image: string;
+  }[];
 };
 
 const SelectPrasadPackage = () => {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
 const navigation = useNavigation<NavigationProp<StackParamList>>();
+const route = useRoute<RouteProp<StackParamList, 'SelectPrasadPackage'>>();
+
+const {imageUri, templeName} = route.params;
 
    const handleGoBack = () => {
      navigation.goBack(); // Navigate back to the previous screen
@@ -49,10 +63,21 @@ const navigation = useNavigation<NavigationProp<StackParamList>>();
 
   const handleAddToCart = () => {
     if (selectedPackage) {
-      Alert.alert(
-        'Added to Cart',
-        `You have added the ${selectedPackage} package to the cart.`,
+      const selectedPackageData = packages.find(
+        pkg => pkg.id === selectedPackage,
       );
+
+      if (selectedPackageData) {
+        navigation.navigate('Cart', [
+          {
+            title: templeName,
+            description: selectedPackageData.title,
+            price: selectedPackageData.price,
+            quantity: 1,
+            image: imageUri,
+          },
+        ]);
+      }
     } else {
       Alert.alert(
         'No Package Selected',
@@ -77,7 +102,7 @@ const navigation = useNavigation<NavigationProp<StackParamList>>();
                   size={23}
                   color="black"
                 />
-                <Text style={{paddingLeft: '2%', fontSize:18,color:'black',fontWeight:600}}>Rudrabhishek</Text>
+                <Text style={{paddingLeft: '2%', fontSize:18,color:'black',fontWeight:600}}>Select Prasad Package</Text>
               </View>
       <View style={{backgroundColor: 'yellow', borderRadius: 15}}>
         <Text style={styles.header}>🌟 Choose Your Prasad Package 🌟</Text>

@@ -1,14 +1,12 @@
 import React from 'react';
 import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 type CartBoxProps = {
   item: {
     id: string;
     title: string;
     description: string;
-    price: number;
+    price: number | string;
     quantity: number;
     image: string;
   };
@@ -21,6 +19,15 @@ const CartBox: React.FC<CartBoxProps> = ({
   incrementQuantity,
   decrementQuantity,
 }) => {
+  // Safely parse price as a number
+  const parsePrice = (price: number | string): number =>
+    typeof price === 'number'
+      ? price
+      : parseFloat(price.replace(/[^0-9.]/g, ''));
+
+  // Calculate total price
+  const totalPrice = parsePrice(item.price) * item.quantity || 0;
+
   return (
     <View style={styles.cartItem}>
       <Image source={{uri: item.image}} style={styles.itemImage} />
@@ -49,7 +56,8 @@ const CartBox: React.FC<CartBoxProps> = ({
           </View>
         </View>
       </View>
-      <Text style={styles.itemPrice}>₹{item.price * item.quantity}</Text>
+      {/* Ensure the total price is safely rendered inside Text */}
+      <Text style={styles.itemPrice}>₹{totalPrice.toFixed(2)}</Text>
     </View>
   );
 };
@@ -85,7 +93,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   quantityButton: {
-    // backgroundColor: '#ddd',
     paddingHorizontal: 12,
     color: '#fff',
     padding: 8,

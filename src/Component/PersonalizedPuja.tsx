@@ -61,7 +61,6 @@ const PersonalizedPuja = () => {
   };
 
   return (
-    
     <ScrollView style={styles.container}>
       <Text style={styles.header}>Fill the Form</Text>
       <Text style={styles.subHeader}>
@@ -159,10 +158,16 @@ const PersonalizedPuja = () => {
           backgroundColor: '#1AA11F',
           borderRadius: 10,
           overflow: 'hidden',
+          marginBottom: 70,
         }}>
         <TouchableOpacity onPress={handlePress} style={{padding: 10}}>
           <Text
-            style={{color: '#fff', textAlign: 'center', fontWeight: 'bold', fontSize:16}}>
+            style={{
+              color: '#fff',
+              textAlign: 'center',
+              fontWeight: 'bold',
+              fontSize: 16,
+            }}>
             Submit Request
           </Text>
         </TouchableOpacity>

@@ -6,6 +6,7 @@ import {
   Image,
   Text,
   TouchableOpacity,
+  FlatList,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import CardBox from './CardBox';
@@ -41,6 +42,7 @@ const PujaPage = () => {
   const samplePujaData = [
     {
       id: '1',
+      pujaId: 'Rudrabhishek',
       title: 'Rudrabhishek (5 Shastri)',
       description:
         'The Mahamrityunjay Jaap offers protection from negative forces and aids in healing and recovery from...',
@@ -50,8 +52,58 @@ const PujaPage = () => {
       imageUri:
         'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/rudra-min.png',
     },
-    // Add more puja items if needed
+
+    {
+      id: '2',
+      pujaId: 'Hawan',
+      title: 'Navagraha Hawan',
+      description:
+        'Navagraha Hawan helps reduce the malefic effects of planets and boosts positive energies...',
+      location: 'ISKCON Temple, Bengaluru, Karnataka, India',
+      date: '22 December, Sunday',
+      price: '₹950/-',
+      imageUri:
+        'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/navagraha_hawan.png',
+    },
+    {
+      id: '3',
+      pujaId: 'Puja',
+      title: 'Ganesha Puja',
+      description:
+        'Ganesha Puja is performed to remove obstacles and bring success and prosperity in life...',
+      location: 'Siddhivinayak Temple, Mumbai, Maharashtra, India',
+      date: '20 December, Friday',
+      price: '₹600/-',
+      imageUri:
+        'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/ganesha_puja.png',
+    },
+    {
+      id: '4',
+      pujaId: 'Sringar',
+      title: 'Durga Maa Sringar Puja',
+      description:
+        'Performed to honor Goddess Durga with ornaments, flowers, and offerings to seek her blessings...',
+      location: 'Vaishno Devi Temple, Jammu & Kashmir, India',
+      date: '25 December, Wednesday',
+      price: '₹1200/-',
+      imageUri:
+        'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/durga_sringar.png',
+    },
   ];
+
+   const filteredPujaData =
+     activeFilter === 'All Puja'
+       ? samplePujaData
+       : samplePujaData.filter(
+           puja =>
+             puja.pujaId.toLowerCase().trim() ===
+             activeFilter.toLowerCase().trim(),
+         );
+
+   console.log('Active Filter:', activeFilter);
+   console.log('Filtered Data:', filteredPujaData);
+  
+   
 
   return (
     <View style={styles.container}>
@@ -96,19 +148,25 @@ const PujaPage = () => {
           </TouchableOpacity>
         ))}
       </View>
-      <View style={{width: '100%', paddingTop: '4%'}}>
-        {samplePujaData.map(puja => (
-          <CardBox
-            key={puja.id}
-            title={puja.title}
-            description={puja.description}
-            location={puja.location}
-            date={puja.date}
-            price={puja.price}
-            imageUri={puja.imageUri}
-            // onPress={() => navigation.navigate('PujaDetail', {puja})}
-          />
-        ))}
+      <View style={{width: '100%', paddingTop: '4%',paddingBottom:100}}>
+        <FlatList
+        
+        
+          data={filteredPujaData}
+          keyExtractor={item => item.id}
+          renderItem={({item}) => (
+            // console.log('Rendering item:', item);
+            <CardBox
+              title={item.title}
+              description={item.description}
+              location={item.location}
+              date={item.date}
+              price={item.price}
+              imageUri={item.imageUri}
+            />
+          )}
+          contentContainerStyle={{paddingBottom: 20}}
+        />
       </View>
     </View>
   );
