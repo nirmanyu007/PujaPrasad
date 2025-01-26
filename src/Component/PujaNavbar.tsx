@@ -1,8 +1,15 @@
-import {View, Text, Image} from 'react-native';
+import {View, Text, Image, TouchableOpacity} from 'react-native';
 import React from 'react';
 import Antdesign from 'react-native-vector-icons/AntDesign';
+import {DrawerNavigationProp} from '@react-navigation/drawer';
+import {DrawerParamList} from '../../App';
+import {useNavigation} from '@react-navigation/native';
 
-const PujaNavbar = () => {
+type PujaNavbarProps = {
+  title: string;
+};
+const PujaNavbar : React.FC<PujaNavbarProps> = ({title}) => {
+   const navigation = useNavigation<DrawerNavigationProp<DrawerParamList>>();
   return (
     <View>
       <View
@@ -11,10 +18,10 @@ const PujaNavbar = () => {
           flexDirection: 'row',
           justifyContent: 'space-between',
           width: '100%',
-          paddingTop:'3%',
-          alignItems:'center'
+          paddingTop: '3%',
+          alignItems: 'center',
         }}>
-        <View
+        <TouchableOpacity
           style={{
             backgroundColor: 'white',
             borderRadius: 1000,
@@ -26,14 +33,14 @@ const PujaNavbar = () => {
             shadowOpacity: 1, // Opacity of the shadow
             shadowRadius: 4, // Blur radius
             elevation: 4, // For Android
-          }}>
+          }}
+          onPress={() => navigation.openDrawer()}>
           <Antdesign name="bars" size={30} color="#666161" />
-        </View>
+        </TouchableOpacity>
         <View style={{display: 'flex', alignItems: 'center'}}>
           <Text style={{color: '#FE6505', fontSize: 20, fontWeight: 600}}>
-          Book Puja
+            Book Puja
           </Text>
-          
         </View>
         <View
           style={{

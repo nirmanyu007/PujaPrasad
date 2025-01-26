@@ -76,7 +76,7 @@ const HomePage: React.FC = () => {
         resizeMode="cover">
         {/* Navbar inside ImageBackground with absolute positioning */}
         <View style={{paddingHorizontal:'4%', paddingTop:'10%'}}>
-          <HomeNavBAr />
+          <HomeNavBAr title="My Custom Title"/>
         </View>
       </ImageBackground>
       <Carousel

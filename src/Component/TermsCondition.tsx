@@ -1,13 +1,25 @@
 import React from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
 import Antdesign from 'react-native-vector-icons/AntDesign';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+
+type StackParamList = {
+  PujaDetail: undefined;
+  ViewPujaBooking: undefined; // Define any params if required, e.g., { id: number }
+};
 
 const TermsCondition = () => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>(); // Get the navigation object
+  
+     const handleGoBack = () => {
+       navigation.goBack(); // Navigate back to the previous screen
+     };
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.headerContainer}>
         <Antdesign
           name="arrowleft"
+          onPress={handleGoBack}
           size={24}
           color="black"
           style={styles.backIcon}
@@ -16,8 +28,6 @@ const TermsCondition = () => {
       </View>
 
       <Text style={styles.updatedText}>Last updated: 23-01-2025</Text>
-
-      
     </ScrollView>
   );
 };

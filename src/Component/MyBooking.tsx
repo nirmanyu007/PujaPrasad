@@ -2,9 +2,23 @@ import React, {useState} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import PujaBooking from './PujaBooking';
 import PrasadBooking from './PrasadBooking';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+
+type StackParamList = {
+  PujaDetail: undefined;
+  ViewPujaBooking: undefined; // Define any params if required, e.g., { id: number }
+};
 
 const MyBooking = () => {
   const [activeTab, setActiveTab] = useState<'puja' | 'prasad'>('puja');
+
+  const navigation = useNavigation<NavigationProp<StackParamList>>(); // Get the navigation object
+  
+     const handleGoBack = () => {
+       navigation.goBack(); // Navigate back to the previous screen
+     };
 
   const renderContent = () => {
     if (activeTab === 'puja') {
@@ -17,8 +31,16 @@ const MyBooking = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <Text style={styles.header}>My Bookings</Text>
+      <View style={{flexDirection:'row'}}>
+        {/* Header */}
+        <AntDesign
+          onPress={handleGoBack}
+          name="arrowleft"
+          size={23}
+          color="black"
+        />
+        <Text style={styles.header}>My Bookings</Text>
+      </View>
 
       {/* Tabs */}
       <View style={styles.tabContainer}>

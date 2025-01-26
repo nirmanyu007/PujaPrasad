@@ -11,17 +11,32 @@ import {
 // import {Picker} from '@react-native-picker/picker';
 import {RadioButton} from 'react-native-paper'; // Install if not present using `npm install react-native-paper`
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+
+type StackParamList = {
+  PujaDetailPage: undefined;
+};
 
 const Profile = () => {
   const [gender, setGender] = React.useState<string>('');
   const [addressType, setAddressType] = React.useState<string>('Home');
+  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
+
+  const handleGoBack = () => {
+    navigation.goBack(); // Navigate back to the previous screen
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.header}>
-                <AntDesign name="arrowleft" size={23} color="black" />
-                <Text style={styles.headerText}>Edit Profile</Text>
-              </View>
+      <View style={styles.header}>
+        <AntDesign
+          onPress={handleGoBack}
+          name="arrowleft"
+          size={23}
+          color="black"
+        />
+        <Text style={styles.headerText}>Edit Profile</Text>
+      </View>
       {/* Profile Picture */}
       <View style={styles.profilePictureContainer}>
         <View style={styles.profilePicture} />

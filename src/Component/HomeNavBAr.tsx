@@ -3,9 +3,14 @@ import {View, Text, Image, TouchableOpacity} from 'react-native';
 import Antdesign from 'react-native-vector-icons/AntDesign';
 import {useNavigation} from '@react-navigation/native';
 import {DrawerNavigationProp} from '@react-navigation/drawer';
+import {DrawerParamList} from '../../App';
 
-const HomeNavBar = () => {
-  const navigation = useNavigation<DrawerNavigationProp<any>>(); // Access drawer navigation
+type HomeNavBarProps = {
+  title: string;
+};
+
+const HomeNavBar: React.FC<HomeNavBarProps> = ({title}) => {
+  const navigation = useNavigation<DrawerNavigationProp<DrawerParamList>>();
 
   return (
     <View>

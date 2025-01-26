@@ -37,28 +37,43 @@ import ContactUs from './src/Component/ContactUs';
 import About from './src/Component/About';
 import Otp from './src/Component/Otp';
 import Library from './src/Component/Libreary';
+import CustomDrawer from './src/Component/CustomDrawer';
+import PujaBooking from './src/Component/PujaBooking';
+import PrasadBooking from './src/Component/PrasadBooking';
+import TermsCondition from './src/Component/TermsCondition';
+import PrivacyPolicy from './src/Component/PrivacyPolicy';
 
 export type RootStackParamList = {
   Otp: undefined;
   TabNavigator: undefined;
   ContactUs: undefined;
   About: undefined;
-  PujaDetail:undefined;
-  ViewPujaBooking:undefined;
-  Congratulation:undefined;
-  SelectPrasadPackage:undefined;
-  Blogs:undefined;
-  Libreary:undefined;
-  Suvichar:undefined;
-  BlogDetail:undefined;
-Arti:undefined;
-Chalisa:undefined;
-ArtiDetail:undefined;
-ChalisaDetail:undefined;
-MandirDetail:undefined;
-Cart:undefined;
-Address:undefined;
-PujaDetailPage:undefined;
+  PujaDetail: undefined;
+  ViewPujaBooking: undefined;
+  Congratulation: undefined;
+  SelectPrasadPackage: undefined;
+  Blogs: undefined;
+  Libreary: undefined;
+  Suvichar: undefined;
+  BlogDetail: undefined;
+  Arti: undefined;
+  Chalisa: undefined;
+  ArtiDetail: undefined;
+  ChalisaDetail: undefined;
+  MandirDetail: undefined;
+  Cart: undefined;
+  Address: undefined;
+  PujaDetailPage: undefined;
+  // MainDrawer:undefined;
+  DrawerNavigator: undefined;
+};
+
+export type DrawerParamList = {
+  Home: undefined;
+  ContactUs: undefined;
+  Profile: undefined;
+  About: undefined;
+  Puja: undefined;
 };
 
 // Create Bottom Tab Navigator
@@ -71,6 +86,27 @@ const Drawer = createDrawerNavigator();
 
 
 
+const DrawerNavigator: React.FC = () => {
+  return (
+    <Drawer.Navigator
+      drawerContent={props => <CustomDrawer {...props} />}
+      screenOptions={{
+        headerShown: false,
+      }}>
+      <Drawer.Screen name="Home" component={HomePage} />
+      <Drawer.Screen name="Puja" component={PujaPage} />
+      <Drawer.Screen name="Mandir" component={Mandir} />
+      <Drawer.Screen name="Prasad" component={PrasadPage} />
+      <Drawer.Screen name="Explore" component={Explore} />
+      <Drawer.Screen name="ContactUs" component={ContactUs} />
+      <Drawer.Screen name="Profile" component={Profile} />
+      <Drawer.Screen name="About" component={About} />
+      <Drawer.Screen name="MyBooking" component={MyBooking} />
+      <Drawer.Screen name="TermsCondition" component={TermsCondition} />
+      <Drawer.Screen name="PrivacyPolicy" component={PrivacyPolicy} />
+    </Drawer.Navigator>
+  );
+};
 
 const TabNavigator = () => {
   return (
@@ -82,7 +118,7 @@ const TabNavigator = () => {
         tabBarInactiveTintColor: 'gray',
       }}>
       <Tab.Screen
-        name="Puja"
+        name="PujaPage"
         component={PujaPage}
         options={{
           tabBarIcon: ({color, size}) => (
@@ -111,7 +147,7 @@ const TabNavigator = () => {
       />
       <Tab.Screen
         name="Home"
-        component={HomePage}
+        component={DrawerNavigator}
         options={{
           tabBarLabel: '',
           tabBarIcon: ({color}) => (
@@ -156,6 +192,8 @@ const TabNavigator = () => {
   );
 };
 
+
+
 const App = () => {
   return (
     <NavigationContainer>
@@ -165,6 +203,7 @@ const App = () => {
           headerShown: false,
         }}>
         <Stack.Screen name="TabNavigator" component={TabNavigator} />
+        {/* <Stack.Screen name="MainDrawer" component={DrawerNavigator} /> */}
         <Stack.Screen name="Otp" component={Otp} />
         <Stack.Screen name="ContactUs" component={ContactUs} />
         <Stack.Screen name="About" component={About} />

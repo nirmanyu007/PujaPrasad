@@ -10,12 +10,26 @@ import {
 } from 'react-native';
 import Antdesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+// import AntDesign from 'react-native-vector-icons/AntDesign';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+
+type StackParamList = {
+  PujaDetail: undefined;
+  ViewPujaBooking: undefined; // Define any params if required, e.g., { id: number }
+};
 
 const ContactUs = () => {
+
+   const navigation = useNavigation<NavigationProp<StackParamList>>(); // Get the navigation object
+  
+     const handleGoBack = () => {
+       navigation.goBack(); // Navigate back to the previous screen
+     };
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.headerContainer}>
         <Antdesign
+          onPress={handleGoBack}
           name="arrowleft"
           size={24}
           color="black"

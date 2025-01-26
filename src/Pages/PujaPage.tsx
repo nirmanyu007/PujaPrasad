@@ -21,7 +21,7 @@ const PujaPage = () => {
   return (
     <View style={styles.container}>
       <View style={styles.duing}>
-        <PujaNavbar />
+        <PujaNavbar title="My Custom Title" />
         {/* Tab Selector */}
         <View style={styles.tabContainer}>
           <TouchableOpacity
