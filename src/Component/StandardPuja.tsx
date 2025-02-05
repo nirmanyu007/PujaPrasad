@@ -138,67 +138,21 @@ const PujaPage = () => {
     fetchPujaData();
   }, []);
 
-  // const samplePujaData = [
-  //   {
-  //     id: '1',
-  //     pujaId: 'Rudrabhishek',
-  //     title: 'Rudrabhishek (5 Shastri)',
-  //     description:
-  //       'The Mahamrityunjay Jaap offers protection from negative forces and aids in healing and recovery from...',
-  //     location: 'Kashi Vishwanath Temple, Varanasi, Uttar Pradesh, India',
-  //     date: '17 December, Tuesday',
-  //     price: '₹850/-',
-  //     imageUri:
-  //       'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/rudra-min.png',
-  //   },
+  
 
-  //   {
-  //     id: '2',
-  //     pujaId: 'Hawan',
-  //     title: 'Navagraha Hawan',
-  //     description:
-  //       'Navagraha Hawan helps reduce the malefic effects of planets and boosts positive energies...',
-  //     location: 'ISKCON Temple, Bengaluru, Karnataka, India',
-  //     date: '22 December, Sunday',
-  //     price: '₹950/-',
-  //     imageUri:
-  //       'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/navagraha_hawan.png',
-  //   },
-  //   {
-  //     id: '3',
-  //     pujaId: 'Puja',
-  //     title: 'Ganesha Puja',
-  //     description:
-  //       'Ganesha Puja is performed to remove obstacles and bring success and prosperity in life...',
-  //     location: 'Siddhivinayak Temple, Mumbai, Maharashtra, India',
-  //     date: '20 December, Friday',
-  //     price: '₹600/-',
-  //     imageUri:
-  //       'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/ganesha_puja.png',
-  //   },
-  //   {
-  //     id: '4',
-  //     pujaId: 'Sringar',
-  //     title: 'Durga Maa Sringar Puja',
-  //     description:
-  //       'Performed to honor Goddess Durga with ornaments, flowers, and offerings to seek her blessings...',
-  //     location: 'Vaishno Devi Temple, Jammu & Kashmir, India',
-  //     date: '25 December, Wednesday',
-  //     price: '₹1200/-',
-  //     imageUri:
-  //       'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/durga_sringar.png',
-  //   },
-  // ];
+ const filteredPujaData = pujaData.filter(puja => {
+   const matchesSearch = puja.title
+     .toLowerCase()
+     .includes(searchTerm.toLowerCase());
 
-  const filteredPujaData = pujaData.filter(({title}) => {
-    const matchesSearch = title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesFilter =
-      activeFilter === 'All Puja' ||
-      title.toLowerCase().includes(activeFilter.toLowerCase()); // Check active filter
-    return matchesSearch && matchesFilter;
-  });
+   const matchesFilter =
+     activeFilter === 'All Puja' ||
+     puja.poojaID.toLowerCase().includes(activeFilter.toLowerCase()) || // Check if poojaID matches filter
+     puja.title.toLowerCase().includes(activeFilter.toLowerCase()); // Check if title matches filter
+
+   return matchesSearch && matchesFilter;
+ });
+
 
   console.log('Active Filter:', activeFilter);
   console.log('Filtered Data:', filteredPujaData);
@@ -299,6 +253,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     // alignItems: 'center',
     display: 'flex',
+    paddingBottom:400
   },
   searchContainer: {
     flexDirection: 'row',

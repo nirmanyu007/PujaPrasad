@@ -205,7 +205,7 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Otp"
+        initialRouteName="Splash"
         screenOptions={{
           headerShown: false,
         }}>

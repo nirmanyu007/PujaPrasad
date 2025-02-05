@@ -62,6 +62,7 @@ const styles = StyleSheet.create({
   container: {
     // flex: 1,
     backgroundColor: '#fff',
+    // paddingBottom:400
   },
   duing:{
     width: '100%',

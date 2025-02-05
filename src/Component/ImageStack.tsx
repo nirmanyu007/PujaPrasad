@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Image, StyleSheet} from 'react-native';
+import {SvgUri} from 'react-native-svg';
 
 const imageArray: string[] = [
   'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/pooja-images/user1.svg',
@@ -53,18 +54,12 @@ const ImageStack: React.FC = () => {
   const randomImages = getRandomImages(imageArray, 3);
   return (
     <View style={styles.imageStack}>
-      <Image
-        source={{uri: randomImages[0]}}
-        style={[styles.image, styles.imageLeft]}
-      />
-      <Image
-        source={{uri: randomImages[1]}}
+      <SvgUri uri={randomImages[0]} style={[styles.image, styles.imageLeft]} />
+      <SvgUri
+        uri={randomImages[1]}
         style={[styles.image, styles.imageMiddle]}
       />
-      <Image
-        source={{uri: randomImages[2]}}
-        style={[styles.image, styles.imageRight]}
-      />
+      <SvgUri uri={randomImages[2]} style={[styles.image, styles.imageRight]} />
     </View>
   );
 };
