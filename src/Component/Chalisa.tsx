@@ -23,6 +23,8 @@ const Chalisa = () => {
          image:
            'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/hanuman.png', // Replace with the actual image URL
          backgroundColor: '#F8A126',
+         rightIconBackgroundColor: '#EEAF5A',
+         borderCol: '#FF6505',
        },
        {
          id: 2,
@@ -31,6 +33,8 @@ const Chalisa = () => {
          image:
            'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/shiv_aarti.png', // Replace with the actual image URL
          backgroundColor: '#0A6B81',
+         rightIconBackgroundColor: '#3B8899',
+         borderCol: '#3B3A4C',
        },
        {
          id: 3,
@@ -39,16 +43,19 @@ const Chalisa = () => {
          image:
            'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/Durga%201.png', // Replace with the actual image URL
          backgroundColor: '#A11A30',
+         rightIconBackgroundColor: '#946567',
+         borderCol: '#FF6505',
        },
      ];
   return (
     <View>
-      <View style={{backgroundColor: '#7F2A04'}}>
+      <View style={{backgroundColor: '#E6B079'}}>
         <AntDesign
           onPress={handleGoBack}
           name="arrowleft"
           size={23}
-          color="black"
+          color="white"
+          style={{paddingLeft: 10, paddingTop: 10}}
         />
       </View>
       <View style={styles.imageContainer}>
@@ -57,23 +64,61 @@ const Chalisa = () => {
         </Text>
         <Image
           source={{
-            uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/boxPrasad.png', // Replace with the actual image URL
+            uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/boxe.png', // Replace with the actual image URL
           }}
           style={styles.image}
         />
+        <View style={{position: 'absolute', top: 15, left: 90}}>
+          <Image
+            source={{
+              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/hanumanlogo.png', // Replace with the actual image URL
+            }}
+            style={{width: 58, height: 58}}
+          />
+        </View>
       </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {chalisaData.map(item => (
           <TouchableOpacity
             onPress={handleClick}
             key={item.id}
-            style={[styles.card, {backgroundColor: item.backgroundColor}]}>
+            style={[
+              styles.card,
+              {backgroundColor: item.backgroundColor},
+              {borderColor: item.borderCol},
+            ]}>
             <Image source={{uri: item.image}} style={styles.cardImage} />
             <View style={styles.cardContent}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}>
+                <Image
+                  source={{
+                    uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/home.png', // Replace with the actual image URL
+                  }}
+                  style={{width: 20, height: 20}}
+                />
+                <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
+              </View>
               <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
             </View>
-            <AntDesign name="right" size={18} color="#fff" />
+            <View
+              style={{
+                paddingTop: 40,
+                paddingRight: 10,
+                // backgroundColor: 'rgba(255,254,100,1)',
+              }}>
+              <View
+                style={[
+                  styles.rightIconBackground,
+                  {backgroundColor: item.rightIconBackgroundColor},
+                ]}>
+                <AntDesign name="right" size={18} color="#fff" />
+              </View>
+            </View>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -102,7 +147,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     // alignItems: 'center',
     // marginVertical: 20,
-    backgroundColor: '#7F2A04',
+    backgroundColor: '#E6B079',
     marginBottom: '5%',
     flexDirection: 'row',
     alignItems: 'center',
@@ -123,29 +168,45 @@ const styles = StyleSheet.create({
   },
   card: {
     flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 10,
+    // alignItems: 'center',
+    borderRadius: 20,
     marginBottom: 15,
     // padding: 10,
     height: 100,
+    borderWidth: 2,
   },
   cardImage: {
     width: 140,
-    height: 100,
-    // borderRadius: 10,
+    height: 96,
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
     marginRight: 10,
   },
   cardContent: {
-    flex: 1,
+    // flex: 1,
+    paddingTop: 10,
+    width: '45%',
   },
   cardTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
+    display: 'flex',
+    // justifyContent:'center',
+    paddingTop: 10,
   },
   cardSubtitle: {
     fontSize: 14,
     color: '#f0f0f0',
+    paddingLeft: 5,
+  },
+  rightIconContainer: {
+    paddingTop: 40,
+    paddingRight: 10,
+  },
+  rightIconBackground: {
+    padding: 5,
+    borderRadius: 10000,
   },
 });
 

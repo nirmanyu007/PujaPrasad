@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -11,36 +11,149 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import MandirNavbar from '../Component/MandirNavbar';
 import MandirCard from '../Component/MandirCard';
+import axios from 'axios';
 
 const Mandir = () => {
   // const [selectedState, setSelectedState] = useState('Choose State');
   const [selectedState, setSelectedState] = useState('Choose State');
   const [isDropdownVisible, setDropdownVisible] = useState(false);
+  const [data, setData] = useState<any>({mandirs: []}); // ✅ Default structure
+
+  const [states, setStates] = useState<any[]>([]);
+  const [stateFilter, setStateFilter] = useState('');
+  const [filteredData, setFilteredData] = useState<any[]>([]);
+  const [godFilter, setGodFilter] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [templeFilter, setTempleFilter] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchOptions, setSearchOptions] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [resultsCount, setResultsCount] = useState<number>(0);
+
+  const staticStates = [
+    'Himachal Pradesh',
+    'Punjab',
+    'Haryana',
+    'Rajasthan',
+    'Uttar Pradesh',
+  ];
 
   const toggleDropdown = () => {
     setDropdownVisible(!isDropdownVisible);
   };
 
-  const handleStateSelection = (state: string) => {
-    setSelectedState(state);
-    setDropdownVisible(false); // Close the dropdown after selection
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          `http://192.168.1.30:5001/fetch-active-mandirs`,
+        );
+        setData(response.data);
+        setFilteredData(response.data.mandirs);
+
+        // Mandir List
+        const uniqueStates = Array.from(
+          new Set(response.data.mandirs.map((temple: any) => temple.state)),
+        ).map(state => {
+          const temple = response.data.mandirs.find(
+            (t: any) => t.state === state,
+          );
+          return {
+            name: temple?.state || '',
+            value: state,
+          };
+        });
+        setStates([{name: 'All States', value: ''}, ...uniqueStates]);
+
+        // States List
+        const uniqueSearchOptions = Array.from(
+          new Set(response.data.mandirs.map((temple: any) => temple.nameID)),
+        )
+          .map(nameID => {
+            const temple = response.data.mandirs.find(
+              (t: any) => t.nameID === nameID,
+            );
+            return {
+              value: temple?.nameEnglish || '',
+              filter: nameID,
+            };
+          })
+          .filter(option => option.value);
+        setSearchOptions(uniqueSearchOptions);
+      } catch (err) {
+        setError('Failed to fetch data');
+        console.error(`Error occuring: ${err}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (data && Array.isArray(data.mandirs)) {
+      const filteredMandirs = data.mandirs.filter((temple: any) => {
+        // Check all filters
+        const matchesGodFilter = godFilter
+          ? temple.godName?.some((god: string) =>
+              god.toLowerCase().includes(godFilter.toLowerCase()),
+            )
+          : true;
+        const matchesStateFilter = stateFilter
+          ? temple.state?.toLowerCase() === stateFilter.toLowerCase()
+          : true;
+        const matchesTempleFilter = templeFilter
+          ? temple.nameID?.toLowerCase().includes(templeFilter.toLowerCase())
+          : true;
+
+        return matchesGodFilter && matchesStateFilter && matchesTempleFilter;
+      });
+
+      setFilteredData(filteredMandirs);
+      setResultsCount(filteredMandirs.length);
+    }
+  }, [data, godFilter, stateFilter, templeFilter]);
+
+  const handleSearch = (value: string) => {
+    setTempleFilter(value);
   };
 
-  const states = [
-    'Uttar Pradesh',
-    'Rajasthan',
-    'Madhya Pradesh',
-    'Maharashtra',
-    'Gujarat',
-    'Tamil Nadu',
-    'Kerala',
-    'Punjab',
-    'Bihar',
-    // Add more states as needed
-  ];
+  const handleGod = (value: string) => {
+    setGodFilter(prevValue => (prevValue === value ? '' : value)); // Toggle filter
+  };
+
+  const handleStateSelection = (state: string) => {
+    setSelectedState(state);
+    setDropdownVisible(false);
+
+    if (!data || !data.mandirs || !Array.isArray(data.mandirs)) {
+      console.error("Data is not an array or hasn't loaded yet.");
+      return;
+    }
+
+    const filteredTemples =
+      state === 'Choose State'
+        ? data.mandirs // Show all temples when "Choose State" is selected
+        : data.mandirs.filter((temple: any) => temple.state === state);
+
+    setFilteredData(filteredTemples);
+  };
+
+  if (loading)
+    return (
+      <View>
+        <Text>Loading...</Text>
+      </View>
+    );
+  if (error)
+    return (
+      <View>
+        <Text>{error}</Text>
+      </View>
+    );
 
   return (
-    <View style={{paddingHorizontal: '4%',  backgroundColor: '#fff'}}>
+    <View style={{paddingHorizontal: '4%', backgroundColor: '#fff'}}>
       <MandirNavbar />
 
       {/* Search Bar */}
@@ -56,6 +169,7 @@ const Mandir = () => {
             style={styles.searchInput}
             placeholder="Search for Mandir"
             placeholderTextColor="#666"
+            onChangeText={handleSearch}
           />
         </View>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -97,14 +211,25 @@ const Mandir = () => {
           },
           {
             id: 5,
-            name: 'Krishna',
+            name: 'Shree Krishna',
             icon: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/krishna.png',
           },
         ].map(filter => (
-          <View key={filter.id} style={styles.filterItem}>
+          <TouchableOpacity
+            key={filter.id}
+            style={[
+              styles.filterItem,
+              godFilter === filter.name && styles.selectedFilter,
+              filter.name === 'All God' &&
+                godFilter === '' &&
+                styles.selectedFilter, // Highlight when "All God" is active
+            ]}
+            onPress={() =>
+              handleGod(filter.name === 'All God' ? '' : filter.name)
+            }>
             <Image source={{uri: filter.icon}} style={styles.filterIcon} />
             <Text style={styles.filterText}>{filter.name}</Text>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
 
@@ -122,7 +247,7 @@ const Mandir = () => {
         {/* Dropdown List */}
         {isDropdownVisible && (
           <View style={styles.dropdownList}>
-            {states.map((state, index) => (
+            {staticStates.map((state, index) => (
               <TouchableOpacity
                 key={index}
                 style={styles.dropdownItem}
@@ -133,16 +258,30 @@ const Mandir = () => {
           </View>
         )}
       </View>
-      <View>
-        <MandirCard/>
+      <View style={{marginVertical: 10}}>
+        <Text style={{fontSize: 16, color: '#FF8901', fontWeight: '500'}}>
+          Results found: {resultsCount}
+        </Text>
       </View>
+      <ScrollView style={{marginTop: 0}}>
+        {filteredData.map((temple: any, index: number) => (
+          <MandirCard
+            key={index}
+            image={temple.mandirSectionImage}
+            name={temple.nameEnglish}
+            place={temple.location}
+            hoverName={temple.nameHindi}
+            id={temple._id}
+            templeData={temple} // ✅ Change templeDetails to templeData
+          />
+        ))}
+      </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   searchContainer: {
-    
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -158,6 +297,20 @@ const styles = StyleSheet.create({
   searchIcon: {
     marginRight: 5,
   },
+  selectedFilter: {
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4, // Equivalent to blur
+    // elevation: 4, // For Android
+    borderColor: '#FFE3B6', // Stroke color
+    borderWidth: 2,
+    borderRadius: 9,
+    // padding: 5,
+  },
   searchInput: {
     fontSize: 16,
     color: '#000',
@@ -167,7 +320,8 @@ const styles = StyleSheet.create({
     height: 24,
   },
   filterContainer: {
-    marginTop: 20,
+    marginVertical: 10,
+    minHeight: 90,
   },
   filterItem: {
     alignItems: 'center',
@@ -185,7 +339,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   dropdownContainer: {
-    marginTop: 20,
+    marginTop: 10,
   },
   dropdown: {
     flexDirection: 'row',
@@ -197,7 +351,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 10,
     backgroundColor: '#fff',
-    width: '100%',
+    width: '50%',
   },
   dropdownText: {
     fontSize: 16,

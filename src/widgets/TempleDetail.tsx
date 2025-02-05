@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 const TempleDetail = () => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -21,10 +22,15 @@ const TempleDetail = () => {
         numberOfLines={isExpanded ? undefined : 2}>
         {description}
       </Text>
-      <TouchableOpacity onPress={toggleExpanded}>
+      <TouchableOpacity style={{alignItems:'center',flexDirection:'row'}} onPress={toggleExpanded}>
         <Text style={styles.showMoreText}>
-          {isExpanded ? 'Show less ▲' : 'Show more ▼'}
+          {isExpanded ? 'Show less ' : 'Show more '}
         </Text>
+        <MaterialIcon
+                    name={isExpanded ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+                    size={20}
+                    color="#FFA500"
+                  />
       </TouchableOpacity>
     </View>
   );
@@ -57,7 +63,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   showMoreText: {
-    marginTop: 8,
+    // marginTop: 8,
     fontSize: 14,
     fontWeight: 'bold',
     color: '#FD7109',

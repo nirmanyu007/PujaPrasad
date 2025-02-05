@@ -3,35 +3,69 @@ import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
 
 type StackParamList = {
-  BlogDetail: undefined;
+  BlogDetail: {
+    title: string;
+    image: string;
+    description: string;
+    description2: string;
+    description3: string;
+    author: string;
+    date: string;
+  };
 };
 
+interface BlogCardProps {
+  title: string;
+  image: string;
+  description: string;
+  description2: string;
+  description3: string;
+  author: string;
+  date: string;
+}
 
-const BlogCard: React.FC = () => {
-  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
-    const handleClick = () => {
-      navigation.navigate('BlogDetail'); // Navigate to PreviewPuja screen
-    };
+const BlogCard: React.FC<BlogCardProps> = ({
+  title,
+  image,
+  description,
+  description2,
+  description3,
+  author,
+  date,
+}) => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>();
+
+  const handleClick = () => {
+    navigation.navigate('BlogDetail', {
+      title,
+      image,
+      description,
+      description2,
+      description3,
+      author,
+      date,
+    });
+  };
+
   return (
     <TouchableOpacity onPress={handleClick} style={styles.card}>
-      <Image
-        source={{
-          uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/Blog1.png',
-        }} // Replace with your image URL
-        style={styles.image}
-      />
+      {image ? (
+        <Image source={{uri: image}} style={styles.image} />
+      ) : (
+        <View style={styles.imagePlaceholder}>
+          <Text style={styles.placeholderText}>No Image</Text>
+        </View>
+      )}
       <View style={styles.textContainer}>
-        <Text style={styles.title}>
-          Why Maha Kumbh is the Ultimate Gateway to Moksha
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.description} numberOfLines={3}>
+          {description} {description2} {description3}
         </Text>
-        <Text style={styles.description}>
-          Maha Kumbh, the grandest spiritual gathering in the world, is revered
-          as the ultimate opportunity to attain moksha—freedom from the cycle of
-          birth and rebirth <Text style={styles.readMore}>Read more...</Text>
-        </Text>
+        <Text style={styles.readMore}>Read more...</Text>
+        <View style={{borderWidth: 0.2, borderColor: '#B3B3B3'}}></View>
         <View style={styles.footer}>
-          <Text style={styles.author}>Tashneet Kaur</Text>
-          <Text style={styles.date}>01 Jan, 2025</Text>
+          <Text style={styles.author}>{author}</Text>
+          <Text style={styles.date}>{date}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -40,19 +74,32 @@ const BlogCard: React.FC = () => {
 
 const styles = StyleSheet.create({
   card: {
+    width:'100%',
     backgroundColor: '#fff',
     borderRadius: 8,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    // shadowColor: '#000',
+    // shadowOffset: {width: 0, height: 2},
+    // shadowOpacity: 0.1,
+    // shadowRadius: 4,
+    // elevation: 2,
+    borderColor:'#999999',
+    borderWidth:1,
     marginBottom: 16,
   },
   image: {
     width: '100%',
     height: 200,
+  },
+  imagePlaceholder: {
+    width: '100%',
+    height: 200,
+    backgroundColor: '#ccc',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    color: '#888',
   },
   textContainer: {
     padding: 16,
@@ -66,11 +113,12 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 12,
+    // marginBottom: 12,
   },
   readMore: {
     color: '#FF9800',
     fontWeight: 'bold',
+    marginBottom:5,
   },
   footer: {
     flexDirection: 'row',

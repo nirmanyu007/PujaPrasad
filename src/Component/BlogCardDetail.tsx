@@ -1,88 +1,78 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import {View, Text, Image, StyleSheet, ScrollView} from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import {useNavigation, NavigationProp} from '@react-navigation/native';
+import {useNavigation, useRoute, RouteProp} from '@react-navigation/native';
 
 type StackParamList = {
-  Arti: undefined;
-  Chalisa: undefined;
+  BlogDetail: {
+    title: string;
+    image: string;
+    description: string;
+    description2: string;
+    description3: string;
+    author: string;
+    date: string;
+  };
 };
 
-
-
-const BlogCardDetail = () => {
-  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
+const BlogCardDetail: React.FC = () => {
+  const navigation = useNavigation();
+  const route = useRoute<RouteProp<StackParamList, 'BlogDetail'>>();
+  const {title, image, description, description2, description3, author, date} =
+    route.params;
 
   const handleGoBack = () => {
-    navigation.goBack(); // Navigate back to the previous screen
+    navigation.goBack();
   };
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-              <AntDesign
-                onPress={handleGoBack}
-                name="arrowleft"
-                size={23}
-                color="white"
-              />
-              <Text
-                style={{
-                  color: 'white',
-                  fontSize: 18,
-                  fontWeight: 600,
-                  paddingLeft: '2%',
-                }}>
-                Vedic Vibhav
-              </Text>
-            </View>
+        <AntDesign
+          onPress={handleGoBack}
+          name="arrowleft"
+          size={23}
+          color="white"
+        />
+        <Text style={styles.headerText}>Vedic Vibhav</Text>
+      </View>
 
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* Blog Image */}
         <View style={styles.imageContainer}>
-          <Image
-            source={{
-              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/Blog1.png', // Replace with your image URL
-            }}
-            style={styles.blogImage}
-          />
+          <Image source={{uri: image}} style={styles.blogImage} />
           <View style={styles.newBadge}>
             <Text style={styles.newBadgeText}>New</Text>
           </View>
         </View>
 
         {/* Blog Title */}
-        <Text style={styles.title}>
-          Why Maha Kumbh is the Ultimate Gateway to Moksha
-        </Text>
+        <Text style={styles.title}>{title}</Text>
 
         {/* Author and Date */}
         <View style={styles.authorDateContainer}>
-          <Text style={styles.author}>Author: Tashneet Kaur</Text>
-          <Text style={styles.date}>01 Jan, 2025</Text>
+          <View style={{display: 'flex', flexDirection: 'column'}}>
+            <Text style={styles.author}>Author:</Text>
+            <Text style={{fontSize: 14, color: 'black', fontWeight: 'bold'}}>
+              {author}
+            </Text>
+          </View>
+          <View style={{display: 'flex', flexDirection: 'column'}}>
+            <Text style={styles.author}>Date:</Text>
+            <Text style={{fontSize: 14, color: 'black', fontWeight: 'bold'}}>
+              {date}
+            </Text>
+          </View>
         </View>
 
         {/* Blog Content */}
         <Text style={styles.content}>
-          Maha Kumbh, the grandest spiritual gathering in the world, is revered
-          as the ultimate opportunity to attain moksha—freedom from the cycle of
-          birth and rebirth. This sacred event, celebrated once every 12 years,
-          brings together millions of devotees, saints, and seekers at the
-          Triveni Sangam, the confluence of Ganga, Yamuna, and the mystical
-          Saraswati rivers...
+          {description} {'\n\n'}
+          {description2} {'\n\n'}
+          {description3}
         </Text>
       </ScrollView>
-
-      
-      
     </View>
   );
 };
@@ -103,6 +93,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
+    paddingLeft: '2%',
+    // fontFamily: 'Poppins-Bold',
   },
   contentContainer: {
     padding: 20,
@@ -112,8 +104,8 @@ const styles = StyleSheet.create({
   },
   blogImage: {
     width: '100%',
-    height: 200,
-    borderRadius: 8,
+    height: 195,
+    borderRadius: 15,
   },
   newBadge: {
     position: 'absolute',
@@ -134,6 +126,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginVertical: 10,
     color: '#333',
+    fontFamily: 'Poppins-Bold',
   },
   authorDateContainer: {
     flexDirection: 'row',
@@ -149,27 +142,10 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   content: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#444',
     lineHeight: 24,
     marginTop: 10,
-  },
-  fab: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    backgroundColor: '#FFA500',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-  },
-  fabText: {
-    fontSize: 24,
-    color: '#fff',
-    fontWeight: 'bold',
   },
 });
 

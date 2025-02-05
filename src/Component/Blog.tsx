@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -14,23 +14,100 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 
 type StackParamList = {
   PujaDetail: undefined;
-  PreviewPuja: undefined; // Define any params if required, e.g., { id: number }
+  PreviewPuja: undefined;
 };
+
+interface Post {
+  _id: string;
+  title: string;
+  titleHindi?: string;
+  description: string;
+  description2?: string; // Add description2
+  description3?: string;
+  images?: string[];
+  addedOn: string;
+  author: string;
+  hashtags?: string[];
+}
 
 const Blog: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<string>(''); // Current selected filter
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [activeFilter, setActiveFilter] = useState<string | null>(null); // Default: No filter
   const navigation = useNavigation<NavigationProp<StackParamList>>();
+  const [uniqueTags, setUniqueTags] = useState<string[]>([]);
+  const [error, setError] = useState<Error | null>(null);
 
   const handleGoBack = () => {
-    navigation.goBack(); // Navigate back to the previous screen
+    navigation.goBack();
   };
 
   const filters = ['New', 'Trending', '#Hanuman', '#Holi', '#Shiva', '#HarHar'];
 
-  const handleFilterClick = (filter: string) => {
-    setActiveFilter(filter);
-  };
+  // Sample Blog Data (Replace with API)
+  const blogData = [
+    {id: 1, title: 'Hanuman Jayanti Special', tag: '#Hanuman'},
+    {id: 2, title: 'The Spiritual Importance of Holi', tag: '#Holi'},
+    {id: 3, title: 'Shiva’s Eternal Wisdom', tag: '#Shiva'},
+    {id: 4, title: 'The Power of Chanting Har Har Mahadev', tag: '#HarHar'},
+    {id: 5, title: 'Latest Puja Trends', tag: 'Trending'},
+    {id: 6, title: 'New Temple Rituals', tag: 'New'},
+  ];
+
+  const filteredPosts = posts.filter(({title, hashtags}) => {
+    const matchesSearch = title
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+
+    const matchesFilter =
+      !activeFilter || // If no filter is selected, allow all posts
+      (hashtags && hashtags.includes(activeFilter)) || // If post contains the active filter tag
+      activeFilter === 'New' || // Special case for 'New'
+      activeFilter === 'Trending'; // Special case for 'Trending'
+
+    return matchesSearch && matchesFilter;
+  });
+
+  // Filter blogs only if a filter is selected
+  const filteredBlogs = activeFilter
+    ? blogData.filter(blog => blog.tag === activeFilter)
+    : blogData; // Default to all blogs
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch(`http://192.168.1.30:5001/fetch-blogs`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data: Post[] = await response.json();
+
+        // Sort posts in reverse order (latest first)
+        const sortedPosts = data.sort(
+          (a, b) =>
+            new Date(b.addedOn).getTime() - new Date(a.addedOn).getTime(),
+        );
+        setPosts(sortedPosts);
+
+        // Extract unique tags
+        const tagsSet = new Set<string>();
+        sortedPosts.forEach(post => {
+          if (Array.isArray(post.hashtags)) {
+            post.hashtags.forEach(tag => tagsSet.add(tag));
+          }
+        });
+        setUniqueTags(Array.from(tagsSet));
+
+        // setLoading(false);
+      } catch (error) {
+        console.error('Error fetching blog posts:', error);
+        setError(error instanceof Error ? error : new Error('Unknown error'));
+        // setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -41,33 +118,28 @@ const Blog: React.FC = () => {
           size={23}
           color="white"
         />
-        <Text
-          style={{
-            color: 'white',
-            fontSize: 18,
-            fontWeight: 600,
-            paddingLeft: '2%',
-          }}>
-          Blog
-        </Text>
+        <Text style={styles.headerText}>Blog</Text>
       </View>
+
       <View style={styles.container2}>
+        {/* Search Box */}
         <View style={styles.searchContainer}>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Icon
-                    name="search"
-                    size={24}
-                    color="#FF8901"
-                    style={styles.searchIcon}
-                  />
-                  <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search for Blog"
-                    placeholderTextColor="#666"
-                  />
-                </View>
-                
-              </View>
+          <Icon
+            name="search"
+            size={24}
+            color="#FF8901"
+            style={styles.searchIcon}
+          />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search for Blog"
+            placeholderTextColor="#666"
+            value={searchQuery} // Bind the value to the state
+            onChangeText={text => setSearchQuery(text)} // Update state as user types
+          />
+        </View>
+
+        {/* Filters */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -79,7 +151,10 @@ const Blog: React.FC = () => {
                 styles.filterButton,
                 activeFilter === filter && styles.activeFilter,
               ]}
-              onPress={() => handleFilterClick(filter)}>
+              onPress={() =>
+                setActiveFilter(filter === activeFilter ? null : filter)
+              } // Toggle filter
+            >
               <Text
                 style={[
                   styles.filterText,
@@ -90,11 +165,27 @@ const Blog: React.FC = () => {
             </TouchableOpacity>
           ))}
         </ScrollView>
-        <View style={styles.results}>
-          {activeFilter === 'New' && <BlogCard />}
-          {/* Add more cards or data based on filters */}
-          {/* <BlogCard /> */}
-        </View>
+
+        {/* Blog Results */}
+        {/* Blog Results */}
+        <ScrollView style={styles.results}>
+          {filteredPosts.length > 0 ? (
+            filteredPosts.map(blog => (
+              <BlogCard
+                key={blog._id}
+                title={blog.title}
+                image={blog.images?.[0] || ''}
+                description={blog.description}
+                description2={blog.description2 || ''}
+                description3={blog.description3 || ''}
+                author={blog.author}
+                date={new Date(blog.addedOn).toDateString()}
+              />
+            ))
+          ) : (
+            <Text style={styles.noResultsText}>No blogs found.</Text>
+          )}
+        </ScrollView>
       </View>
     </View>
   );
@@ -102,30 +193,29 @@ const Blog: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
     backgroundColor: '#fff',
-    // paddingHorizontal: 16, // Reduced padding to minimize space
-    // paddingTop: 16, // Top padding for header
+    flex: 1,
   },
   container2: {
     paddingHorizontal: 16,
   },
   header: {
-    // fontSize: 18,
-    // fontWeight: '600',
-    marginBottom: 12, // Reduced space below header
-    // color: 'white',
+    marginBottom: 12,
     backgroundColor: '#FFA500',
-    display: 'flex',
     flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: '3%',
     paddingLeft: '2%',
   },
-  
+  headerText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+    paddingLeft: '2%',
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.4)',
     borderRadius: 10,
@@ -141,31 +231,26 @@ const styles = StyleSheet.create({
   searchInput: {
     fontSize: 16,
     color: '#000',
-  },
-  input: {
     flex: 1,
-    fontSize: 16,
-    paddingVertical: 8,
-    borderColor: 'rgba(0,0,0,0.5)',
-    borderWidth: 1,
-    borderRadius: 10,
   },
   filterContainer: {
     flexDirection: 'row',
-    marginBottom: 8, // Reduced margin below filters
+    // marginBottom: 8,
+    paddingBottom: 8,
   },
   filterButton: {
-    paddingVertical: 4, // Reduced padding for buttons
-    paddingHorizontal: 12, // Reduced horizontal padding
+    paddingVertical: 4,
+    paddingHorizontal: 12,
     borderRadius: 20,
     borderWidth: 1,
+    backgroundColor: '#FFE0BB',
     height: 32,
     borderColor: '#FF9800',
     marginRight: 8,
   },
   filterText: {
     fontSize: 14,
-    color: '#FF9800',
+    color: 'black',
   },
   activeFilter: {
     backgroundColor: '#FF9800',
@@ -174,10 +259,14 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   results: {
-    // flex: 1,
-    marginTop: 8, // Reduced space above results
+    marginTop: 8,
+  },
+  noResultsText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#888',
+    marginTop: 20,
   },
 });
-
 
 export default Blog;

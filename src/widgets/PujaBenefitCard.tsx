@@ -1,58 +1,84 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
 import Carousel from 'react-native-snap-carousel';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons'; // ✅ Import MaterialIcons
 
-interface CardData {
+interface BenefitData {
   title: string;
   description: string;
-  expandedDescription: string;
 }
 
-const data: CardData[] = [
-  {
-    title: 'For the Well-Being of Your Children',
-    description:
-      'According to scriptures, performing the 11,000 Mahamrityunjaya Mantra Jaap...',
-    expandedDescription:
-      'According to scriptures, performing the 11,000 Mahamrityunjaya Mantra Jaap, along with the Yam Dand-Mukti Pujan and Ayushya Havan at the Markandey Mahadev Temple, is believed to invoke Lord Shiva’s blessings for children’s health, prosperity, and well-being.',
-  },
-  {
-    title: 'For a Prosperous Career',
-    description: 'Seeking divine blessings for success in your career...',
-    expandedDescription:
-      'Seeking divine blessings for success in your career, the Rudrabhishek with 108 Bilva leaves is said to remove obstacles in professional life and provide clarity in decision-making.',
-  },
-  {
-    title: 'For Family Harmony',
-    description:
-      'Strengthen family bonds and resolve conflicts by performing...',
-    expandedDescription:
-      'Strengthen family bonds and resolve conflicts by performing the Saptashati Durga Path at a sacred site, believed to enhance unity and understanding within the family.',
-  },
-];
+interface PujaBenefitCardProps {
+  poojaBenefits: {
+    benefit1Heading: string;
+    benefit1Desc: string;
+    benefit2Heading: string;
+    benefit2Desc: string;
+    benefit3Heading: string;
+    benefit3Desc: string;
+  };
+}
 
-const PujaBenefitCard: React.FC = () => {
+const PujaBenefitCard: React.FC<PujaBenefitCardProps> = ({poojaBenefits}) => {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
+  // Convert `poojaBenefits` into a format usable by the Carousel
+  const data: BenefitData[] = [
+    {
+      title: poojaBenefits.benefit1Heading,
+      description: poojaBenefits.benefit1Desc.replace(/<\/?[^>]+(>|$)/g, ''), // Strip HTML tags
+    },
+    {
+      title: poojaBenefits.benefit2Heading,
+      description: poojaBenefits.benefit2Desc.replace(/<\/?[^>]+(>|$)/g, ''), // Strip HTML tags
+    },
+    {
+      title: poojaBenefits.benefit3Heading,
+      description: poojaBenefits.benefit3Desc.replace(/<\/?[^>]+(>|$)/g, ''), // Strip HTML tags
+    },
+  ];
 
   const renderItem = ({
     item,
     index,
   }: {
-    item: CardData;
+    item: BenefitData;
     index: number;
   }): React.ReactElement => {
     const isExpanded = expandedIndex === index;
 
     return (
       <View style={styles.card}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.description}>
-          {isExpanded ? item.expandedDescription : item.description}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingBottom: 8,
+          }}>
+          <Icon name="flower" color="#FF6505" size={18} />
+          <Text style={styles.title}>{item.title}</Text>
+        </View>
+        <Text style={styles.description} numberOfLines={isExpanded ? 0 : 3}>
+          {item.description}
         </Text>
-        <TouchableOpacity onPress={() => setExpandedIndex(isExpanded ? null : index)}>
+        <TouchableOpacity
+          style={styles.toggleButton}
+          onPress={() => setExpandedIndex(isExpanded ? null : index)}>
           <Text style={styles.showMore}>
-            {isExpanded ? 'Show less ▲' : 'Show more ▼'}
+            {isExpanded ? 'Show Less' : 'Show More'}
           </Text>
+          <MaterialIcon
+            name={isExpanded ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+            size={20}
+            color="#FFA500"
+          />
         </TouchableOpacity>
       </View>
     );
@@ -60,18 +86,18 @@ const PujaBenefitCard: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Carousel<CardData>
+      <Carousel<BenefitData>
         data={data}
         renderItem={renderItem}
         sliderWidth={Dimensions.get('window').width}
-        itemWidth={Dimensions.get('window').width * 0.8}
+        itemWidth={Dimensions.get('window').width * 0.9}
         inactiveSlideScale={0.9}
         inactiveSlideOpacity={0.7}
-        loop={true} // Enable looping
-        autoplay={true} // Enable autoplay
-        autoplayDelay={1000} // Initial delay before autoplay starts (in ms)
-        autoplayInterval={3000} // Interval between auto-scrolls (in ms)
-        vertical={false} // Ensure horizontal scrolling
+        loop={true}
+        autoplay={true}
+        autoplayDelay={1000}
+        autoplayInterval={3000}
+        vertical={false}
       />
     </View>
   );
@@ -85,22 +111,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   card: {
-    // backgroundColor: '#FFF7ED',
     borderRadius: 10,
-    borderWidth:1,
-    marginTop:'5%',
+    borderWidth: 1,
+    marginTop: '5%',
     padding: 16,
-    borderColor:'rbga(0,0,0,0.1)',
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.2,
-    // shadowRadius: 4,
-    // elevation: 5,
+    borderColor: 'rgba(0,0,0,0.1)',
   },
   title: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 8,
+    paddingLeft: 3,
     color: '#000',
   },
   description: {
@@ -112,7 +132,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#FF6505',
     fontWeight: 'bold',
-    marginTop: 8,
+    marginLeft: 5,
+  },
+  toggleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // marginTop: 8,
   },
 });
 

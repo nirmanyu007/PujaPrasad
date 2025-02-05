@@ -42,14 +42,17 @@ import PujaBooking from './src/Component/PujaBooking';
 import PrasadBooking from './src/Component/PrasadBooking';
 import TermsCondition from './src/Component/TermsCondition';
 import PrivacyPolicy from './src/Component/PrivacyPolicy';
+import Splash from './src/Component/Splash';
+import GoogleAuth from './src/Component/GoogleAuth';
+import PrasadCongrets from './src/Component/PrasadCongrets';
 
 export type RootStackParamList = {
   Otp: undefined;
   TabNavigator: undefined;
   ContactUs: undefined;
   About: undefined;
-  PujaDetail: undefined;
-  ViewPujaBooking: undefined;
+  PujaDetails: { pujaId: string }; // PujaDetails expects a parameter
+  ViewPujaBooking: { pujaId: string , packagename:string};
   Congratulation: undefined;
   SelectPrasadPackage: undefined;
   Blogs: undefined;
@@ -63,10 +66,14 @@ export type RootStackParamList = {
   MandirDetail: undefined;
   Cart: undefined;
   Address: undefined;
-  PujaDetailPage: undefined;
-  // MainDrawer:undefined;
+  PujaDetailPage: {packageName:string, price:number};
   DrawerNavigator: undefined;
+  Splash: undefined;
+  Google: undefined;
+  PrasadCongrets:undefined;
+  PrasadBooking:undefined;
 };
+
 
 export type DrawerParamList = {
   Home: undefined;
@@ -142,7 +149,7 @@ const TabNavigator = () => {
               }}
               style={{width: size, height: size, tintColor: color}}
             />
-          ),
+          )
         }}
       />
       <Tab.Screen
@@ -207,7 +214,7 @@ const App = () => {
         <Stack.Screen name="Otp" component={Otp} />
         <Stack.Screen name="ContactUs" component={ContactUs} />
         <Stack.Screen name="About" component={About} />
-        <Stack.Screen name="PujaDetail" component={PujaDetail} />
+        <Stack.Screen name="PujaDetails" component={PujaDetail} />
         <Stack.Screen name="Congratulation" component={Congratulation} />
         <Stack.Screen name="ViewPujaBooking" component={View_Puja_Booking} />
         <Stack.Screen name="Blogs" component={Blog} />
@@ -222,6 +229,10 @@ const App = () => {
         <Stack.Screen name="Cart" component={Cart} />
         <Stack.Screen name="Address" component={Address} />
         <Stack.Screen name="PujaDetailPage" component={PujaDetailPage} />
+        <Stack.Screen name="Splash" component={Splash} />
+        <Stack.Screen name="PrasadCongrets" component={PrasadCongrets} />
+        <Stack.Screen name="PrasadBooking" component={PrasadBooking} />
+        <Stack.Screen name="Google" component={GoogleAuth} />
         <Stack.Screen
           name="SelectPrasadPackage"
           component={SelectPrasadPackage}

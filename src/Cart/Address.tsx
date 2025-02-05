@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -9,15 +9,19 @@ import {
   TextInput,
   ScrollView,
   FlatList,
+  Alert,
 } from 'react-native';
+import Antdesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Feather from 'react-native-vector-icons/Feather';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type RootStackParamList = {
   Address: undefined;
   Cart: undefined;
+  PrasadCongrets :undefined;
 };
 
 type AddressDetailsType = {
@@ -37,6 +41,7 @@ const Address = () => {
       useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [modalVisible, setModalVisible] = useState(false);
   const [address, setAddress] = useState('');
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [addresses, setAddresses] = useState<AddressDetailsType[]>([]);
   const [selectedAddressIndex, setSelectedAddressIndex] = useState<
     number | null
@@ -53,30 +58,143 @@ const Address = () => {
     addressType: 'Home', // This is valid as 'Home' | 'Work' | 'Other'
   });
 
+  const [errors, setErrors] = useState({
+    name: '',
+    phone: '',
+    address1: '',
+    state: '',
+    pincode: '',
+    city: '',
+  });
+
+  const handleClick = () => {
+    navigation.navigate('PrasadCongrets'); // Navigate to Cart screen
+  };
+
+  useEffect(() => {
+    const loadAddresses = async () => {
+      try {
+        const storedAddresses = await AsyncStorage.getItem('addresses');
+        if (storedAddresses) {
+          setAddresses(JSON.parse(storedAddresses));
+        }
+      } catch (error) {
+        console.error('Failed to load addresses from storage', error);
+      }
+    };
+
+    loadAddresses();
+  }, []);
+
+  const saveAddressesToStorage = async (
+    updatedAddresses: AddressDetailsType[],
+  ) => {
+    try {
+      await AsyncStorage.setItem('addresses', JSON.stringify(updatedAddresses));
+    } catch (error) {
+      console.error('Failed to save addresses to storage', error);
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {
+      name: addressDetails.name.trim() ? '' : 'Please enter name',
+      phone: /^[0-9]{10}$/.test(addressDetails.phone.trim())
+        ? ''
+        : 'Please enter a valid 10-digit phone number',
+      address1: addressDetails.address1.trim()
+        ? ''
+        : 'Please enter address line 1',
+      state: addressDetails.state.trim() ? '' : 'Please enter state',
+      pincode: /^[0-9]{6}$/.test(addressDetails.pincode.trim())
+        ? ''
+        : 'Please enter a valid 6-digit pincode',
+      city: addressDetails.city.trim() ? '' : 'Please enter city',
+    };
+
+    setErrors(newErrors);
+
+    // Check if there are no errors
+    return Object.values(newErrors).every(error => error === '');
+  };
+
   const handleSaveAddress = () => {
-    console.log('Saved Address Details:', addressDetails);
+    if (validateForm()) {
+      let updatedAddresses;
+      if (editingIndex !== null) {
+        // Update the existing address
+        updatedAddresses = addresses.map((addr, index) =>
+          index === editingIndex ? addressDetails : addr,
+        );
+        setEditingIndex(null); // Clear editing mode
+      } else {
+        // Add the new address to the addresses array
+        updatedAddresses = [...addresses, addressDetails];
+      }
 
-    // Add the new address to the addresses array
-    setAddresses(prevAddresses => [...prevAddresses, addressDetails]);
+      // Update state and save to storage
+      setAddresses(updatedAddresses);
+      saveAddressesToStorage(updatedAddresses);
 
-    // Close the modal and reset the form
-    setModalVisible(false);
-    setAddressDetails({
-      name: '',
-      phone: '',
-      address1: '',
-      address2: '',
-      landmark: '',
-      state: '',
-      pincode: '',
-      city: '',
-      addressType: 'Home', // Reset to a valid value
-    });
+      // Close the modal and reset the form
+      setModalVisible(false);
+      setAddressDetails({
+        name: '',
+        phone: '',
+        address1: '',
+        address2: '',
+        landmark: '',
+        state: '',
+        pincode: '',
+        city: '',
+        addressType: 'Home',
+      });
+      setErrors({
+        name: '',
+        phone: '',
+        address1: '',
+        state: '',
+        pincode: '',
+        city: '',
+      });
+    }
+  };
+  const handleClearAddresses = async () => {
+    Alert.alert(
+      'Clear All Addresses',
+      'Are you sure you want to clear all saved addresses?',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Clear',
+          onPress: async () => {
+            try {
+              // Clear the addresses state
+              setAddresses([]);
+              setSelectedAddressIndex(null);
+              // Remove addresses from AsyncStorage
+              await AsyncStorage.removeItem('addresses');
+              Alert.alert('Success', 'All addresses have been cleared.');
+            } catch (error) {
+              console.error('Failed to clear addresses', error);
+              Alert.alert('Error', 'Failed to clear addresses.');
+            }
+          },
+        },
+      ],
+    );
+  };
+  const handleEditAddress = (index: number) => {
+    // Pre-fill the form with the selected address
+    setAddressDetails(addresses[index]);
+    setEditingIndex(index); // Set editing mode
+    setModalVisible(true); // Open modal
   };
   const handleDeleteAddress = (index: number): void => {
     const updatedAddresses = [...addresses];
     updatedAddresses.splice(index, 1);
     setAddresses(updatedAddresses);
+    saveAddressesToStorage(updatedAddresses);
 
     // Update selectedAddressIndex if the deleted address was selected
     if (selectedAddressIndex === index) {
@@ -90,6 +208,20 @@ const Address = () => {
       const selectedAddress = addresses[selectedAddressIndex];
       console.log('Proceeding with address:', selectedAddress);
     }
+  };
+
+  const handleInputChange = (
+    field: keyof AddressDetailsType,
+    value: string,
+  ) => {
+    setAddressDetails(prevDetails => ({
+      ...prevDetails,
+      [field]: value,
+    }));
+    setErrors(prevErrors => ({
+      ...prevErrors,
+      [field]: '', // Clear error for the field as the user types
+    }));
   };
 
   return (
@@ -110,7 +242,8 @@ const Address = () => {
                 />
                 <Text style={styles.headerText}>Address</Text>
               </View>
-              <TouchableOpacity>
+              <TouchableOpacity style={{flexDirection:'row'}} onPress={handleClearAddresses}>
+                <Antdesign name="delete" size={20} color="black" />
                 <Text style={styles.clearButton}>Clear</Text>
               </TouchableOpacity>
             </View>
@@ -152,7 +285,9 @@ const Address = () => {
                 <Text style={styles.addressType}>{item.addressType}</Text>
               </Text>
               <View style={styles.actionButtons}>
-                <TouchableOpacity style={styles.editButton}>
+                <TouchableOpacity
+                  onPress={() => handleEditAddress(index)}
+                  style={styles.editButton}>
                   <Feather name="edit" size={16} color="#007BFF" />
                   <Text style={styles.editButtonText}>Edit</Text>
                 </TouchableOpacity>
@@ -195,7 +330,7 @@ const Address = () => {
             styles.makePaymentButton,
             selectedAddressIndex === null && styles.disabledButton,
           ]}
-          onPress={handleMakePayment}
+          onPress={handleClick}
           disabled={selectedAddressIndex === null}>
           <Text style={styles.makePaymentText}>Make Payment</Text>
         </TouchableOpacity>
@@ -220,91 +355,78 @@ const Address = () => {
                 style={styles.input}
                 placeholder="Name"
                 value={addressDetails.name}
-                onChangeText={text =>
-                  setAddressDetails({...addressDetails, name: text})
-                }
+                onChangeText={text => handleInputChange('name', text)}
               />
+              {errors.name ? (
+                <Text style={styles.errorText}>{errors.name}</Text>
+              ) : null}
+
               <TextInput
                 style={styles.input}
                 placeholder="Phone"
                 keyboardType="phone-pad"
                 value={addressDetails.phone}
-                onChangeText={text =>
-                  setAddressDetails({...addressDetails, phone: text})
-                }
+                onChangeText={text => handleInputChange('phone', text)}
               />
+              {errors.phone ? (
+                <Text style={styles.errorText}>{errors.phone}</Text>
+              ) : null}
+
               <TextInput
                 style={styles.input}
                 placeholder="Address 1"
                 value={addressDetails.address1}
-                onChangeText={text =>
-                  setAddressDetails({...addressDetails, address1: text})
-                }
+                onChangeText={text => handleInputChange('address1', text)}
               />
+              {errors.address1 ? (
+                <Text style={styles.errorText}>{errors.address1}</Text>
+              ) : null}
+
               <TextInput
                 style={styles.input}
-                placeholder="Address 2"
+                placeholder="Address 2 (Optional)"
                 value={addressDetails.address2}
-                onChangeText={text =>
-                  setAddressDetails({...addressDetails, address2: text})
-                }
+                onChangeText={text => handleInputChange('address2', text)}
               />
+
               <TextInput
                 style={styles.input}
-                placeholder="Landmark"
+                placeholder="Landmark (Optional)"
                 value={addressDetails.landmark}
-                onChangeText={text =>
-                  setAddressDetails({...addressDetails, landmark: text})
-                }
+                onChangeText={text => handleInputChange('landmark', text)}
               />
+
               <TextInput
                 style={styles.input}
                 placeholder="State"
                 value={addressDetails.state}
-                onChangeText={text =>
-                  setAddressDetails({...addressDetails, state: text})
-                }
+                onChangeText={text => handleInputChange('state', text)}
               />
+              {errors.state ? (
+                <Text style={styles.errorText}>{errors.state}</Text>
+              ) : null}
+
               <View style={styles.row}>
                 <TextInput
                   style={[styles.input, styles.halfInput]}
                   placeholder="Pincode"
                   keyboardType="numeric"
                   value={addressDetails.pincode}
-                  onChangeText={text =>
-                    setAddressDetails({...addressDetails, pincode: text})
-                  }
+                  onChangeText={text => handleInputChange('pincode', text)}
                 />
+                {errors.pincode ? (
+                  <Text style={styles.errorText}>{errors.pincode}</Text>
+                ) : null}
+
                 <TextInput
                   style={[styles.input, styles.halfInput]}
                   placeholder="City"
                   value={addressDetails.city}
-                  onChangeText={text =>
-                    setAddressDetails({...addressDetails, city: text})
-                  }
+                  onChangeText={text => handleInputChange('city', text)}
                 />
-              </View>
-              <View style={styles.radioGroup}>
-                {['Home', 'Work', 'Other'].map(type => (
-                  <TouchableOpacity
-                    key={type}
-                    style={styles.radioOption}
-                    onPress={() =>
-                      setAddressDetails(prevDetails => ({
-                        ...prevDetails,
-                        addressType: type as 'Home' | 'Work' | 'Other', // Explicitly type `type`
-                      }))
-                    }>
-                    <View
-                      style={[
-                        styles.radioCircle,
-                        addressDetails.addressType === type &&
-                          styles.radioSelected,
-                      ]}
-                    />
-                    <Text style={styles.radioLabel}>{type}</Text>
-                  </TouchableOpacity>
-                ))}
+                {errors.city ? (
+                  <Text style={styles.errorText}>{errors.city}</Text>
+                ) : null}
               </View>
             </ScrollView>
             <TouchableOpacity
@@ -331,6 +453,11 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginBottom: 8,
   },
   radioOption: {
     flexDirection: 'row',
@@ -363,7 +490,8 @@ const styles = StyleSheet.create({
   },
   clearButton: {
     fontSize: 14,
-    color: '#FF0000',
+    color: 'black',
+    paddingLeft:5
   },
   addButton: {
     borderWidth: 1,
@@ -456,7 +584,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 8,
     width: '100%',
-    marginBottom: 16,
+    // marginBottom: 16,
+    marginTop:10
   },
   row: {
     flexDirection: 'row',

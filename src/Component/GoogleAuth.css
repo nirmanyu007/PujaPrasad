@@ -1,0 +1,26 @@
+.g_id_button {
+
+    width: 100% !important;
+    height: auto !important;
+}
+
+#googlePop-up {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@media (max-width: 767px) {
+    #googlePop-up {
+        width: 90%;
+        /* Ensure the Google button adapts to smaller screens */
+    }
+
+    /* If modal needs adjustment on smaller screens */
+    .modal-class {
+        width: 90%;
+        /* Adjust modal width */
+        height: auto;
+        /* Allow modal to grow with content */
+    }
+}

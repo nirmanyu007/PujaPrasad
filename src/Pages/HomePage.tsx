@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -9,74 +9,178 @@ import {
   ImageBackground,
 } from 'react-native';
 import Carousel from 'react-native-snap-carousel';
-import HomeNavBAr from '../Component/HomeNavBAr';
+import HomeNavBar from '../Component/HomeNavBAr';
+import axios from 'axios';
+import {useNavigation} from '@react-navigation/native';
+import {RootStackParamList} from '../../App';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
 interface CarouselItem {
   title: string;
   location: string;
   image: string;
+  id: string;
 }
 
 const {width} = Dimensions.get('window');
 
-const carouselData: CarouselItem[] = [
-  {
-    title: 'Rudra Abhishekam',
-    location: 'Kashi Vishwanath Temple, Varanasi',
-    image:
-      'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/Rudra_Banner.png',
-  },
-  {
-    title: 'Maha Shivratri Puja',
-    location: 'Somnath Temple, Gujarat',
-    image:
-      'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/Rudra_Banner.png',
-  },
-  {
-    title: 'Durga Puja',
-    location: 'Dakshineswar Temple, Kolkata',
-    image:
-      'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/Rudra_Banner.png',
-  },
-];
+type PoojaMandirList = {
+  mandirId: string; // Assuming mandirId is a string representing the Mandir's _id
+  originalPrice: number;
+  discountPrice: number;
+  poojaMandirTime: string;
+  poojaMandirDates: string;
+  poojaMandirBenefits: string;
+  _id: string;
+};
+
+type Puja = {
+  _id: string;
+  poojaID: string;
+  title: string;
+  titleHindi?: string; // Optional
+  poojaGod: string;
+  moolmantra: string;
+  mandirLists: PoojaMandirList[];
+  poojaCardBenefit: string;
+  poojaDescription: string;
+  poojaCardImage: string;
+  images: string[];
+  isActive: boolean;
+  isExclusive: boolean;
+  isFeatured: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+};
+
+type Mandir = {
+  _id: string;
+  nameEnglish: string;
+  poojaMandirDates: string;
+};
 
 const HomePage: React.FC = () => {
   const carouselRef = useRef<Carousel<CarouselItem>>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [pujaData, setPujaData] = useState<Puja[]>([]);
+  const [mandirMap, setMandirMap] = useState<{[key: string]: Mandir}>({});
+  const [carouselData, setCarouselData] = useState<CarouselItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const renderItem = ({item}: {item: CarouselItem}) => (
-    <View style={styles.card}>
-      <View style={styles.position}>
-        <Image source={{uri: item.image}} style={styles.image} />
-      </View>
+  // Navigation setup
+  type NavigationProps = NativeStackNavigationProp<
+    RootStackParamList,
+    'PujaDetails'
+  >;
+  const navigation = useNavigation<NavigationProps>();
 
-      <Image
-        source={{
-          uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/logo.png',
-        }}
-        style={styles.image1}
-      />
-      <View style={styles.doing}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.location}>{item.location}</Text>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>BOOK PUJA NOW</Text>
-        </TouchableOpacity>
+  useEffect(() => {
+    const fetchPujaData = async () => {
+      try {
+        const response = await axios.get(
+          `http://192.168.1.30:5001/fetch-all-poojas-exclusive`,
+        );
+        const processedPoojas: Puja[] = response.data.poojas.map(
+          (puja: any) => ({
+            ...puja,
+            poojaCardBenefit: puja.poojaCardBenefit,
+            poojaDescription: puja.poojaDescription,
+          }),
+        );
+        setPujaData(processedPoojas);
+
+        const mandirIdsSet = new Set<string>();
+        processedPoojas.forEach(puja => {
+          puja.mandirLists.forEach(mandir => {
+            mandirIdsSet.add(mandir.mandirId);
+          });
+        });
+
+        const uniqueMandirIds = Array.from(mandirIdsSet);
+
+        const fetchMandirs = uniqueMandirIds.map(id =>
+          axios
+            .get(`http://192.168.1.30:5001/fetch-mandir-by-id/${id}`)
+            .then(res => res.data.mandir as Mandir)
+            .catch(err => {
+              console.error(`Error fetching mandir with ID ${id}:`, err);
+              return null;
+            }),
+        );
+
+        const mandirResponses = await Promise.all(fetchMandirs);
+        const validMandirs = mandirResponses.filter(
+          (mandir: Mandir | null) => mandir !== null,
+        ) as Mandir[];
+
+        const mandirDataMap: {[key: string]: Mandir} = {};
+        validMandirs.forEach((mandir: Mandir) => {
+          mandirDataMap[mandir._id] = mandir;
+        });
+        setMandirMap(mandirDataMap);
+
+        const newCarouselData = processedPoojas.map(puja => {
+          const mandir = mandirMap[puja.mandirLists[0]?.mandirId];
+          return {
+            title: puja.title,
+            location: mandir?.nameEnglish || 'Unknown Location',
+            image: puja.poojaCardImage,
+            id: puja._id,
+          };
+        });
+
+        setCarouselData(newCarouselData);
+      } catch (err: any) {
+        console.error('There was an error fetching the Puja data!', err);
+        setError('No poojas available right now. We will get back soon.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPujaData();
+  }, []);
+
+  const renderItem = ({item}: {item: CarouselItem}) => {
+    return (
+      <View style={styles.card}>
+        <View style={styles.position}>
+          <Image source={{uri: item.image}} style={styles.image} />
+        </View>
+
+        <Image
+          source={{
+            uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/logo.png',
+          }}
+          style={styles.image1}
+        />
+        <View style={styles.doing}>
+          <Text style={styles.title}>{item.title}</Text>
+          <Text style={styles.location}>{item.location}</Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() =>
+              navigation.navigate('PujaDetails', {pujaId: item.id})
+            }>
+            <Text style={styles.buttonText}>BOOK PUJA NOW</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
       <ImageBackground
         source={{
-          uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/Decoration_Home.png',
+          uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/Mask.png',
         }}
         style={styles.backgroundImage}
         resizeMode="cover">
-        {/* Navbar inside ImageBackground with absolute positioning */}
-        <View style={{paddingHorizontal:'4%', paddingTop:'10%'}}>
-          <HomeNavBAr title="My Custom Title"/>
+        <View style={{paddingHorizontal: '4%', paddingTop: '10%'}}>
+          <HomeNavBar title="My Custom Title" />
         </View>
       </ImageBackground>
       <Carousel
@@ -89,21 +193,19 @@ const HomePage: React.FC = () => {
         autoplay={true}
         autoplayInterval={3000}
         vertical={false}
-        containerCustomStyle={styles.carouselContainer} // Added this
-        onSnapToItem={index => setActiveIndex(index)} // Track active slide
+        containerCustomStyle={styles.carouselContainer}
+        onSnapToItem={index => setActiveIndex(index)}
       />
-
-      {/* Flower Indicators */}
       <View style={styles.indicators}>
         {carouselData.map((_, index) => (
           <Image
             key={index}
             source={{
-              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/Vector.png', // Replace with your flower image URL
+              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/Vector.png',
             }}
             style={[
               styles.flower,
-              activeIndex === index && styles.activeFlower, // Highlight the active flower
+              activeIndex === index && styles.activeFlower,
             ]}
           />
         ))}
@@ -114,17 +216,17 @@ const HomePage: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
   },
   backgroundImage: {
     width: '100%',
-    height: 135,
+    height: 212,
+    objectFit: 'contain',
   },
   carouselContainer: {
-    marginTop: -30, // Adjust this value to move the carousel up as needed
+    marginTop: -30,
   },
   card: {
     backgroundColor: '#fff',
@@ -199,10 +301,10 @@ const styles = StyleSheet.create({
     width: 15,
     height: 15,
     marginHorizontal: 5,
-    tintColor: 'gray', // Default flower color
+    tintColor: 'gray',
   },
   activeFlower: {
-    tintColor: '#FF6605', // Highlighted flower color
+    tintColor: '#FF6605',
   },
 });
 

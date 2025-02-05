@@ -1,49 +1,73 @@
-import React from 'react';
-import {View, Text, TextInput, Image, StyleSheet, Alert} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Image,
+  StyleSheet,
+  Alert,
+  ScrollView,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PrasadNavbar from '../Component/PrasadNavbar';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Iconn from 'react-native-vector-icons/FontAwesome5';
 import PrasadBox from '../widgets/PrasadBox';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
+import axios from 'axios';
 
 type StackParamList = {
   Cart: undefined;
-  SelectPrasadPackage: {imageUri: string; templeName: string};
+  SelectPrasadPackage: {
+    imageUri: string;
+    templeName: string;
+    // description: string;
+    prasadEntries: {price: number; description: string}[];
+  }; // ✅ Add description here
 };
 
 const PrasadPage = () => {
+  const [prasadBoxes, setPrasadBoxes] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const navigation = useNavigation<NavigationProp<StackParamList>>();
 
   const handleClick = () => {
     navigation.navigate('Cart'); // Navigate to Cart screen
   };
 
-  const prasadData = [
-    {
-      id: '1',
-      name: 'Kashi Vishwanath Temple Prasad',
-      price: '₹501/-',
-      imageUri:
-        'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/kashi_prasad.png',
-    },
-    {
-      id: '2',
-      name: 'Vaishno Devi Temple Prasad',
-      price: '₹651/-',
-      imageUri:
-        'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/vaishno_prasad.png',
-    },
-  ];
+  useEffect(() => {
+    const fetchPrasadBoxes = async () => {
+      try {
+        const response = await axios.get(
+          `http://192.168.1.30:5001/fetch-active-mandirs`,
+        );
+        const data = response.data;
+        console.log(data);
+
+        // Assuming the API returns an array of mandirs and we filter those with prasad available
+        const prasadMandirs = data.mandirs.filter(
+          (mandir: any) => mandir.isPrasadAvailable,
+        );
+        setPrasadBoxes(prasadMandirs);
+      } catch (error) {
+        console.error('Error fetching prasad boxes:', error);
+        // message.error('Failed to load mandirs. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPrasadBoxes();
+  }, []);
 
   const storeData = async (name: string, imageUri: string) => {
     try {
       const prasad = {name, imageUri};
       await AsyncStorage.setItem('selectedPrasad', JSON.stringify(prasad));
-      // Alert.alert('Success', 'Prasad saved to local storage!');
+      Alert.alert('Success', 'Prasad saved to local storage!');
     } catch (error) {
       console.error('Error saving data', error);
-      // Alert.alert('Error', 'Failed to save Prasad to local storage.');
+      Alert.alert('Error', 'Failed to save Prasad to local storage.');
     }
   };
 
@@ -99,21 +123,37 @@ const PrasadPage = () => {
         </View>
       </View>
       <View>
-        {prasadData.map(prasad => (
-          <PrasadBox
-            key={prasad.id}
-            name={prasad.name}
-            price={prasad.price}
-            imageUri={prasad.imageUri}
-            onPress={() => {
-              storeData(prasad.name, prasad.imageUri); // Store data to local storage
-              navigation.navigate('SelectPrasadPackage', {
-                imageUri: prasad.imageUri,
-                templeName: prasad.name,
-              });
-            }}
-          />
-        ))}
+        <ScrollView>
+          {loading ? (
+            <Text style={styles.loadingText}>Loading...</Text>
+          ) : prasadBoxes.length > 0 ? (
+            prasadBoxes.map((prasad: any) => (
+              <PrasadBox
+                key={prasad._id}
+                name={prasad.nameEnglish}
+                price={`₹${prasad.prasadPrice}/-`} // Use API Price
+                imageUri={prasad.prasadCardImage || prasad.images[0]} // Fallback Image
+                onPress={() => {
+                  navigation.navigate('SelectPrasadPackage', {
+                    imageUri: prasad.prasadCardImage || prasad.images[0], // Temple image
+                    templeName: prasad.nameEnglish, // Temple Name
+                    prasadEntries: prasad.prasadEntries, // Pass all prasad entries
+                  });
+                }}
+              />
+            ))
+          ) : (
+            <View style={styles.noDataContainer}>
+              <Image
+                source={{
+                  uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/prashad-images/notemplefound.png',
+                }}
+                style={styles.noDataImage}
+              />
+              <Text style={styles.noDataText}>No Prasad Available</Text>
+            </View>
+          )}
+        </ScrollView>
       </View>
     </View>
   );
@@ -148,5 +188,31 @@ const styles = StyleSheet.create({
   rightIcon: {
     width: 24,
     height: 24,
+  },
+  loadingText: {
+    textAlign: 'center',
+    fontSize: 18,
+    marginTop: 20,
+  },
+  noDataContainer: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: '4%',
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    zIndex: 1000,
+    position: 'relative',
+  },
+  noDataImage: {
+    width: '50%',
+    resizeMode: 'contain',
+  },
+  noDataText: {
+    fontSize: 16,
+    marginTop: 10,
+    color: '#888',
   },
 });

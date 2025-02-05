@@ -1,12 +1,15 @@
 import React from 'react';
 import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '../../App';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type CardBoxProps = {
   title: string;
   description: string;
   location: string;
   date: string;
+  id:string;
   price: string;
   imageUri: string;
   // onPress: () => void;
@@ -17,61 +20,68 @@ const CardBox: React.FC<CardBoxProps> = ({
   description,
   location,
   date,
+  id,
   price,
   imageUri,
   // onPress,
 }) => {
-  const navigation = useNavigation();
+ type NavigationProps = NativeStackNavigationProp<
+     RootStackParamList,
+     'PujaDetails'
+   >;
+   const navigation = useNavigation<NavigationProps>();
 
   const handlePress = () => {
-    navigation.navigate('PujaDetail' as never); // TypeScript compatibility
+     navigation.navigate('PujaDetails', {pujaId: id}); // TypeScript compatibility
   };
 
   return (
     <View style={styles.cardContainer}>
-      {/* Top Section with Image */}
-      <View style={styles.imageContainer}>
-        <Image source={{uri: imageUri}} style={styles.cardImage} />
-      </View>
-
-      {/* Text Content */}
-      <View style={styles.contentContainer}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.description}>{description}</Text>
-
-        {/* Location Section */}
-        <View style={styles.infoRow}>
-          <Image
-            source={{
-              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/temple.png',
-            }}
-            style={styles.icon}
-          />
-          <Text style={styles.infoText}>{location}</Text>
+      <TouchableOpacity onPress={handlePress}>
+        {/* Top Section with Image */}
+        <View style={styles.imageContainer}>
+          <Image source={{uri: imageUri}} style={styles.cardImage} />
         </View>
 
-        {/* Date Section */}
-        <View style={styles.infoRow}>
-          <Image
-            source={{
-              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/date.png',
-            }}
-            style={styles.icon}
-          />
-          <Text style={styles.infoText}>{date}</Text>
-        </View>
+        {/* Text Content */}
+        <View style={styles.contentContainer}>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.description}>{description}</Text>
 
-        {/* Footer Section */}
-        <View style={styles.footer}>
-          <Text style={styles.startingPrice}>*Starting from {price}</Text>
-          <TouchableOpacity style={styles.button} onPress={handlePress}>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={styles.buttonText10}> |</Text>
-              <Text style={styles.buttonText}> Book Puja</Text>
-            </View>
-          </TouchableOpacity>
+          {/* Location Section */}
+          <View style={styles.infoRow}>
+            <Image
+              source={{
+                uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/temple.png',
+              }}
+              style={styles.icon}
+            />
+            <Text style={styles.infoText}>{location}</Text>
+          </View>
+
+          {/* Date Section */}
+          <View style={styles.infoRow}>
+            <Image
+              source={{
+                uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/date.png',
+              }}
+              style={styles.icon}
+            />
+            <Text style={styles.infoText}>{date}</Text>
+          </View>
+
+          {/* Footer Section */}
+          <View style={styles.footer}>
+            <Text style={styles.startingPrice}>*Starting from {price}</Text>
+            <TouchableOpacity style={styles.button} onPress={handlePress}>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text style={styles.buttonText10}> |</Text>
+                <Text style={styles.buttonText}> Book Puja</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -81,6 +91,7 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: '#fff',
     borderRadius: 10,
+    marginBottom:15,
     overflow: 'hidden',
     elevation: 5, // Android shadow
     shadowColor: '#000', // iOS shadow

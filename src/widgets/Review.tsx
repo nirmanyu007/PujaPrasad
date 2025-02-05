@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {View, Text, Image, StyleSheet, Dimensions} from 'react-native';
 import Carousel from 'react-native-snap-carousel';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 const reviews = [
   {
@@ -51,7 +52,7 @@ const Review = () => {
 
   const renderItem = ({item}: {item: (typeof reviews)[0]}) => (
     <View style={styles.card}>
-      <View style={{flexDirection: 'column',display:'flex',alignItems:'center',paddingRight:'3%'}}>
+      <View>
         <Image source={{uri: item.image}} style={styles.image} />
         <Text style={styles.name}>{item.name}</Text>
         <Text style={styles.location}>{item.location}</Text>
@@ -69,9 +70,9 @@ const Review = () => {
         data={reviews}
         renderItem={renderItem}
         sliderWidth={screenWidth}
-        itemWidth={screenWidth }
+        itemWidth={screenWidth * 0.85} // Reduce width slightly for better centering
         onSnapToItem={index => setActiveIndex(index)}
-        vertical={false} // Ensure the carousel is horizontal
+        vertical={false}
       />
       <View style={styles.pagination}>
         {reviews.map((_, index) => (
@@ -90,37 +91,38 @@ const Review = () => {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
     paddingVertical: 16,
     backgroundColor: '#F9F9F9',
+    alignItems: 'center',
   },
   card: {
-    backgroundColor: '#FFF',
+    // backgroundColor: '#FFF',
     borderRadius: 8,
-    margin:5,
-    padding: 16,
+    // padding: 16,
     flexDirection: 'row',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: {width: 0, height: 2},
-    shadowRadius: 4,
-    elevation: 2,
+    alignItems: 'center', // Ensures proper alignment
+    // shadowColor: '#000',
+    // shadowOpacity: 0.1,
+    // shadowOffset: {width: 0, height: 2},
+    // shadowRadius: 4,
+    // elevation: 2,
+    width: '100%',
   },
   image: {
     width: 70,
     height: 70,
     borderRadius: 35,
-    marginRight: 16,
+    marginRight: 12,
   },
   reviewContent: {
-    flex: 1,
-    justifyContent: 'center',
+    flex: 1, // Takes remaining space
+    paddingLeft:'5%'
   },
   reviewText: {
     fontSize: 14,
     fontStyle: 'italic',
     color: '#555',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   star: {
     fontSize: 16,
@@ -133,16 +135,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
-    marginTop: 8,
+    marginBottom: 2,
   },
   location: {
     fontSize: 14,
     color: '#888',
+    marginBottom: 4,
   },
   pagination: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 16,
+    marginTop: 12,
   },
   dot: {
     width: 8,

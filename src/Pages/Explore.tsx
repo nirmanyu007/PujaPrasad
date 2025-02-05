@@ -23,14 +23,28 @@ const Explore = () => {
     navigation.navigate('Suvichar'); // Navigate to PreviewPuja screen
   };
   return (
-    <View style={{paddingHorizontal: '4%'}}>
+    <View
+      style={{
+        flex: 1,
+        paddingHorizontal: '4%',
+        position: 'relative',
+        backgroundColor: '#FFFEFA',
+      }}>
+      {/* <View style={{position: 'absolute', top: 0}}> */}
+      <Image
+        source={{
+          uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/gridBox.png',
+        }}
+        style={{position: 'absolute', top: 0, width: '100%', height: 425}}
+      />
+      {/* </View> */}
       <ExploreNavbar />
-      <View style={{flexDirection: 'row'}}>
+      <View style={{flexDirection: 'row', paddingVertical: '5%'}}>
         <TouchableOpacity
           onPress={handleClick}
           style={{
             backgroundColor: '#FFA500',
-            borderRadius: 20,
+            borderRadius: 10,
             borderBottomWidth: 5,
             width: '50%',
             borderBottomColor: 'rgba(255,165,0,0.5)',
@@ -38,13 +52,14 @@ const Explore = () => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             paddingHorizontal: '5%',
+            paddingVertical: '3%',
           }}>
-          <Text style={{paddingTop: '5%', color: 'white', fontSize: 20}}>
-            Blogs
+          <Text style={{paddingTop: '35%', color: 'white', fontSize: 20}}>
+            | Blog
           </Text>
           <Image
             source={{
-              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/ganesh2.png',
+              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/ganeshBlack.png',
             }}
             style={{height: 81, width: 50}}
           />
@@ -52,49 +67,65 @@ const Explore = () => {
         <TouchableOpacity
           onPress={handleClick2}
           style={{
-            backgroundColor: '#FFA500',
-            borderRadius: 20,
+            backgroundColor: '#F980D1',
+            borderRadius: 10,
             borderBottomWidth: 5,
             width: '50%',
-            borderBottomColor: 'rgba(255,165,0,0.5)',
+            borderBottomColor: '#FCBFE5',
             marginLeft: '1%',
             flexDirection: 'row',
             justifyContent: 'space-between',
             paddingHorizontal: '5%',
+            paddingVertical: '3%',
           }}>
-          <Text style={{paddingTop: '5%', color: 'white', fontSize: 20}}>
-            Library
+          <Text style={{paddingTop: '35%', color: 'white', fontSize: 20}}>
+            | Library
           </Text>
           <Image
             source={{
-              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/sarswati.png',
+              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/SarswatiBlack.png',
             }}
-            style={{height: 81, width: 50}}
+            style={{height: 81, width: 67}}
           />
         </TouchableOpacity>
       </View>
       <TouchableOpacity
         onPress={handleClick3}
         style={{
-          backgroundColor: '#FFA500',
-          borderRadius: 20,
+          backgroundColor: '#01A668',
+          borderRadius: 10,
           width: '49%',
           borderBottomWidth: 5,
-          borderBottomColor: 'rgba(255,165,0,0.5)',
+          borderBottomColor: '#BFE8D5',
           flexDirection: 'row',
           justifyContent: 'space-between',
-          paddingHorizontal: '5%',
+          paddingHorizontal: '1%',
+          paddingVertical: '3%',
         }}>
-        <Text style={{paddingTop: '5%', color: 'white', fontSize: 20}}>
-          Suvichar
+        <Text style={{paddingTop: '35%', color: 'white', fontSize: 20}}>
+          | Suvichar
         </Text>
         <Image
           source={{
-            uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/krishna2.png',
+            uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/KrishnaBlack.png',
           }}
-          style={{height: 81, width: 50}}
+          style={{height: 81, width: 77}}
         />
       </TouchableOpacity>
+      <Image
+        source={{
+          uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/flower123.png',
+        }}
+        style={{
+          height: 170,
+          width: '100%',
+          position: 'absolute',
+          bottom: 150, // Position at the bottom
+          left: 0, // Align to the left
+          right: 0, // Align to the right
+        }}
+        resizeMode="contain" // Keep aspect ratio
+      />
     </View>
   );
 }

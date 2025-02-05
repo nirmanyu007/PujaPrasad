@@ -1,5 +1,7 @@
 import React from 'react';
-import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet, Image, TouchableOpacity, Alert} from 'react-native';
+import {Swipeable} from 'react-native-gesture-handler';
+import AntDesign from 'react-native-vector-icons/AntDesign'
 
 type CartBoxProps = {
   item: {
@@ -12,53 +14,79 @@ type CartBoxProps = {
   };
   incrementQuantity: (id: string) => void;
   decrementQuantity: (id: string) => void;
+  deleteItem: (id: string) => void;
 };
 
 const CartBox: React.FC<CartBoxProps> = ({
   item,
   incrementQuantity,
   decrementQuantity,
+  deleteItem,
 }) => {
-  // Safely parse price as a number
-  const parsePrice = (price: number | string): number =>
-    typeof price === 'number'
+  const parsePrice = (price: number | string): number => {
+    if (!price) return 0;
+    return typeof price === 'number'
       ? price
-      : parseFloat(price.replace(/[^0-9.]/g, ''));
+      : parseFloat(price.replace(/[^0-9.]/g, '')) || 0;
+  };
 
-  // Calculate total price
   const totalPrice = parsePrice(item.price) * item.quantity || 0;
 
+  const renderRightActions = () => {
+    return (
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={() => {
+          Alert.alert(
+            'Confirm Delete',
+            `Are you sure you want to remove ${item.title}?`,
+            [
+              {text: 'Cancel', style: 'cancel'},
+              {text: 'Delete', onPress: () => deleteItem(item.id)},
+            ],
+          );
+        }}>
+        <AntDesign name="delete" size={30} color="#FF0000" />
+        <Text style={styles.deleteButtonText}>Delete</Text>
+      </TouchableOpacity>
+    );
+  };
+
   return (
-    <View style={styles.cartItem}>
-      <Image source={{uri: item.image}} style={styles.itemImage} />
-      <View style={styles.itemDetails}>
-        <Text style={styles.itemTitle}>{item.title}</Text>
-        <Text style={styles.itemDescription}>{item.description}</Text>
-        <View style={styles.quantityContainer}>
-          <View
-            style={{
-              backgroundColor: '#FF6505',
-              flexDirection: 'row',
-              alignItems: 'center',
-              borderRadius: 5,
-            }}>
-            <TouchableOpacity
-              style={styles.quantityButton}
-              onPress={() => decrementQuantity(item.id)}>
-              <Text style={styles.quantityText}>-</Text>
-            </TouchableOpacity>
-            <Text style={styles.quantity}>{item.quantity}</Text>
-            <TouchableOpacity
-              style={styles.quantityButton}
-              onPress={() => incrementQuantity(item.id)}>
-              <Text style={styles.quantityText}>+</Text>
-            </TouchableOpacity>
+    <Swipeable renderRightActions={renderRightActions}>
+      <View style={styles.cartItem}>
+        <Image
+          source={{
+            uri: item.image || 'https://via.placeholder.com/150', // Use item.image instead of item.imageUri
+          }}
+          style={styles.itemImage}
+        />
+        <View style={styles.itemDetails}>
+          <Text style={styles.itemTitle}>{item.title || 'Unknown Title'}</Text>
+          <Text style={styles.itemDescription}>
+            {item.description || 'No description available.'}
+          </Text>
+          <View style={styles.quantityContainer}>
+            <View style={styles.quantityWrapper}>
+              <TouchableOpacity
+                style={styles.quantityButton}
+                onPress={() => {
+                  if (item.quantity > 1) decrementQuantity(item.id);
+                }}>
+                <Text style={styles.quantityText}>-</Text>
+              </TouchableOpacity>
+              <Text style={styles.quantity}>{item.quantity}</Text>
+              <TouchableOpacity
+                style={styles.quantityButton}
+                onPress={() => incrementQuantity(item.id)}>
+                <Text style={styles.quantityText}>+</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
+        <Text style={styles.itemPrice}>₹{totalPrice.toFixed(2)}</Text>
       </View>
-      {/* Ensure the total price is safely rendered inside Text */}
-      <Text style={styles.itemPrice}>₹{totalPrice.toFixed(2)}</Text>
-    </View>
+    </Swipeable>
   );
 };
 
@@ -70,8 +98,8 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
   },
   itemImage: {
-    width: 100,
-    height: 100,
+    width: '25%',
+    height: 80,
     borderRadius: 8,
   },
   itemDetails: {
@@ -79,24 +107,28 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   itemTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'rgba(0,0,0,0.7)',
   },
   itemDescription: {
     fontSize: 12,
     color: '#666',
-    marginVertical: 4,
+    marginBottom: 8,
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 12,
+  },
+  quantityWrapper: {
+    backgroundColor: '#FF6505',
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 5,
   },
   quantityButton: {
     paddingHorizontal: 12,
-    color: '#fff',
-    padding: 8,
-    borderRadius: 4,
   },
   quantityText: {
     fontSize: 20,
@@ -113,7 +145,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#FF5733',
-    alignSelf: 'center',
+    alignSelf: 'flex-end',
+  },
+  deleteButton: {
+    backgroundColor: '#FFCBC8',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    height: '100%',
+    flexDirection: 'column',
+  },
+  deleteButtonText: {
+    color: '#FF0000',
+    // fontWeight: 'bold',
   },
 });
 

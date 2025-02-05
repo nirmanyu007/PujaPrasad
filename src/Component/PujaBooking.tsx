@@ -1,59 +1,65 @@
 import React from 'react';
 import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 
+const pujaData = [
+  {
+    status: 'In Process',
+    statusSubText: 'Puja will perform on 1 January 2024, (IST 08:00 AM)',
+    pujaTitle: 'Mahamrityunjaya Jaap and Rudrabhishek 11 Shashtri',
+    pujaDescription:
+      'The Mahamrityunjay Jaap offers protection from negative forces, untimely death, and aids in healing and recovery from illnesses.',
+    packageType: 'Individual',
+    pujaDate: '20 Jan, 2025, Tuesday',
+    temple: 'Kashi Vishwanath Temple, Varanasi, Uttar Pradesh, India',
+    price: '₹850/-',
+    iconUri:
+      'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Icons/puja.png',
+  },
+];
+
 const PujaBooking = () => {
   return (
     <View style={styles.container}>
-      {/* Status Section */}
-      <View style={styles.statusContainer}>
-        <View style={styles.statusIcon}>
-          <Image
-            source={{
-              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Icons/puja.png', // Replace with appropriate icon
-            }}
-            style={styles.iconImage}
-          />
-        </View>
-        <View style={styles.statusTextContainer}>
-          <Text style={styles.statusText}>In Process</Text>
-          <Text style={styles.statusSubText}>
-            Puja will perform on 1 January 2024, (IST 08:00 AM)
-          </Text>
-        </View>
-      </View>
+      {pujaData.map((puja, index) => (
+        <View key={index}>
+          {/* Status Section */}
+          <View style={styles.statusContainer}>
+            <View style={styles.statusIcon}>
+              <Image source={{uri: puja.iconUri}} style={styles.iconImage} />
+            </View>
+            <View style={styles.statusTextContainer}>
+              <Text style={styles.statusText}>{puja.status}</Text>
+              <Text style={styles.statusSubText}>{puja.statusSubText}</Text>
+            </View>
+          </View>
 
-      {/* Puja Details Section */}
-      <View style={styles.detailsContainer}>
-        <Text style={styles.pujaTitle}>
-          Mahamrityunjaya Jaap and Rudrabhishek 11 Shashtri
-        </Text>
-        <Text style={styles.pujaDescription}>
-          The Mahamrityunjay Jaap offers protection from negative forces,
-          untimely death, and aids in healing and recovery from illnesses.
-        </Text>
-        <Text style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Package:</Text>{' '}
-          <Text style={styles.detailValue}>Individual</Text>
-        </Text>
-        <Text style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Date & Day of Puja:</Text>{' '}
-          <Text style={styles.detailValue}>20 Jan, 2025, Tuesday</Text>
-        </Text>
-        <Text style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Temple:</Text>{' '}
-          <Text style={styles.detailValue}>
-            Kashi Vishwanath Temple, Varanasi, Uttar Pradesh, India
-          </Text>
-        </Text>
-      </View>
+          {/* Puja Details Section */}
+          <View style={styles.detailsContainer}>
+            <Text style={styles.pujaTitle}>{puja.pujaTitle}</Text>
+            <Text style={styles.pujaDescription}>{puja.pujaDescription}</Text>
+            <Text style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Package:</Text>{' '}
+              <Text style={styles.detailValue}>{puja.packageType}</Text>
+            </Text>
+            <Text style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Date & Day of Puja:</Text>{' '}
+              <Text style={styles.detailValue}>{puja.pujaDate}</Text>
+            </Text>
+            <Text style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Temple:</Text>{' '}
+              <Text style={styles.detailValue}>{puja.temple}</Text>
+            </Text>
+          </View>
 
-      {/* Pricing and Action Section */}
-      <View style={styles.actionContainer}>
-        <Text style={styles.priceText}>₹850/-</Text>
-        <TouchableOpacity style={styles.trackButton}>
-          <Text style={styles.trackButtonText}>Track Prasad</Text>
-        </TouchableOpacity>
-      </View>
+          {/* Pricing and Action Section */}
+          <View style={styles.actionContainer}>
+            <Text style={styles.priceText}>{puja.price}</Text>
+            <TouchableOpacity style={styles.trackButton}>
+              <Text style={styles.trackButtonText}>Track Prasad</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ))}
     </View>
   );
 };
@@ -63,7 +69,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 8,
     padding: 15,
-    // margin: 15,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: {width: 0, height: 4},

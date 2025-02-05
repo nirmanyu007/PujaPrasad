@@ -1,8 +1,9 @@
 import React, {useState} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons'; // ✅ Import Material Icons
 
 const Faq = () => {
-  const [activeFaq, setActiveFaq] = useState<number>(0);
+  const [activeFaq, setActiveFaq] = useState<number>(-1);
 
   const faqs = [
     {
@@ -34,14 +35,21 @@ const Faq = () => {
             onPress={() => handleFaqToggle(index)}
             style={styles.faqHeader}>
             <Text style={styles.question}>{faq.question}</Text>
-            <Text style={styles.arrow}>{activeFaq === index ? '▲' : '▼'}</Text>
+            <MaterialIcon
+              name={
+                activeFaq === index
+                  ? 'keyboard-arrow-up'
+                  : 'keyboard-arrow-down'
+              }
+              size={30}
+              color="black"
+            />
           </TouchableOpacity>
           {activeFaq === index && (
             <Text style={styles.answer}>{faq.answer}</Text>
           )}
         </View>
       ))}
-      {/* <Text>Hello</Text> */}
     </View>
   );
 };
@@ -50,16 +58,15 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     backgroundColor: '#F9F9F9',
-    marginBottom:'5%'
+    marginBottom: '5%',
   },
-  
   faqContainer: {
     backgroundColor: '#FFF',
     borderRadius: 8,
     padding: 16,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#BFBEBD',
   },
   faqHeader: {
     flexDirection: 'row',
@@ -68,12 +75,8 @@ const styles = StyleSheet.create({
   },
   question: {
     fontSize: 14,
-    // fontWeight: 500,
-    color: '#333',
-  },
-  arrow: {
-    fontSize: 18,
-    color: '#FD7109',
+    color: 'black',
+    flex: 1, // Ensures text takes full width before the icon
   },
   answer: {
     marginTop: 8,

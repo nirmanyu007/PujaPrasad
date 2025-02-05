@@ -40,12 +40,12 @@ const HomeNavBar: React.FC<HomeNavBarProps> = ({title}) => {
 
         {/* Center Text and Image */}
         <View style={{display: 'flex', alignItems: 'center'}}>
-          <Text style={{color: '#FE6505', fontSize: 20, fontWeight: '600'}}>
+          <Text style={{color: 'white', fontSize: 20, fontWeight: '600'}}>
             जय श्री राम
           </Text>
           <Image
             source={{
-              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/bar.png',
+              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/barwhite.png',
             }}
             style={{width: 150, height: 10}}
           />

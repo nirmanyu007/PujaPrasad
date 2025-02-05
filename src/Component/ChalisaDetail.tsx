@@ -35,10 +35,41 @@ const ChalisaDetail = () => {
 
       {/* Toggle Button */}
       <TouchableOpacity style={styles.button} onPress={handleLanguageToggle}>
-        <Text style={styles.buttonText}>
-          {isHindi ? 'Switch to English' : 'Switch to Hindi'}
-        </Text>
-      </TouchableOpacity>
+              <View style={styles.buttonContent}>
+                {isHindi ? (
+                  <>
+                    <Image
+                      source={{
+                        uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/vec12.png', // Replace with the actual image URL
+                      }}
+                      style={styles.languageImage1}
+                    />
+                    {/* <Image
+                      source={{
+                        uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/hindi.png', // Replace with the actual image URL
+                      }}
+                      style={styles.languageImage}
+                    /> */}
+                    <Text style={{color:'white',fontSize:18}}>En</Text>
+                  </>
+                ) : (
+                  <>
+                    <Image
+                      source={{
+                        uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/vec12.png', // Replace with the actual image URL
+                      }}
+                      style={styles.languageImage1}
+                    />
+                    <Image
+                      source={{
+                        uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/hindi.png', // Replace with the actual image URL
+                      }}
+                      style={styles.languageImage}
+                    />
+                  </>
+                )}
+              </View>
+            </TouchableOpacity>
 
       {/* Verses */}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -124,15 +155,39 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   button: {
-    alignSelf: 'center',
-    backgroundColor: '#FFA500',
-    paddingHorizontal: 20,
+    position: 'absolute',
+    zIndex: 10, // Ensure the button is on top of other elements
+    right: 15, // Adjust distance from the right
+    top: '50%', // Adjust vertical position
+    transform: [{translateY: -25}], // Center the button vertically
+    backgroundColor: '#FF4E18',
+    paddingHorizontal: 10,
     paddingVertical: 10,
-    borderRadius: 8,
-    marginBottom: 10,
+    borderRadius: 8000,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal:5
   },
   buttonText: {
     fontSize: 16,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  languageImage: {
+    width: 35,
+    height: 20,
+    borderRadius: 4,
+  },
+  languageImage1: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    marginRight: 5,
+  },
+  languageText: {
+    fontSize: 14,
     color: '#fff',
     fontWeight: 'bold',
   },

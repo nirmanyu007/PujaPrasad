@@ -1,14 +1,23 @@
 import React, {useState} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const MandirIntro = () => {
+type Props = {
+  description?: string; // Optional property
+};
+
+const MandirIntro: React.FC<Props> = ({description}) => {
   const [expanded, setExpanded] = useState(false);
 
   const handleToggle = () => {
     setExpanded(!expanded);
   };
 
-  const introText = `Baijnath Temple, located in Himachal Pradesh, is one of the oldest and most revered temples dedicated to Lord Shiva, worshipped here as Baijnath, the healer of all diseases. The temple, built in the 8th century, is known for its stunning North Indian (Shikhara) architecture and its deep spiritual significance.`;
+  // Ensure `description` has a valid string value
+  const safeDescription =
+    description && description.length > 0
+      ? description
+      : 'No introduction available.';
 
   return (
     <View style={{paddingHorizontal: 20}}>
@@ -20,16 +29,24 @@ const MandirIntro = () => {
       {/* Introduction Text */}
       <View style={styles.introBox}>
         <Text style={styles.text}>
-          {expanded ? introText : `${introText.substring(0, 120)}...`}
+          {expanded
+            ? safeDescription
+            : `${safeDescription.substring(0, 120)}...`}
         </Text>
 
         {/* Show More / Show Less Button */}
-        <TouchableOpacity onPress={handleToggle}>
-          <Text style={styles.toggleText}>
-            {expanded ? 'Show less' : 'Show more'}{' '}
-            <Text style={{fontSize: 18}}>{expanded ? '▲' : '▼'}</Text>
-          </Text>
-        </TouchableOpacity>
+        {safeDescription.length > 120 && (
+          <TouchableOpacity onPress={handleToggle} style={styles.toggleButton}>
+            <Text style={styles.toggleText}>
+              {expanded ? 'Show less' : 'Show more'}
+            </Text>
+            <Icon
+              name={expanded ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+              size={20}
+              color="#FFA500"
+            />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -42,9 +59,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     marginBottom: 10,
     borderRadius: 8,
-    // borderTopRightRadius: 8,
     alignSelf: 'flex-start',
-    
   },
   title: {
     fontSize: 16,
@@ -65,10 +80,16 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   toggleText: {
-    marginTop: 10,
+    // marginTop: 10,
     fontSize: 14,
     fontWeight: 'bold',
     color: '#FFA500',
+  },
+  toggleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // justifyContent:'center',
+    marginTop: 10,
   },
 });
 

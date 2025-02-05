@@ -1,53 +1,114 @@
 import React from 'react';
-import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
 
-const MandirPuja = () => {
+type Puja = {
+  _id: string; // Puja ID
+  title: string;
+  poojaCardImage: string;
+  poojaCardBenefit: string;
+  mandirLists: {
+    poojaMandirDates: string[];
+    poojaMandirTime: string;
+    originalPrice: number;
+  }[];
+};
+
+type Props = {
+  name: string; // Mandir name
+  pujas: Puja[]; // Array of pujas
+};
+
+type StackParamList = {
+  PujaDetails: {
+    pujaId: string;
+    pujaData: Puja; // Include pujaData of type Puja
+  }; // Define the route for PujaDetail
+};
+
+const MandirPuja: React.FC<Props> = ({name, pujas}) => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>();
+
+  const handlePujaCardPress = (puja: Puja) => {
+    navigation.navigate('PujaDetails', {
+      pujaId: puja._id,
+      pujaData: puja, // Pass the entire puja object
+    });
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <Text style={styles.headerText}>
         🌼 BOOK ONLINE PUJA IN 🌼{'\n'}
-        <Text style={styles.headerSubText}>Baijnath Temple</Text>
+        <Text style={styles.headerSubText}>{name}</Text>
       </Text>
 
-      {/* Puja Card */}
-      <View style={styles.card}>
-        {/* Top Section */}
-        <View style={styles.imageContainer}>
-          <Image
-            source={{
-              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/pujaBack.png', // Replace with actual image URL
-            }}
-            style={styles.image}
-          />
-          <Text style={styles.badge}>BHOG</Text>
+      {pujas.length === 0 ? (
+        // No puja available message
+        <View style={styles.noPujaContainer}>
+          <Text style={styles.noPujaText}>No puja available</Text>
         </View>
+      ) : (
+        // Render puja cards if pujas are available
+        <ScrollView>
+          {pujas.map((puja, index) => {
+            const {title, poojaCardImage, poojaCardBenefit, mandirLists} = puja;
+            const firstMandir = mandirLists[0]; // Assuming there’s always at least one mandir
+            const pujaDate =
+              firstMandir?.poojaMandirDates[0] || 'Date not available';
+            const pujaTime =
+              firstMandir?.poojaMandirTime || 'Time not available';
+            const price = firstMandir?.originalPrice || 0;
 
-        {/* Middle Section */}
-        <View style={styles.detailsContainer}>
-          <Text style={styles.pujaName}>Bhog</Text>
-          <Text style={styles.pujaDescription}>Health & Well Being</Text>
-          <View style={styles.locationContainer}>
-            <Icon name="location-on" size={18} color="#FF8901" />
-            <Text style={styles.locationText}>
-              Kashi Vishwanath Temple, Varanasi,{'\n'}Uttar Pradesh, India
-            </Text>
-          </View>
-          <View style={styles.dateContainer}>
-            <Icon name="event" size={18} color="#FF8901" />
-            <Text style={styles.dateText}>17 December, Tuesday</Text>
-          </View>
-        </View>
+            return (
+              <TouchableOpacity
+                key={index}
+                style={styles.card}
+                onPress={() => handlePujaCardPress(puja)}>
+                {/* Top Section */}
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{
+                      uri: poojaCardImage || 'https://via.placeholder.com/150', // Fallback if image is missing
+                    }}
+                    style={styles.image}
+                  />
+                  <Text style={styles.badge}>BHOG</Text>
+                </View>
 
-        {/* Bottom Section */}
-        <View style={styles.footer}>
-          <Text style={styles.price}>*Starting from ₹ 850/-</Text>
-          <TouchableOpacity style={styles.bookButton}>
-            <Text style={styles.bookButtonText}>Book Puja →</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+                {/* Middle Section */}
+                <View style={styles.detailsContainer}>
+                  <Text style={styles.pujaName}>{title}</Text>
+                  <Text style={styles.pujaDescription}>{poojaCardBenefit}</Text>
+                  <View style={styles.dateContainer}>
+                    <Icon name="event" size={18} color="#FF8901" />
+                    <Text style={styles.dateText}>
+                      {pujaDate}, {pujaTime}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Bottom Section */}
+                <View style={styles.footer}>
+                  <Text style={styles.price}>*Starting from ₹ {price}/-</Text>
+                  <TouchableOpacity style={styles.bookButton}>
+                    <Text style={styles.bookButtonText}>Book Puja →</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      )}
     </View>
   );
 };
@@ -67,6 +128,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
+  },
+  noPujaContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  noPujaText: {
+    fontSize: 16,
+    color: 'white',
+    fontStyle: 'italic',
   },
   card: {
     marginTop: 20,
@@ -110,16 +180,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginVertical: 5,
-  },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 5,
-  },
-  locationText: {
-    fontSize: 14,
-    color: '#333',
-    marginLeft: 5,
   },
   dateContainer: {
     flexDirection: 'row',

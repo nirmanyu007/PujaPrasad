@@ -30,6 +30,8 @@ const Arti = () => {
       image:
         'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/krishna.png', // Replace with the actual image URL
       backgroundColor: '#FFA500',
+      rightIconBackgroundColor: '#EEAF5A',
+      borderCol: '#FF6505',
     },
     {
       id: 2,
@@ -37,7 +39,9 @@ const Arti = () => {
       subtitle: 'Vedic Vaibhav',
       image:
         'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/ganesh.png', // Replace with the actual image URL
-      backgroundColor: '#8B0000',
+      backgroundColor: '#570F14',
+      rightIconBackgroundColor: '#946567',
+      borderCol: '#A70D4D',
     },
     {
       id: 3,
@@ -46,6 +50,8 @@ const Arti = () => {
       image:
         'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/laxmi.png', // Replace with the actual image URL
       backgroundColor: '#FF69B4',
+      rightIconBackgroundColor: '#F27EAD',
+      borderCol: '#D2A24D',
     },
     {
       id: 4,
@@ -54,6 +60,8 @@ const Arti = () => {
       image:
         'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/shiv_aarti.png', // Replace with the actual image URL
       backgroundColor: '#1E90FF',
+      rightIconBackgroundColor: '#3B8899',
+      borderCol: '#014757',
     },
   ];
 
@@ -65,7 +73,7 @@ const Arti = () => {
           name="arrowleft"
           onPress={handleGoBack}
           size={23}
-          color="black"
+          color="white"
         />
         {/* <Text style={styles.headerText}>Aarti</Text> */}
       </View>
@@ -89,18 +97,44 @@ const Arti = () => {
           <TouchableOpacity
             onPress={handleClick}
             key={item.id}
-            style={[styles.card, {backgroundColor: item.backgroundColor}]}>
+            style={[styles.card, {backgroundColor: item.backgroundColor},{borderColor:item.borderCol}]}>
             <Image source={{uri: item.image}} style={styles.cardImage} />
             <View style={styles.cardContent}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}>
+                <Image
+                  source={{
+                    uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/home.png', // Replace with the actual image URL
+                  }}
+                  style={{width: 20, height: 20}}
+                />
+                <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
+              </View>
               <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
             </View>
-            <AntDesign name="right" size={18} color="#fff" />
+            <View
+              style={{
+                paddingTop: 40,
+                paddingRight: 10,
+                // backgroundColor: 'rgba(255,254,100,1)',
+              }}>
+              <View
+                style={[
+                  styles.rightIconBackground,
+                  {backgroundColor: item.rightIconBackgroundColor},
+                ]}>
+                <AntDesign name="right" size={18} color="#fff" />
+              </View>
+            </View>
           </TouchableOpacity>
         ))}
       </ScrollView>
     </View>
-  );
+  );  
 };
 
 const styles = StyleSheet.create({
@@ -125,11 +159,11 @@ const styles = StyleSheet.create({
     // alignItems: 'center',
     // marginVertical: 20,
     backgroundColor: '#E6B079',
-    marginBottom:'5%',
-    flexDirection:'row',
-    alignItems:'center',
-    justifyContent:'space-between',
-    paddingHorizontal:'4%'
+    marginBottom: '5%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: '4%',
   },
   image: {
     width: 150,
@@ -145,29 +179,46 @@ const styles = StyleSheet.create({
   },
   card: {
     flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 10,
+    // alignItems: 'center',
+    borderRadius: 20,
     marginBottom: 15,
     // padding: 10,
     height: 100,
+    borderWidth:2,
+
   },
   cardImage: {
     width: 140,
-    height: 100,
-    // borderRadius: 10,
+    height: 96,
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
     marginRight: 10,
   },
   cardContent: {
-    flex: 1,
+    // flex: 1,
+    paddingTop: 10,
+    width: '45%',
   },
   cardTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
+    display: 'flex',
+    // justifyContent:'center',
+    paddingTop: 10,
   },
   cardSubtitle: {
     fontSize: 14,
     color: '#f0f0f0',
+    paddingLeft: 5,
+  },
+  rightIconContainer: {
+    paddingTop: 40,
+    paddingRight: 10,
+  },
+  rightIconBackground: {
+    padding: 5,
+    borderRadius: 10000,
   },
 });
 

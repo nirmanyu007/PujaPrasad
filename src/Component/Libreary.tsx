@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, Text, Image, StyleSheet, TouchableOpacity, ImageBackground} from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
 
@@ -21,45 +21,51 @@ const Library = () => {
       };
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <AntDesign
-          onPress={handleGoBack}
-          name="arrowleft"
-          size={23}
-          color="black"
-        />
-        <Text style={styles.headerText}>Library</Text>
-      </View>
-
-      {/* Boxes */}
-      <View style={styles.boxContainer}>
-        {/* Aarti Box */}
-        <TouchableOpacity
-          onPress={handleClick}
-          style={[styles.box, styles.aartiBox]}>
-          <Image
-            source={{
-              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/arti.png', // Replace with Aarti image URL
-            }}
-            style={styles.boxImage}
+      <ImageBackground
+        source={{
+          uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/libback.png', // Replace with Aarti image URL
+        }}
+        style={{height: '100%', width: '100%'}}>
+        {/* Header */}
+        <View style={styles.header}>
+          <AntDesign
+            onPress={handleGoBack}
+            name="arrowleft"
+            size={23}
+            color="black"
           />
-          <Text style={styles.boxText}>Aarti</Text>
-        </TouchableOpacity>
+          <Text style={styles.headerText}>Library</Text>
+        </View>
 
-        {/* Chalisa Box */}
-        <TouchableOpacity
-          onPress={handleClick2}
-          style={[styles.box, styles.chalisaBox]}>
-          <Image
-            source={{
-              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/boxPrasad.png', // Replace with Chalisa image URL
-            }}
-            style={styles.boxImage}
-          />
-          <Text style={styles.boxText}>Chalisa</Text>
-        </TouchableOpacity>
-      </View>
+        {/* Boxes */}
+        <View style={styles.boxContainer}>
+          {/* Aarti Box */}
+          <TouchableOpacity
+            onPress={handleClick}
+            style={[styles.box, styles.aartiBox]}>
+            <Text style={styles.boxText}>Aarti</Text>
+            <Image
+              source={{
+                uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/arti.png', // Replace with Aarti image URL
+              }}
+              style={styles.boxImage}
+            />
+          </TouchableOpacity>
+
+          {/* Chalisa Box */}
+          <TouchableOpacity
+            onPress={handleClick2}
+            style={[styles.box, styles.chalisaBox]}>
+            <Image
+              source={{
+                uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/boxPrasad.png', // Replace with Chalisa image URL
+              }}
+              style={styles.boxImage}
+            />
+            <Text style={styles.boxText}>Chalisa</Text>
+          </TouchableOpacity>
+        </View>
+      </ImageBackground>
     </View>
   );
 };
@@ -73,7 +79,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 30,
   },
   headerText: {
     paddingLeft: 10,
@@ -87,28 +93,31 @@ const styles = StyleSheet.create({
   },
   box: {
     width: '48%',
-    height: 200,
+    height: 150,
     borderRadius: 10,
     overflow: 'hidden',
     justifyContent: 'flex-end',
     padding: 10,
   },
   aartiBox: {
-    backgroundColor: '#FFE4C4',
+    backgroundColor: '#E6B079',
   },
   chalisaBox: {
-    backgroundColor: '#8B4513',
+    backgroundColor: '#7F2A04',
   },
   boxImage: {
     position: 'absolute',
-    top: 0,
-    left: 0,
+    bottom: 0,
+    right: 0,
     width: '100%',
-    height: '100%',
+    height: 135,
     resizeMode: 'cover',
   },
   boxText: {
-    fontSize: 18,
+    position: 'absolute',
+    top:20,
+    left:15,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
   },

@@ -167,11 +167,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   overlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     width: '100%',
     height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-end',
+    // alignItems: 'center',
+    paddingLeft:15
   },
   contactDetailsContainer: {
     alignItems: 'center',
@@ -181,6 +182,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 8,
     color: '#fff',
+    alignItems:'center',
   },
 });
 
