@@ -1,209 +1,177 @@
-import React, {useState} from 'react';
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
+// src/pages/ChalisaDetail.tsx
+import React, { useEffect, useState } from 'react';
+import { 
+  View, 
+  Text, 
+  Image, 
+  TouchableOpacity, 
+  StyleSheet, 
+  ScrollView, 
+  ActivityIndicator, 
+  Animated, 
+  Easing 
 } from 'react-native';
-// import React from 'react';
+import axios from 'axios';
+import { useNavigation, NavigationProp, useRoute, RouteProp } from '@react-navigation/native';
 
-const ChalisaDetail = () => {
+type StackParamList = {
+  ChalisaDetail: { libraryId: string };
+};
 
-    
-      const [isHindi, setIsHindi] = useState(false);
-    
-      const handleLanguageToggle = () => {
-        setIsHindi(!isHindi);
-      };
+interface LibraryItem {
+  _id: string;
+  id: string;
+  nameEnglish: string;
+  nameHindi: string;
+  descriptionEnglish: string;
+  descriptionHindi: string;
+  godName: string;
+  aartiImage: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+const LanguageToggle: React.FC<{ isHindi: boolean; onToggle: (value: boolean) => void }> = ({ isHindi, onToggle }) => {
+  const animatedValue = React.useRef(new Animated.Value(isHindi ? 1 : 0)).current;
+  
+  useEffect(() => {
+    Animated.timing(animatedValue, {
+      toValue: isHindi ? 1 : 0,
+      duration: 300,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: false,
+    }).start();
+  }, [isHindi, animatedValue]);
+
+  const sliderTranslate = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 100],
+  });
 
   return (
-    <View style={styles.container}>
-      {/* Image */}
-      <Image
-        source={{
-          uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/hanuman.png', // Replace with actual image URL
-        }}
-        style={styles.image}
-      />
-
-      {/* Title */}
-      <Text style={styles.title}>
-        {isHindi ? 'आरती कुंज बिहारी जी' : 'Hanuman Chalisa'}
-      </Text>
-
-      {/* Toggle Button */}
-      <TouchableOpacity style={styles.button} onPress={handleLanguageToggle}>
-              <View style={styles.buttonContent}>
-                {isHindi ? (
-                  <>
-                    <Image
-                      source={{
-                        uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/vec12.png', // Replace with the actual image URL
-                      }}
-                      style={styles.languageImage1}
-                    />
-                    {/* <Image
-                      source={{
-                        uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/hindi.png', // Replace with the actual image URL
-                      }}
-                      style={styles.languageImage}
-                    /> */}
-                    <Text style={{color:'white',fontSize:18}}>En</Text>
-                  </>
-                ) : (
-                  <>
-                    <Image
-                      source={{
-                        uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/vec12.png', // Replace with the actual image URL
-                      }}
-                      style={styles.languageImage1}
-                    />
-                    <Image
-                      source={{
-                        uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/hindi.png', // Replace with the actual image URL
-                      }}
-                      style={styles.languageImage}
-                    />
-                  </>
-                )}
-              </View>
-            </TouchableOpacity>
-
-      {/* Verses */}
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {!isHindi ? (
-          <>
-            <Text style={styles.verse}>
-              Aarti Kunj Bihari Ki,
-              {'\n'}Shri Girdhar Krishna Murari Ki
-              {'\n'}Aarti Kunj Bihari Ki,
-              {'\n'}Shri Girdhar Krishna Murari Ki{'\n\n'}
-            </Text>
-
-            <Text style={styles.verse}>
-              Gale Mein Bajanti Mala,
-              {'\n'}Bajave Murali Madhur Bala
-              {'\n'}Shravan Mein Kundal Jhalakala,
-              {'\n'}Nand Ke Anand Nandlala{'\n\n'}
-            </Text>
-
-            <Text style={styles.verse}>
-              Sagan Sam Ang Kanti Kali,
-              {'\n'}Radhika Chamak Rahi Aali
-              {'\n'}Latan Mein Thadhe Banamali{'\n\n'}
-            </Text>
-
-            <Text style={styles.verse}>
-              Bhramar Si Alak, Kasturi-Tilak,
-              {'\n'}Chandra Si Jhalak
-              {'\n'}Lalit Chavi Shyama Pyari Ki,
-              {'\n'}Shri Girdhar Krishna Murari Ki{'\n\n'}
-            </Text>
-          </>
-        ) : (
-          <>
-            <Text style={styles.verse}>
-              आरती कुंज बिहारी की,
-              {'\n'}श्री गिरिधर कृष्ण मुरारी की
-              {'\n'}आरती कुंज बिहारी की,
-              {'\n'}श्री गिरिधर कृष्ण मुरारी की{'\n\n'}
-            </Text>
-
-            <Text style={styles.verse}>
-              गले में बैजंती माला,
-              {'\n'}बजावें मुरली मधुर बाला
-              {'\n'}श्रवण में कुंडल झलकाला,
-              {'\n'}नंद के आनंद नंदलाला{'\n\n'}
-            </Text>
-
-            <Text style={styles.verse}>
-              सगन सम अंग कांति काली,
-              {'\n'}राधिका चमक रही आली
-              {'\n'}लतन में ठाढ़े बनमाली{'\n\n'}
-            </Text>
-
-            <Text style={styles.verse}>
-              भृमर सी अलक, कस्तूरी-तिलक,
-              {'\n'}चंद्र सी झलक
-              {'\n'}ललित छवि श्यामा प्यारी की,
-              {'\n'}श्री गिरिधर कृष्ण मुरारी की{'\n\n'}
-            </Text>
-          </>
-        )}
-      </ScrollView>
+    <View style={toggleStyles.container}>
+      <TouchableOpacity style={toggleStyles.touchable} onPress={() => onToggle(false)}>
+        <Text style={[toggleStyles.label, !isHindi && toggleStyles.activeLabel]}>English</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={toggleStyles.touchable} onPress={() => onToggle(true)}>
+        <Text style={[toggleStyles.label, isHindi && toggleStyles.activeLabel]}>Hindi</Text>
+      </TouchableOpacity>
+      <Animated.View style={[toggleStyles.slider, { transform: [{ translateX: sliderTranslate }] }]} />
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const toggleStyles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  image: {
-    width: '100%',
-    height: 200,
-    resizeMode: 'cover',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'center',
+    width: 200,
+    height: 40,
+    backgroundColor: '#ddd',
+    borderRadius: 20,
+    flexDirection: 'row',
+    position: 'relative',
+    overflow: 'hidden',
+    alignSelf: 'center',
     marginVertical: 10,
   },
-  button: {
-    position: 'absolute',
-    zIndex: 10, // Ensure the button is on top of other elements
-    right: 15, // Adjust distance from the right
-    top: '50%', // Adjust vertical position
-    transform: [{translateY: -25}], // Center the button vertically
-    backgroundColor: '#FF4E18',
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    borderRadius: 8000,
-  },
-  buttonContent: {
-    flexDirection: 'row',
+  touchable: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal:5
   },
-  buttonText: {
+  label: {
     fontSize: 16,
-    color: '#fff',
-    fontWeight: 'bold',
+    color: '#555',
+    fontWeight: '500',
   },
-  languageImage: {
-    width: 35,
-    height: 20,
-    borderRadius: 4,
+  activeLabel: {
+    color: 'black',
   },
-  languageImage1: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    marginRight: 5,
-  },
-  languageText: {
-    fontSize: 14,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  scrollContainer: {
-    padding: 15,
-    paddingLeft: 25,
-  },
-  verse: {
-    fontSize: 16,
-    color: '#444',
-    lineHeight: 24,
-    marginBottom: 10,
+  slider: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 100,
+    height: '100%',
+    backgroundColor: '#E6B079',
+    opacity: 0.5,
+    borderRadius: 20,
   },
 });
 
+const ChalisaDetail: React.FC = () => {
+  const route = useRoute<RouteProp<StackParamList, 'ChalisaDetail'>>();
+  const { libraryId } = route.params;
+  const navigation = useNavigation<NavigationProp<StackParamList>>();
+
+  const [isHindi, setIsHindi] = useState<boolean>(false);
+  const [libraryItem, setLibraryItem] = useState<LibraryItem | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const fetchLibraryItem = async () => {
+    try {
+      const response = await axios.get<{ library: LibraryItem }>(`http://192.168.1.7:5001/fetch-library-data-by-id/${libraryId}`);
+      setLibraryItem(response.data.library);
+    } catch (error) {
+      console.error("Error fetching library item", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLibraryItem();
+  }, [libraryId]);
+
+  const toggleLanguage = () => {
+    setIsHindi(prev => !prev);
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    );
+  }
+
+  if (!libraryItem) {
+    return (
+      <View style={styles.center}>
+        <Text>No data available for this item.</Text>
+      </View>
+    );
+  }
+
+  const description: string = isHindi ? libraryItem.descriptionHindi : libraryItem.descriptionEnglish;
+  const plainDescription: string = description.replace(/<\/?[^>]+(>|$)/g, "");
+
+  return (
+    <ScrollView style={styles.container}>
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <Text style={styles.backText}>Back</Text>
+      </TouchableOpacity>
+      <Image source={{ uri: libraryItem.aartiImage }} style={styles.image} />
+      <Text style={styles.title}>{isHindi ? libraryItem.nameHindi : libraryItem.nameEnglish}</Text>
+      <Text style={styles.godName}>{libraryItem.godName}</Text>
+      <LanguageToggle isHindi={isHindi} onToggle={setIsHindi} />
+      <View style={styles.descriptionContainer}>
+        <Text style={styles.descriptionText}>{plainDescription}</Text>
+      </View>
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 15, backgroundColor: '#fff' },
+  center: { flex:1, justifyContent:'center', alignItems:'center' },
+  backButton: { marginBottom: 10 },
+  backText: { fontSize: 16, color: '#007AFF' },
+  image: { width: '100%', height: 200, resizeMode: 'cover', borderRadius: 10 },
+  title: { fontSize: 24, fontWeight: 'bold', marginVertical: 10 },
+  godName: { fontSize: 18, color: '#888', marginBottom: 10 },
+  descriptionContainer: { marginTop: 10 },
+  descriptionText: { fontSize: 16, lineHeight: 24 },
+});
 
 export default ChalisaDetail;
-
-

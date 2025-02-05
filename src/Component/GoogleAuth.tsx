@@ -1,8 +1,8 @@
-
-
-import React, {useState} from 'react';
-import {View, Pressable, Text, ActivityIndicator} from 'react-native';
-import {GoogleSignin} from '@react-native-google-signin/google-signin';
+// src/components/GoogleAuth.tsx
+import React, { useState } from 'react';
+import { View, Pressable, Text, ActivityIndicator } from 'react-native';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { useNavigation } from '@react-navigation/native';
 
 // Configure Google Sign-In
 GoogleSignin.configure({
@@ -24,13 +24,10 @@ type GoogleSignInResponse = {
   };
 };
 
-// Mock API
+// Mock API (for demonstration)
 const authAPI = {
-  validateToken: async (data: {
-    token: string;
-    email: string;
-  }): Promise<{data: any}> => {
-    return Promise.resolve({data: {success: true}});
+  validateToken: async (data: { token: string; email: string; }): Promise<{ data: any }> => {
+    return Promise.resolve({ data: { success: true } });
   },
 };
 
@@ -38,17 +35,23 @@ const GoogleLogin = async (): Promise<GoogleSignInResponse | null> => {
   try {
     await GoogleSignin.hasPlayServices();
     const userInfo = await GoogleSignin.signIn();
-
     console.log('Google Sign-In Raw Response:', userInfo); // Debugging Log
 
-    if (userInfo?.idToken && userInfo?.user?.email) {
+    // The response from signIn() now has a "data" property containing the token and user info
+    if (
+      userInfo &&
+      userInfo.data &&
+      userInfo.data.idToken &&
+      userInfo.data.user &&
+      userInfo.data.user.email
+    ) {
       return {
-        idToken: userInfo.idToken,
+        idToken: userInfo.data.idToken,
         user: {
-          email: userInfo.user.email,
-          name: userInfo.user.name || '',
-          photo: userInfo.user.photo || '',
-          id: userInfo.user.id || '',
+          email: userInfo.data.user.email,
+          name: userInfo.data.user.name || '',
+          photo: userInfo.data.user.photo || '',
+          id: userInfo.data.user.id || '',
         },
       };
     } else {
@@ -61,13 +64,13 @@ const GoogleLogin = async (): Promise<GoogleSignInResponse | null> => {
   }
 };
 
-
 const GoogleAuth: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const handlePostLoginData = async (data: any) => {
     console.log('Post Login Data:', data);
+    // Handle post-login behavior (e.g., navigation, storing token, etc.)
   };
 
   const handleGoogleLogin = async () => {
@@ -78,7 +81,7 @@ const GoogleAuth: React.FC = () => {
       const response = await GoogleLogin();
 
       if (response) {
-        const {idToken, user} = response;
+        const { idToken, user } = response;
 
         if (idToken && user.email) {
           console.log('Google Sign-In Successful:', user);
@@ -105,7 +108,7 @@ const GoogleAuth: React.FC = () => {
   };
 
   return (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Pressable
         onPress={handleGoogleLogin}
         style={{
@@ -113,10 +116,10 @@ const GoogleAuth: React.FC = () => {
           padding: 10,
           borderRadius: 5,
         }}>
-        <Text style={{color: '#fff'}}>Continue with Google</Text>
+        <Text style={{ color: '#fff' }}>Continue with Google</Text>
       </Pressable>
       {loading && <ActivityIndicator size="large" color="#4285F4" />}
-      {error && <Text style={{color: 'red', marginTop: 10}}>{error}</Text>}
+      {error && <Text style={{ color: 'red', marginTop: 10 }}>{error}</Text>}
     </View>
   );
 };

@@ -1,214 +1,181 @@
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
-import React from 'react'
-import AntDesign from 'react-native-vector-icons/AntDesign'
-import {useNavigation, NavigationProp} from '@react-navigation/native';
+// src/pages/Chalisa.tsx
+import React, { useEffect, useState, useRef } from 'react';
+import { 
+  View, 
+  Text, 
+  Image, 
+  StyleSheet, 
+  ScrollView, 
+  TouchableOpacity, 
+  ActivityIndicator, 
+  Animated, 
+  Easing 
+} from 'react-native';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import axios from 'axios';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 
-type StackParamList = {
-  ChalisaDetail: undefined;
-};
-
-const Chalisa = () => {
-  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
-          const handleClick = () => {
-            navigation.navigate('ChalisaDetail'); // Navigate to PreviewPuja screen
-          };
-          const handleGoBack = () => {
-            navigation.goBack(); // Navigate back to the previous screen
-          };
-     const chalisaData = [
-       {
-         id: 1,
-         title: 'Hanuman Chalisa',
-         subtitle: 'Vedic Vaibhav',
-         image:
-           'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/hanuman.png', // Replace with the actual image URL
-         backgroundColor: '#F8A126',
-         rightIconBackgroundColor: '#EEAF5A',
-         borderCol: '#FF6505',
-       },
-       {
-         id: 2,
-         title: 'Shiv Chalisa',
-         subtitle: 'Vedic Vaibhav',
-         image:
-           'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/shiv_aarti.png', // Replace with the actual image URL
-         backgroundColor: '#0A6B81',
-         rightIconBackgroundColor: '#3B8899',
-         borderCol: '#3B3A4C',
-       },
-       {
-         id: 3,
-         title: 'Durga Chalisa',
-         subtitle: 'Vedic Vaibhav',
-         image:
-           'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/Durga%201.png', // Replace with the actual image URL
-         backgroundColor: '#A11A30',
-         rightIconBackgroundColor: '#946567',
-         borderCol: '#FF6505',
-       },
-     ];
-  return (
-    <View>
-      <View style={{backgroundColor: '#E6B079'}}>
-        <AntDesign
-          onPress={handleGoBack}
-          name="arrowleft"
-          size={23}
-          color="white"
-          style={{paddingLeft: 10, paddingTop: 10}}
-        />
-      </View>
-      <View style={styles.imageContainer}>
-        <Text style={{color: 'white', fontSize: 64, paddingLeft: '5%'}}>
-          Chalisa
-        </Text>
-        <Image
-          source={{
-            uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/boxe.png', // Replace with the actual image URL
-          }}
-          style={styles.image}
-        />
-        <View style={{position: 'absolute', top: 15, left: 90}}>
-          <Image
-            source={{
-              uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/hanumanlogo.png', // Replace with the actual image URL
-            }}
-            style={{width: 58, height: 58}}
-          />
-        </View>
-      </View>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {chalisaData.map(item => (
-          <TouchableOpacity
-            onPress={handleClick}
-            key={item.id}
-            style={[
-              styles.card,
-              {backgroundColor: item.backgroundColor},
-              {borderColor: item.borderCol},
-            ]}>
-            <Image source={{uri: item.image}} style={styles.cardImage} />
-            <View style={styles.cardContent}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}>
-                <Image
-                  source={{
-                    uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/home.png', // Replace with the actual image URL
-                  }}
-                  style={{width: 20, height: 20}}
-                />
-                <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
-              </View>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-            </View>
-            <View
-              style={{
-                paddingTop: 40,
-                paddingRight: 10,
-                // backgroundColor: 'rgba(255,254,100,1)',
-              }}>
-              <View
-                style={[
-                  styles.rightIconBackground,
-                  {backgroundColor: item.rightIconBackgroundColor},
-                ]}>
-                <AntDesign name="right" size={18} color="#fff" />
-              </View>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
-  );
+interface LibraryItem {
+  _id: string;
+  id: string;
+  nameEnglish: string;
+  nameHindi: string;
+  descriptionEnglish: string;
+  descriptionHindi: string;
+  godName: string;
+  aartiImage: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
-const styles = StyleSheet.create({
+type StackParamList = {
+  ChalisaDetail: { libraryId: string };
+};
+
+const LanguageToggle: React.FC<{ isHindi: boolean; onToggle: (value: boolean) => void }> = ({ isHindi, onToggle }) => {
+  const animatedValue = useRef(new Animated.Value(isHindi ? 1 : 0)).current;
+  
+  useEffect(() => {
+    Animated.timing(animatedValue, {
+      toValue: isHindi ? 1 : 0,
+      duration: 300,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: false,
+    }).start();
+  }, [isHindi, animatedValue]);
+
+  const sliderTranslate = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 100],
+  });
+
+  return (
+    <View style={toggleStyles.container}>
+      <TouchableOpacity style={toggleStyles.touchable} onPress={() => onToggle(false)}>
+        <Text style={[toggleStyles.label, !isHindi && toggleStyles.activeLabel]}>English</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={toggleStyles.touchable} onPress={() => onToggle(true)}>
+        <Text style={[toggleStyles.label, isHindi && toggleStyles.activeLabel]}>Hindi</Text>
+      </TouchableOpacity>
+      <Animated.View style={[toggleStyles.slider, { transform: [{ translateX: sliderTranslate }] }]} />
+    </View>
+  );
+};
+
+const toggleStyles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: '#E6B079',
-  },
-  headerText: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: 'black',
-    marginLeft: 10,
-  },
-  imageContainer: {
-    // alignItems: 'center',
-    // marginVertical: 20,
-    backgroundColor: '#E6B079',
-    marginBottom: '5%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: '4%',
-  },
-  image: {
-    width: 150,
-    height: 150,
-    borderRadius: 10,
-    objectFit: 'cover',
-    borderWidth: 1,
-    // borderColor: 'black',
-  },
-  scrollContainer: {
-    paddingHorizontal: 10,
-    paddingBottom: 20,
-  },
-  card: {
-    flexDirection: 'row',
-    // alignItems: 'center',
+    width: 200,
+    height: 40,
+    backgroundColor: '#ddd',
     borderRadius: 20,
-    marginBottom: 15,
-    // padding: 10,
-    height: 100,
-    borderWidth: 2,
+    flexDirection: 'row',
+    position: 'relative',
+    overflow: 'hidden',
+    alignSelf: 'center',
+    marginVertical: 10,
   },
-  cardImage: {
-    width: 140,
-    height: 96,
-    borderTopLeftRadius: 20,
-    borderBottomLeftRadius: 20,
-    marginRight: 10,
+  touchable: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  cardContent: {
-    // flex: 1,
-    paddingTop: 10,
-    width: '45%',
-  },
-  cardTitle: {
+  label: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
-    display: 'flex',
-    // justifyContent:'center',
-    paddingTop: 10,
+    color: '#555',
+    fontWeight: '500',
   },
-  cardSubtitle: {
-    fontSize: 14,
-    color: '#f0f0f0',
-    paddingLeft: 5,
+  activeLabel: {
+    color: 'black',
   },
-  rightIconContainer: {
-    paddingTop: 40,
-    paddingRight: 10,
-  },
-  rightIconBackground: {
-    padding: 5,
-    borderRadius: 10000,
+  slider: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 100,
+    height: '100%',
+    backgroundColor: '#E6B079',
+    opacity: 0.5,
+    borderRadius: 20,
   },
 });
 
-export default Chalisa
+const Chalisa: React.FC = () => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>();
+  const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isHindi, setIsHindi] = useState<boolean>(false);
 
+  const fetchLibraryData = async () => {
+    try {
+      const response = await axios.get<LibraryItem[]>("http://192.168.1.7:5001/fetch-library-data");
+      const data = response.data.filter(item => item.id.toLowerCase() === 'chalisa');
+      setLibraryItems(data);
+    } catch (error) {
+      console.error("Error fetching library data", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLibraryData();
+  }, []);
+
+  const handleGoBack = () => navigation.goBack();
+  const handlePress = (item: LibraryItem) => navigation.navigate('ChalisaDetail', { libraryId: item._id });
+
+  return (
+    <View style={styles.container}>
+      <Image
+        source={{ uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/libback.png' }}
+        style={styles.backgroundImage}
+      />
+      <View style={styles.header}>
+        <AntDesign name="arrowleft" onPress={handleGoBack} size={23} color="black" />
+        <Text style={styles.headerText}>Library</Text>
+      </View>
+      <LanguageToggle isHindi={isHindi} onToggle={setIsHindi} />
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {loading ? (
+          <ActivityIndicator size="large" color="#000" />
+        ) : libraryItems.length === 0 ? (
+          <Text style={styles.noDataText}>No Chalisa present for now. Will bring soon</Text>
+        ) : (
+          libraryItems.map(item => (
+            <TouchableOpacity key={item._id} style={[styles.card, { backgroundColor: '#7F2A04', borderColor: '#FF6505' }]} onPress={() => handlePress(item)}>
+              <Image source={{ uri: item.aartiImage }} style={styles.cardImage} />
+              <View style={styles.cardContent}>
+                <Text style={styles.cardTitle}>{isHindi ? item.nameHindi : item.nameEnglish}</Text>
+                <Text style={styles.cardSubtitle}>Vedic Vaibhav</Text>
+              </View>
+            </TouchableOpacity>
+          ))
+        )}
+      </ScrollView>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#fff', padding: 20 },
+  backgroundImage: { position: 'absolute', top: 0, width: '100%', height: '100%', resizeMode: 'cover' },
+  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 30 },
+  headerText: { paddingLeft: 10, fontSize: 18, fontWeight: '600', color: 'black' },
+  scrollContainer: { paddingBottom: 20 },
+  card: { 
+    flexDirection: 'row', 
+    borderRadius: 10, 
+    marginBottom: 15, 
+    height: 150, 
+    overflow: 'hidden', 
+    borderWidth: 2 
+  },
+  cardImage: { width: '40%', height: '100%' },
+  cardContent: { flex: 1, padding: 10, justifyContent: 'center' },
+  cardTitle: { fontSize: 18, fontWeight: 'bold', color: '#fff' },
+  cardSubtitle: { fontSize: 16, color: '#fff' },
+  noDataText: { fontSize: 16, color: '#444', textAlign: 'center', marginVertical: 20 },
+});
+
+export default Chalisa;

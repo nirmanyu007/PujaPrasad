@@ -1,225 +1,181 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ScrollView,
-  TouchableOpacity,
+// src/pages/Arti.tsx
+import React, { useEffect, useState, useRef } from 'react';
+import { 
+  View, 
+  Text, 
+  Image, 
+  StyleSheet, 
+  ScrollView, 
+  TouchableOpacity, 
+  ActivityIndicator, 
+  Animated, 
+  Easing 
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import {useNavigation, NavigationProp} from '@react-navigation/native';
+import axios from 'axios';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+
+interface LibraryItem {
+  _id: string;
+  id: string;
+  nameEnglish: string;
+  nameHindi: string;
+  descriptionEnglish: string;
+  descriptionHindi: string;
+  godName: string;
+  aartiImage: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
 type StackParamList = {
-  ArtiDetail: undefined;
-  
+  ArtiDetail: { libraryId: string };
 };
 
-const Arti = () => {
-  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
-        const handleClick = () => {
-          navigation.navigate('ArtiDetail'); // Navigate to PreviewPuja screen
-        };
-        const handleGoBack = () => {
-          navigation.goBack(); // Navigate back to the previous screen
-        };
-  const artiData = [
-    {
-      id: 1,
-      title: 'Aarti Kunj Bihari Ji',
-      subtitle: 'Vedic Vaibhav',
-      image:
-        'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/krishna.png', // Replace with the actual image URL
-      backgroundColor: '#FFA500',
-      rightIconBackgroundColor: '#EEAF5A',
-      borderCol: '#FF6505',
-    },
-    {
-      id: 2,
-      title: 'Jai Shri Ganesh Deva Aarti',
-      subtitle: 'Vedic Vaibhav',
-      image:
-        'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/ganesh.png', // Replace with the actual image URL
-      backgroundColor: '#570F14',
-      rightIconBackgroundColor: '#946567',
-      borderCol: '#A70D4D',
-    },
-    {
-      id: 3,
-      title: 'Lakshmi Mata Aarti',
-      subtitle: 'Vedic Vaibhav',
-      image:
-        'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/laxmi.png', // Replace with the actual image URL
-      backgroundColor: '#FF69B4',
-      rightIconBackgroundColor: '#F27EAD',
-      borderCol: '#D2A24D',
-    },
-    {
-      id: 4,
-      title: 'Om Jai Shiv Omkara Aarti',
-      subtitle: 'Vedic Vaibhav',
-      image:
-        'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/shiv_aarti.png', // Replace with the actual image URL
-      backgroundColor: '#1E90FF',
-      rightIconBackgroundColor: '#3B8899',
-      borderCol: '#014757',
-    },
-  ];
+const LanguageToggle: React.FC<{ isHindi: boolean; onToggle: (value: boolean) => void }> = ({ isHindi, onToggle }) => {
+  const animatedValue = useRef(new Animated.Value(isHindi ? 1 : 0)).current;
+  
+  useEffect(() => {
+    Animated.timing(animatedValue, {
+      toValue: isHindi ? 1 : 0,
+      duration: 300,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: false,
+    }).start();
+  }, [isHindi, animatedValue]);
+
+  const sliderTranslate = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 100],
+  });
+
+  return (
+    <View style={toggleStyles.container}>
+      <TouchableOpacity style={toggleStyles.touchable} onPress={() => onToggle(false)}>
+        <Text style={[toggleStyles.label, !isHindi && toggleStyles.activeLabel]}>English</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={toggleStyles.touchable} onPress={() => onToggle(true)}>
+        <Text style={[toggleStyles.label, isHindi && toggleStyles.activeLabel]}>Hindi</Text>
+      </TouchableOpacity>
+      <Animated.View style={[toggleStyles.slider, { transform: [{ translateX: sliderTranslate }] }]} />
+    </View>
+  );
+};
+
+const toggleStyles = StyleSheet.create({
+  container: {
+    width: 200,
+    height: 40,
+    backgroundColor: '#ddd',
+    borderRadius: 20,
+    flexDirection: 'row',
+    position: 'relative',
+    overflow: 'hidden',
+    alignSelf: 'center',
+    marginVertical: 10,
+  },
+  touchable: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  label: {
+    fontSize: 16,
+    color: '#555',
+    fontWeight: '500',
+  },
+  activeLabel: {
+    color: 'black',
+  },
+  slider: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 100,
+    height: '100%',
+    backgroundColor: '#E6B079',
+    opacity: 0.5,
+    borderRadius: 20,
+  },
+});
+
+const Arti: React.FC = () => {
+  const navigation = useNavigation<NavigationProp<StackParamList>>();
+  const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isHindi, setIsHindi] = useState<boolean>(false);
+
+  const fetchLibraryData = async () => {
+    try {
+      const response = await axios.get<LibraryItem[]>("http://192.168.1.7:5001/fetch-library-data");
+      const data = response.data.filter(item => item.id.toLowerCase() === 'aarti');
+      setLibraryItems(data);
+    } catch (error) {
+      console.error("Error fetching library data", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLibraryData();
+  }, []);
+
+  const handleGoBack = () => navigation.goBack();
+  const handlePress = (item: LibraryItem) => navigation.navigate('ArtiDetail', { libraryId: item._id });
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      <Image
+        source={{ uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/libback.png' }}
+        style={styles.backgroundImage}
+      />
       <View style={styles.header}>
-        <AntDesign
-          name="arrowleft"
-          onPress={handleGoBack}
-          size={23}
-          color="white"
-        />
-        {/* <Text style={styles.headerText}>Aarti</Text> */}
+        <AntDesign name="arrowleft" onPress={handleGoBack} size={23} color="black" />
+        <Text style={styles.headerText}>Library</Text>
       </View>
-
-      {/* Image and Title */}
-      <View style={styles.imageContainer}>
-        <Text style={{color: 'white', fontSize: 64, paddingLeft: '5%'}}>
-          Aarti
-        </Text>
-        <Image
-          source={{
-            uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/arti.png', // Replace with the actual image URL
-          }}
-          style={styles.image}
-        />
-      </View>
-
-      {/* Aarti List */}
+      <LanguageToggle isHindi={isHindi} onToggle={setIsHindi} />
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {artiData.map(item => (
-          <TouchableOpacity
-            onPress={handleClick}
-            key={item.id}
-            style={[styles.card, {backgroundColor: item.backgroundColor},{borderColor:item.borderCol}]}>
-            <Image source={{uri: item.image}} style={styles.cardImage} />
-            <View style={styles.cardContent}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}>
-                <Image
-                  source={{
-                    uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/home.png', // Replace with the actual image URL
-                  }}
-                  style={{width: 20, height: 20}}
-                />
-                <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
+        {loading ? (
+          <ActivityIndicator size="large" color="#000" />
+        ) : libraryItems.length === 0 ? (
+          <Text style={styles.noDataText}>No Aarti present for now. WILL BRING SOON IN A GOOD FORMATTED MANNER</Text>
+        ) : (
+          libraryItems.map(item => (
+            <TouchableOpacity key={item._id} style={[styles.card, { backgroundColor: '#E6B079', borderColor: '#FF6505' }]} onPress={() => handlePress(item)}>
+              <Image source={{ uri: item.aartiImage }} style={styles.cardImage} />
+              <View style={styles.cardContent}>
+                <Text style={styles.cardTitle}>{isHindi ? item.nameHindi : item.nameEnglish}</Text>
+                <Text style={styles.cardSubtitle}>Vedic Vaibhav</Text>
               </View>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-            </View>
-            <View
-              style={{
-                paddingTop: 40,
-                paddingRight: 10,
-                // backgroundColor: 'rgba(255,254,100,1)',
-              }}>
-              <View
-                style={[
-                  styles.rightIconBackground,
-                  {backgroundColor: item.rightIconBackgroundColor},
-                ]}>
-                <AntDesign name="right" size={18} color="#fff" />
-              </View>
-            </View>
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          ))
+        )}
       </ScrollView>
     </View>
-  );  
+  );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
+  container: { flex: 1, backgroundColor: '#fff', padding: 20 },
+  backgroundImage: { position: 'absolute', top: 0, width: '100%', height: '100%', resizeMode: 'cover' },
+  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 30 },
+  headerText: { paddingLeft: 10, fontSize: 18, fontWeight: '600', color: 'black' },
+  scrollContainer: { paddingBottom: 20 },
+  card: { 
+    flexDirection: 'row', 
+    borderRadius: 10, 
+    marginBottom: 15, 
+    height: 150, 
+    overflow: 'hidden', 
+    borderWidth: 2 
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: '#E6B079',
-  },
-  headerText: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: 'black',
-    marginLeft: 10,
-  },
-  imageContainer: {
-    // alignItems: 'center',
-    // marginVertical: 20,
-    backgroundColor: '#E6B079',
-    marginBottom: '5%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: '4%',
-  },
-  image: {
-    width: 150,
-    height: 150,
-    borderRadius: 10,
-    objectFit: 'cover',
-    borderWidth: 1,
-    // borderColor: 'black',
-  },
-  scrollContainer: {
-    paddingHorizontal: 10,
-    paddingBottom: 20,
-  },
-  card: {
-    flexDirection: 'row',
-    // alignItems: 'center',
-    borderRadius: 20,
-    marginBottom: 15,
-    // padding: 10,
-    height: 100,
-    borderWidth:2,
-
-  },
-  cardImage: {
-    width: 140,
-    height: 96,
-    borderTopLeftRadius: 20,
-    borderBottomLeftRadius: 20,
-    marginRight: 10,
-  },
-  cardContent: {
-    // flex: 1,
-    paddingTop: 10,
-    width: '45%',
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
-    display: 'flex',
-    // justifyContent:'center',
-    paddingTop: 10,
-  },
-  cardSubtitle: {
-    fontSize: 14,
-    color: '#f0f0f0',
-    paddingLeft: 5,
-  },
-  rightIconContainer: {
-    paddingTop: 40,
-    paddingRight: 10,
-  },
-  rightIconBackground: {
-    padding: 5,
-    borderRadius: 10000,
-  },
+  cardImage: { width: '40%', height: '100%' },
+  cardContent: { flex: 1, padding: 10, justifyContent: 'center' },
+  cardTitle: { fontSize: 18, fontWeight: 'bold', color: '#fff' },
+  cardSubtitle: { fontSize: 16, color: '#fff' },
+  noDataText: { fontSize: 16, color: '#444', textAlign: 'center', marginVertical: 20 },
 });
 
 export default Arti;
