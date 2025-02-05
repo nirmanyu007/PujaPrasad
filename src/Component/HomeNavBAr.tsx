@@ -26,7 +26,7 @@ const HomeNavBar: React.FC<HomeNavBarProps> = ({title}) => {
           style={{
             backgroundColor: 'white',
             borderRadius: 1000,
-            padding: 5,
+            padding: 8,
             shadowColor: 'rgba(0, 0, 0, 0.25)', // Color of the shadow
             shadowOffset: {width: 0, height: 0}, // Horizontal and vertical offset
             shadowOpacity: 1, // Opacity of the shadow
@@ -35,7 +35,7 @@ const HomeNavBar: React.FC<HomeNavBarProps> = ({title}) => {
           }}
           onPress={() => navigation.openDrawer()} // Open drawer on press
         >
-          <Antdesign name="bars" size={30} color="#666161" />
+          <Antdesign name="bars" size={25} color="#FE942D" />
         </TouchableOpacity>
 
         {/* Center Text and Image */}
@@ -56,7 +56,7 @@ const HomeNavBar: React.FC<HomeNavBarProps> = ({title}) => {
           style={{
             backgroundColor: 'white',
             borderRadius: 1000,
-            padding: 5,
+            padding: 8,
             shadowColor: 'rgba(0, 0, 0, 0.25)', // Color of the shadow
             shadowOffset: {width: 0, height: 0}, // Horizontal and vertical offset
             shadowOpacity: 1, // Opacity of the shadow

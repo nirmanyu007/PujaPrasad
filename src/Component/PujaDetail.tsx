@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   NativeSyntheticEvent,
+  Animated,
   NativeScrollEvent,
 } from 'react-native';
 import Carousel from 'react-native-snap-carousel';
@@ -94,16 +95,24 @@ interface PujaDetails {
   images: string[];
 }
 
+const stripHtmlTags = (htmlString: string): string => {
+  return htmlString.replace(/<\/?[^>]+(>|$)/g, '');
+};
+
 const {width: screenWidth} = Dimensions.get('window');
 
 const PujaDetail = ({route}: {route: any}) => {
   const detailingRef = useRef<DetailingRef | null>(null);
   const {pujaId, pujaData} = route.params;
   const [puja, setPuja] = useState<any>(null);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const stickyNavPosition = 200; // Adjust this value to when you want navbar to stick
 
   const handleShareOnWhatsApp = () => {
     console.log('Shared on WhatsApp!');
   };
+
+  
 
   const navigation = useNavigation<NavigationProp<StackParamList>>(); // Get the navigation object
 
@@ -111,8 +120,19 @@ const PujaDetail = ({route}: {route: any}) => {
     navigation.goBack(); // Navigate back to the previous screen
   };
   const handleSelectPackage2 = () => {
-    if (detailingRef.current) {
-      detailingRef.current.scrollToPackages();
+    if (packagesRef.current) {
+      packagesRef.current.measure(
+        (
+          _fx: number,
+          _fy: number,
+          _width: number,
+          height: number,
+          _px: number,
+          py: number,
+        ) => {
+          scrollViewRef.current?.scrollTo({y: py, animated: true});
+        },
+      );
     }
   };
 
@@ -472,6 +492,7 @@ const PujaDetail = ({route}: {route: any}) => {
   const faqRef = useRef<View>(null);
 
   const [activeSection, setActiveSection] = useState('about');
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const sectionRefs = [
     {label: 'about', ref: aboutRef},
@@ -503,6 +524,23 @@ const PujaDetail = ({route}: {route: any}) => {
       );
     });
   };
+  const handleNavigationClick = (sectionLabel: string) => {
+    const section = sectionRefs.find(s => s.label === sectionLabel);
+    if (section && section.ref.current) {
+      section.ref.current.measure(
+        (
+          _fx: number,
+          _fy: number,
+          _width: number,
+          height: number,
+          _px: number,
+          py: number,
+        ) => {
+          scrollViewRef.current?.scrollTo({y: py, animated: true});
+        },
+      );
+    }
+  };
 
   return (
     <>
@@ -510,7 +548,13 @@ const PujaDetail = ({route}: {route: any}) => {
         <NavigationProvider navigation={navigation}>
           <View style={styles.container}>
             {/* Content Scroll */}
-            <ScrollView style={styles.scrollViewContent}>
+            <ScrollView
+              ref={scrollViewRef}
+              style={styles.scrollViewContent}
+              onScroll={Animated.event(
+                [{nativeEvent: {contentOffset: {y: scrollY}}}],
+                {useNativeDriver: false},
+              )}>
               <View
                 style={{
                   flexDirection: 'row',
@@ -577,30 +621,72 @@ const PujaDetail = ({route}: {route: any}) => {
                     {poojaDate}, {poojaDay}
                   </Text>
                 </View>
-                <View style={styles.container}>
-                  {/* Top Section with ImageStack and StarRating */}
-                  <View>
-                    <ImageStack />
-                    <StarRating
-                      rating={4.5}
-                      starImage="https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/pooja-images/starrating.svg"
-                    />
-                    {/* <Image  source={{uri:'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/pooja-images/starrating.svg'}} style={{height:20,width:20,}}/> */}
-                  </View>
-
-                  {/* Rating Description */}
-                  <Text style={styles.ratingText}>Based on 120 ratings</Text>
-                </View>
 
                 <CountdownTimer
                   targetDate={
                     selectedPuja.mandirLists?.[0]?.poojaMandirDates?.[0]
                   }
                 />
+                <View style={styles.container}>
+                  {/* Top Section with ImageStack and StarRating */}
+                  <View
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingTop: 15,
+                    }}>
+                    <ImageStack />
+                    <Text
+                      style={{
+                        fontSize: 26,
+                        fontWeight: '600',
+                        color: '#F4B400',
+                        paddingLeft: 70,
+                      }}>
+                      4.7
+                    </Text>
+                    {Array.from({length: 5}).map((_, index) => (
+                      <Image
+                        key={index}
+                        source={{
+                          uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/star.png',
+                        }}
+                        style={{width: 20, height: 20, marginLeft: 2}}
+                      />
+                    ))}
+                    {/* <AntDesign name="star" color="#FDD835" size={23} />
+                    <AntDesign name="star" color="#FDD835" size={23} />
+                    <AntDesign name="star" color="#FDD835" size={23} />
+                    <AntDesign name="star" color="#FDD835" size={23} />
+                    <AntDesign name="star" color="#FDD835" size={23} /> */}
+                    {/* <Image  source={{uri:'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/pooja-images/starrating.svg'}} style={{height:20,width:20,}}/> */}
+                  </View>
+
+                  {/* Rating Description */}
+                  <Text style={styles.ratingText}>Based on 120 ratings</Text>
+                </View>
               </View>
 
               {/* Additional Details */}
-              <View style={styles.container}>
+              <Animated.View
+                style={[
+                  styles.stickyNavigationContainer,
+                  {
+                    transform: [
+                      {
+                        translateY: scrollY.interpolate({
+                          inputRange: [
+                            stickyNavPosition,
+                            stickyNavPosition + 50,
+                          ], // Smooth transition range
+                          outputRange: [0, -50], // Moves up and sticks at top
+                          extrapolate: 'clamp',
+                        }),
+                      },
+                    ],
+                  },
+                ]}>
                 {/* Sticky Navigation */}
                 <ScrollView
                   horizontal
@@ -612,7 +698,8 @@ const PujaDetail = ({route}: {route: any}) => {
                       style={[
                         styles.navItem,
                         activeSection === section.label && styles.activeNavItem,
-                      ]}>
+                      ]}
+                      onPress={() => handleNavigationClick(section.label)}>
                       <Text
                         style={
                           activeSection === section.label
@@ -682,7 +769,7 @@ const PujaDetail = ({route}: {route: any}) => {
                   <ReviewsSection innerRef={reviewsRef} />
                   <FAQSection innerRef={faqRef} />
                 </ScrollView>
-              </View>
+              </Animated.View>
             </ScrollView>
 
             {/* Fixed Button */}
@@ -710,6 +797,17 @@ const styles = StyleSheet.create({
   scrollViewContent: {
     flex: 1,
   },
+  stickyNavigationContainer: {
+  // position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  zIndex: 1000, // Keeps navbar above other content
+  backgroundColor: '#fff',
+  borderBottomWidth: 1,
+  borderBottomColor: '#e0e0e0',
+  paddingVertical: 10,
+},
   floatingButton: {
     position: 'absolute',
     bottom: 10,
@@ -748,7 +846,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginHorizontal: 4,
     borderRadius: 20,
-    backgroundColor: '#e0e0e0', // Default background color
+    // backgroundColor: '#e0e0e0', // Default background color
   },
   activeNavItem: {
     backgroundColor: '#FFA500', // Orange color for active navbar item
@@ -812,6 +910,8 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 14,
     color: 'rgba(0,0,0,0.7)',
+    fontStyle:'italic',
+    paddingTop:10
   },
   sectionContainer: {
     padding: 16,

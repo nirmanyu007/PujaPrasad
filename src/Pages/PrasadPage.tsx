@@ -123,7 +123,7 @@ const PrasadPage = () => {
         </View>
       </View>
       <View>
-        <ScrollView>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
           {loading ? (
             <Text style={styles.loadingText}>Loading...</Text>
           ) : prasadBoxes.length > 0 ? (
@@ -162,6 +162,10 @@ const PrasadPage = () => {
 export default PrasadPage;
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    // paddingHorizontal: 15,
+    paddingBottom: 250, // Add padding to avoid clipping
+  },
   container: {
     backgroundColor: '#fff',
     display: 'flex',
