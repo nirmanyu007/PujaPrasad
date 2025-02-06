@@ -21,9 +21,8 @@ type StackParamList = {
   SelectPrasadPackage: {
     imageUri: string;
     templeName: string;
-    // description: string;
     prasadEntries: {price: number; description: string}[];
-  }; // ✅ Add description here
+  };
 };
 
 const PrasadPage = () => {
@@ -39,7 +38,7 @@ const PrasadPage = () => {
     const fetchPrasadBoxes = async () => {
       try {
         const response = await axios.get(
-          `http://192.168.1.30:5001/fetch-active-mandirs`,
+          `http://192.168.1.7:5001/fetch-active-mandirs`,
         );
         const data = response.data;
         console.log(data);
@@ -51,7 +50,6 @@ const PrasadPage = () => {
         setPrasadBoxes(prasadMandirs);
       } catch (error) {
         console.error('Error fetching prasad boxes:', error);
-        // message.error('Failed to load mandirs. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -135,9 +133,9 @@ const PrasadPage = () => {
                 imageUri={prasad.prasadCardImage || prasad.images[0]} // Fallback Image
                 onPress={() => {
                   navigation.navigate('SelectPrasadPackage', {
-                    imageUri: prasad.prasadCardImage || prasad.images[0], // Temple image
-                    templeName: prasad.nameEnglish, // Temple Name
-                    prasadEntries: prasad.prasadEntries, // Pass all prasad entries
+                    imageUri: prasad.prasadCardImage || prasad.images[0],
+                    templeName: prasad.nameEnglish,
+                    prasadEntries: prasad.prasadEntries,
                   });
                 }}
               />
@@ -163,8 +161,7 @@ export default PrasadPage;
 
 const styles = StyleSheet.create({
   scrollContainer: {
-    // paddingHorizontal: 15,
-    paddingBottom: 250, // Add padding to avoid clipping
+    paddingBottom: 250,
   },
   container: {
     backgroundColor: '#fff',

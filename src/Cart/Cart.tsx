@@ -25,10 +25,8 @@ type CartItem = {
   description: string;
   price: number | string;
   quantity: number;
-  image: string; // This should be used consistently for the image URI
+  image: string;
 };
-;
-
 
 type StackParamList = {
   Cart: CartItem[];
@@ -41,10 +39,9 @@ const Cart: React.FC = () => {
   const initialCartItems = [...(route.params || [])];
 
   const handleGoBack = () => {
-    navigation.goBack(); // Navigate back to the previous screen
+    navigation.goBack();
   };
 
-  // Ensure `price` is always treated as a number
   const [cartItems, setCartItems] = useState<CartItem[]>(
     initialCartItems.map(item => ({
       ...item,
@@ -63,62 +60,44 @@ const Cart: React.FC = () => {
     );
   };
 
- const decrementQuantity = async (id: string) => {
-   try {
-     setCartItems(prevItems => {
-       // Find the item being decremented
-       const itemToDecrement = prevItems.find(item => item.id === id);
+  const decrementQuantity = async (id: string) => {
+    try {
+      setCartItems(prevItems => {
+        const itemToDecrement = prevItems.find(item => item.id === id);
+        if (itemToDecrement && itemToDecrement.quantity === 1) {
+          const updatedItems = prevItems.filter(item => item.id !== id);
+          if (updatedItems.length === 0) {
+            AsyncStorage.removeItem('cartItems')
+              .then(() => console.log('Cart cleared from AsyncStorage'))
+              .catch(error => console.error('Error clearing cart:', error));
+          } else {
+            AsyncStorage.setItem('cartItems', JSON.stringify(updatedItems))
+              .then(() => console.log('Cart updated in AsyncStorage'))
+              .catch(error =>
+                console.error('Error updating cart in storage:', error),
+              );
+          }
+          return updatedItems;
+        } else {
+          const updatedItems = prevItems.map(item =>
+            item.id === id ? {...item, quantity: item.quantity - 1} : item,
+          );
+          AsyncStorage.setItem('cartItems', JSON.stringify(updatedItems))
+            .then(() => console.log('Cart updated in AsyncStorage'))
+            .catch(error =>
+              console.error('Error updating cart in storage:', error),
+            );
+          return updatedItems;
+        }
+      });
+    } catch (error) {
+      console.error('Error in decrementQuantity:', error);
+    }
+  };
 
-       // If the item exists and its quantity is 1, remove it completely
-       if (itemToDecrement && itemToDecrement.quantity === 1) {
-         const updatedItems = prevItems.filter(item => item.id !== id);
-
-         console.log('Item removed, Updated Cart Items:', updatedItems); // Debugging
-
-         // Update AsyncStorage - Remove the cart if empty
-         if (updatedItems.length === 0) {
-           AsyncStorage.removeItem('cartItems')
-             .then(() => console.log('Cart cleared from AsyncStorage')) // Debugging
-             .catch(error => console.error('Error clearing cart:', error));
-         } else {
-           AsyncStorage.setItem('cartItems', JSON.stringify(updatedItems))
-             .then(() => console.log('Cart updated in AsyncStorage')) // Debugging
-             .catch(error =>
-               console.error('Error updating cart in storage:', error),
-             );
-         }
-
-         return updatedItems;
-       } else {
-         // Otherwise, just decrement the quantity
-         const updatedItems = prevItems.map(item =>
-           item.id === id ? {...item, quantity: item.quantity - 1} : item,
-         );
-
-         console.log('Updated Cart Items:', updatedItems); // Debugging
-
-         AsyncStorage.setItem('cartItems', JSON.stringify(updatedItems))
-           .then(() => console.log('Cart updated in AsyncStorage')) // Debugging
-           .catch(error =>
-             console.error('Error updating cart in storage:', error),
-           );
-
-         return updatedItems;
-       }
-     });
-   } catch (error) {
-     console.error('Error in decrementQuantity:', error);
-   }
- };
-
-
-const deleteItem = (id: string) => {
-  setCartItems(prevItems => prevItems.filter(item => item.id !== id));
-};
-
-
-
-
+  const deleteItem = (id: string) => {
+    setCartItems(prevItems => prevItems.filter(item => item.id !== id));
+  };
 
   const getTotalAmount = () => {
     return cartItems.reduce((total, item) => {
@@ -126,7 +105,6 @@ const deleteItem = (id: string) => {
         typeof item.price === 'string'
           ? parseFloat(item.price.replace(/[^0-9.]/g, ''))
           : item.price || 0;
-
       return total + price * (item.quantity || 1);
     }, 0);
   };
@@ -140,18 +118,15 @@ const deleteItem = (id: string) => {
       const storedCartItems = await AsyncStorage.getItem('cartItems');
       if (storedCartItems) {
         const parsedItems: CartItem[] = JSON.parse(storedCartItems);
-
-        // Ensure the image property is consistent
         const processedItems: CartItem[] = parsedItems.map(item => ({
           ...item,
           price: item.price
             ? typeof item.price === 'string'
               ? parseFloat(item.price.replace(/[^0-9.]/g, ''))
               : item.price
-            : 0, // Default price to 0
-          image: item.image || 'https://via.placeholder.com/150', // Provide a fallback for the image
+            : 0,
+          image: item.image || 'https://via.placeholder.com/150',
         }));
-
         setCartItems(processedItems);
       }
     } catch (error) {
@@ -160,32 +135,26 @@ const deleteItem = (id: string) => {
     }
   };
 
-
-
-
-
-
   useEffect(() => {
     fetchCartData();
   }, []);
- const handleClearCart = async () => {
-   try {
-     await AsyncStorage.removeItem('cartItems'); // Remove entire cart array
-     setCartItems([]); // Clear local state
-     Alert.alert('Success', 'Cart cleared!');
-   } catch (error) {
-     Alert.alert('Error', 'Failed to clear cart.');
-     console.error('Error clearing cart data:', error);
-   }
- };
 
+  const handleClearCart = async () => {
+    try {
+      await AsyncStorage.removeItem('cartItems');
+      setCartItems([]);
+      Alert.alert('Success', 'Cart cleared!');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to clear cart.');
+      console.error('Error clearing cart data:', error);
+    }
+  };
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View
-          style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+        <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
           <Entypo onPress={handleGoBack} name="cross" size={24} color="#000" />
           <Text style={styles.headerText}>Cart</Text>
         </View>
@@ -210,18 +179,13 @@ const deleteItem = (id: string) => {
           style={{width: 160, height: 50}}
         />
       </View>
-
-      {/* Cart Items or Empty Cart Message */}
       {cartItems.length > 0 ? (
         <>
-          {/* Cart Summary */}
           <View style={styles.cartSummary}>
             <Text style={styles.cartSummaryText}>
               Total Items ({getTotalItems()})
             </Text>
           </View>
-
-          {/* Cart Items */}
           <FlatList
             data={cartItems}
             keyExtractor={item => item.id}
@@ -234,8 +198,6 @@ const deleteItem = (id: string) => {
               />
             )}
           />
-
-          {/* Bill Details */}
           <View style={styles.billDetails}>
             <Text style={styles.billText}>Bill details</Text>
             <View style={styles.billRow}>
@@ -268,7 +230,6 @@ const deleteItem = (id: string) => {
               <Text style={styles.savings}>Your total savings</Text>
               <Text style={styles.savings}> ₹50</Text>
             </View>
-            {/* Bottom Image */}
             <Image
               source={{
                 uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/bottom.png',
@@ -277,8 +238,6 @@ const deleteItem = (id: string) => {
               resizeMode="cover"
             />
           </View>
-
-          {/* Checkout Button */}
           <TouchableOpacity
             onPress={() => navigation.navigate('Address')}
             style={styles.checkoutButton}>
@@ -417,7 +376,6 @@ const styles = StyleSheet.create({
     color: '#666',
     alignItems: 'center',
     justifyContent: 'center',
-    // width: '70%',
     display: 'flex',
   },
 });

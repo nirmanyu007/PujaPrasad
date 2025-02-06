@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet, Image, TouchableOpacity, Alert} from 'react-native';
 import {Swipeable} from 'react-native-gesture-handler';
-import AntDesign from 'react-native-vector-icons/AntDesign'
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 type CartBoxProps = {
   item: {
@@ -57,7 +57,7 @@ const CartBox: React.FC<CartBoxProps> = ({
       <View style={styles.cartItem}>
         <Image
           source={{
-            uri: item.image || 'https://via.placeholder.com/150', // Use item.image instead of item.imageUri
+            uri: item.image || 'https://via.placeholder.com/150',
           }}
           style={styles.itemImage}
         />
@@ -157,7 +157,6 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     color: '#FF0000',
-    // fontWeight: 'bold',
   },
 });
 

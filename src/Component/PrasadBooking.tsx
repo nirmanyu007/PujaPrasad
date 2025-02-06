@@ -29,7 +29,6 @@ const PrasadBooking = () => {
               <Text style={styles.statusSubText}>{prasad.statusSubText}</Text>
             </View>
           </View>
-
           {/* Prasad Details Section */}
           <View style={styles.detailsContainer}>
             <Text style={styles.prasadTitle}>{prasad.prasadTitle}</Text>
@@ -42,7 +41,6 @@ const PrasadBooking = () => {
               <Text style={styles.detailValue}>{prasad.quantity}</Text>
             </Text>
           </View>
-
           {/* Pricing and Action Section */}
           <View style={styles.actionContainer}>
             <Text style={styles.priceText}>{prasad.price}</Text>

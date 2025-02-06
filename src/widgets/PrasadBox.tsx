@@ -1,6 +1,5 @@
 import React from 'react';
 import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
-import {useNavigation, NavigationProp} from '@react-navigation/native';
 
 type PrasadBoxProps = {
   name: string;
@@ -20,7 +19,6 @@ const PrasadBox: React.FC<PrasadBoxProps> = ({
       <Image source={{uri: imageUri}} style={styles.mainImage} />
       <Text style={styles.name}>{name}</Text>
       <Text style={styles.priceText}>Starting from {price}</Text>
-
       <TouchableOpacity style={styles.button} onPress={onPress}>
         <Text style={styles.buttonText}>Get Prasad</Text>
       </TouchableOpacity>

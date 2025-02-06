@@ -45,8 +45,6 @@ const poojaTime = '10:00 AM';
  * be sure to pass them similarly in React Native.
  */
 
-// ------------------------------------------------------------------
-
 const PujaDetailPage = ({route}: {route: any}) => {
   // 1) Extract props from route.params
   const {packageName, price} = route.params;
@@ -60,14 +58,7 @@ const PujaDetailPage = ({route}: {route: any}) => {
   const [fullName6, setFullName6] = useState('');
 
   // 3) For jointFamilyPackage / vipPackage => dynamic array
-  const [bhaktaNames, setBhaktaNames] = useState<string[]>([
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-  ]);
+  const [bhaktaNames, setBhaktaNames] = useState<string[]>(['', '', '', '', '', '']);
   const [gotras, setGotras] = useState<string[]>(['', '', '', '', '', '']);
 
   // 4) Single gotra for simpler packages
@@ -98,7 +89,19 @@ const PujaDetailPage = ({route}: {route: any}) => {
   const [mobileNumberError, setMobileNumberError] = useState('');
   const [emailError, setEmailError] = useState('');
 
-  // 9) Additional items for your Bill
+  // 9) Shipping address error states
+  const [firstNameError, setFirstNameError] = useState('');
+  const [lastNameError, setLastNameError] = useState('');
+  const [address1Error, setAddress1Error] = useState('');
+  const [cityError, setCityError] = useState('');
+  const [stateValueError, setStateValueError] = useState('');
+  const [pincodeError, setPincodeError] = useState('');
+
+  // 10) Bhakta and Gotra error states
+  const [bhaktaNameError, setBhaktaNameError] = useState('');
+  const [gotraFieldError, setGotraFieldError] = useState('');
+
+  // 11) Additional items for your Bill
   const [additionalRows] = useState([
     // Example of extra charges or line items
     {
@@ -109,9 +112,8 @@ const PujaDetailPage = ({route}: {route: any}) => {
     {description: 'Brahman Bhoj', price: clickedServices.brahmanbhoj ? 350 : 0},
   ]);
 
-  // 10) Sum up total
-  const totalPrice =
-    price + additionalRows.reduce((acc, row) => acc + row.price, 0);
+  // 12) Sum up total
+  const totalPrice = price + additionalRows.reduce((acc, row) => acc + row.price, 0);
 
   const navigation = useNavigation();
 
@@ -122,7 +124,7 @@ const PujaDetailPage = ({route}: {route: any}) => {
   const validateForm = () => {
     let valid = true;
 
-    // Validate WhatsApp number
+    // Validate WhatsApp number (if needed elsewhere, otherwise this block can be commented out)
     if (!whatsAppNumber) {
       setWhatsAppNumberError('Enter WhatsApp number');
       valid = false;
@@ -133,7 +135,7 @@ const PujaDetailPage = ({route}: {route: any}) => {
       setWhatsAppNumberError('');
     }
 
-    // Validate Mobile number
+    // Validate Mobile number - now compulsory
     if (!mobileNumber) {
       setMobileNumberError('Enter mobile number');
       valid = false;
@@ -144,7 +146,7 @@ const PujaDetailPage = ({route}: {route: any}) => {
       setMobileNumberError('');
     }
 
-    // Validate Email (if required)
+    // Validate Email - now compulsory
     if (!email) {
       setEmailError('Enter email address');
       valid = false;
@@ -155,31 +157,78 @@ const PujaDetailPage = ({route}: {route: any}) => {
       setEmailError('');
     }
 
-    // Validate Address if Prasad is selected
+    // Validate Bhakta Names: At least one is compulsory.
+    if (packageName !== 'jointFamilyPackage' && packageName !== 'vipPackage') {
+      const rawNames =
+        packageName === 'familyBhogPackage'
+          ? [fullName1, fullName2, fullName3, fullName4, fullName5, fullName6]
+          : packageName === 'partnerPackage'
+          ? [fullName1, fullName2]
+          : [fullName1];
+      const finalBhaktaNames = rawNames.filter(n => n.trim() !== '');
+      if (finalBhaktaNames.length === 0) {
+        setBhaktaNameError('At least one bhakta name is required.');
+        valid = false;
+      } else {
+        setBhaktaNameError('');
+      }
+    } else {
+      // For jointFamilyPackage / vipPackage
+      if (bhaktaNames.filter(n => n.trim() !== '').length === 0) {
+        setBhaktaNameError('At least one bhakta name is required.');
+        valid = false;
+      } else {
+        setBhaktaNameError('');
+      }
+    }
+
+    // Validate Gotra: For non-joint packages, gotra is compulsory unless user checks "I don't know my gotra"
+    if (packageName !== 'jointFamilyPackage' && packageName !== 'vipPackage') {
+      if (!dontKnowGotra && gotra.trim() === '') {
+        setGotraFieldError("Gotra is required or check 'I don't know my gotra'.");
+        valid = false;
+      } else {
+        setGotraFieldError('');
+      }
+    }
+
+    // Validate Shipping Address if Prasad is selected (without alerts, using error messages)
     if (receivePrasad === 'yes') {
-      if (!firstName) {
-        Alert.alert('Validation Error', 'First name is required for Prasad.');
+      if (!firstName.trim()) {
+        setFirstNameError('First name is required for Prasad.');
         valid = false;
+      } else {
+        setFirstNameError('');
       }
-      if (!lastName) {
-        Alert.alert('Validation Error', 'Last name is required for Prasad.');
+      if (!lastName.trim()) {
+        setLastNameError('Last name is required for Prasad.');
         valid = false;
+      } else {
+        setLastNameError('');
       }
-      if (!address1) {
-        Alert.alert('Validation Error', 'Address is required for Prasad.');
+      if (!address1.trim()) {
+        setAddress1Error('Address is required for Prasad.');
         valid = false;
+      } else {
+        setAddress1Error('');
       }
-      if (!city) {
-        Alert.alert('Validation Error', 'City is required for Prasad.');
+      if (!city.trim()) {
+        setCityError('City is required for Prasad.');
         valid = false;
+      } else {
+        setCityError('');
       }
-      if (!stateValue) {
-        Alert.alert('Validation Error', 'State is required for Prasad.');
+      if (!stateValue.trim()) {
+        setStateValueError('State is required for Prasad.');
         valid = false;
+      } else {
+        setStateValueError('');
       }
-      if (!pincode || pincode.length !== 6 || isNaN(Number(pincode))) {
-        Alert.alert('Validation Error', 'Enter a valid 6-digit pincode.');
+      if (!pincode.trim() || pincode.length !== 6 || isNaN(Number(pincode))) {
+        setPincodeError('Enter a valid 6-digit pincode.');
         valid = false;
+      } else {
+        setPincodeError('');
       }
     }
 
@@ -190,40 +239,28 @@ const PujaDetailPage = ({route}: {route: any}) => {
   // Handle Payment (PhonePe)
   // -----------------------------
   const handlePayment = async () => {
-    if (!validateForm()) {
-      Alert.alert(
-        'Validation Error',
-        'Please fill in all required fields correctly.',
-      );
-      return;
-    }
+    // if (!validateForm()) {
+    //   Alert.alert('Validation Error', 'Please fill in all required fields correctly.');
+    //   return;
+    // }
     try {
       // 1) Build finalBhaktaNames
       let finalBhaktaNames: string[] = [];
-      if (
-        packageName === 'jointFamilyPackage' ||
-        packageName === 'vipPackage'
-      ) {
+      if (packageName === 'jointFamilyPackage' || packageName === 'vipPackage') {
         finalBhaktaNames = bhaktaNames.filter(n => n.trim() !== '');
       } else {
-        // single, partner, familyBhog
-        const rawNames = [
-          fullName1,
-          fullName2,
-          fullName3,
-          fullName4,
-          fullName5,
-          fullName6,
-        ];
+        const rawNames =
+          packageName === 'familyBhogPackage'
+            ? [fullName1, fullName2, fullName3, fullName4, fullName5, fullName6]
+            : packageName === 'partnerPackage'
+            ? [fullName1, fullName2]
+            : [fullName1];
         finalBhaktaNames = rawNames.filter(n => n.trim() !== '');
       }
 
       // 2) Build finalGotras
       let finalGotras: string[] = [];
-      if (
-        packageName === 'jointFamilyPackage' ||
-        packageName === 'vipPackage'
-      ) {
+      if (packageName === 'jointFamilyPackage' || packageName === 'vipPackage') {
         finalGotras = gotras.filter(g => g.trim() !== '');
       } else {
         if (!dontKnowGotra && gotra.trim() !== '') {
@@ -258,15 +295,15 @@ const PujaDetailPage = ({route}: {route: any}) => {
 
         // Prasad shipping
         isAddressSelected,
-        prasadStatus: 'pending', // or "yes" vs "no" based on your logic
+        prasadStatus: 'pending',
         address1: isAddressSelected ? address1 : '',
         address2: isAddressSelected ? address2 : '',
         city: isAddressSelected ? city : '',
         country: isAddressSelected ? country : '',
-        email: email, // always
+        email: email, // always send email
         firstname: isAddressSelected ? firstName : '',
         lastname: isAddressSelected ? lastName : '',
-        mobile: mobileNumber, // always
+        mobile: mobileNumber, // always send mobile number
         state: isAddressSelected ? stateValue : '',
         pincode: isAddressSelected ? parseInt(pincode, 10) || 0 : 0,
 
@@ -286,19 +323,21 @@ const PujaDetailPage = ({route}: {route: any}) => {
       const paymentRequest = {
         amount: totalPrice,
         merchantTransactionId,
-        merchantUserId: userDetails.user?._id, // or any unique user ID
+        merchantUserId: userDetails.user?._id,
         mobileNumber, // for phonepe
         bookingDetails,
       };
 
-      // 6) Call your backend to initiate phonepe
+      console.log(paymentRequest);
+
+      // 6) Call your backend to initiate phonepe using the updated API endpoint
       const response = await axios.post(
-        'http://192.168.1.30:5001/final-payment-phonepe',
+        'http://192.168.1.30:5001/final-payment-phonepe-app',
         paymentRequest,
       );
       if (response.data.paymentUrl) {
         // In a web browser, you'd do window.location.href = ...
-        // In React Native, we use Linking:
+        // In React Native, we use Linking to open the payment URL:
         Linking.openURL(response.data.paymentUrl);
       } else {
         Alert.alert('Error', 'Error initiating payment.');
@@ -336,16 +375,12 @@ const PujaDetailPage = ({route}: {route: any}) => {
       <ScrollView contentContainerStyle={styles.container}>
         {/* Heading + Back Arrow */}
         <View style={styles.headingRow}>
-          <AntDesign
-            onPress={handleGoBack}
-            name="arrowleft"
-            size={23}
-            color="black"
-          />
+          <AntDesign onPress={handleGoBack} name="arrowleft" size={23} color="black" />
           <Text style={styles.heading}>Fill Your Details</Text>
         </View>
 
-        {/* WhatsApp Number */}
+        {/*
+        // Commented Out: Your WhatsApp Number section
         <Text style={styles.label}>Your WhatsApp Number</Text>
         <TextInput
           style={styles.input1}
@@ -365,15 +400,14 @@ const PujaDetailPage = ({route}: {route: any}) => {
           }}>
           <Icon name="whatsapp" color="green" size={20} />
           <Text style={styles.note}>
-            Vedic Vaibhav team will contact you on WhatsApp. Please provide your
-            WhatsApp number.
+            Vedic Vaibhav team will contact you on WhatsApp. Please provide your WhatsApp number.
           </Text>
         </View>
         <View style={styles.separator} />
+        */}
 
         {/* Dynamic Bhakta Names */}
-        {packageName !== 'jointFamilyPackage' &&
-        packageName !== 'vipPackage' ? (
+        {packageName !== 'jointFamilyPackage' && packageName !== 'vipPackage' ? (
           <>
             <Text style={styles.sectionTitle}>Fill the name of the Bhakta</Text>
             <Text style={styles.sectionNote}>
@@ -392,8 +426,7 @@ const PujaDetailPage = ({route}: {route: any}) => {
                   onChangeText={setFullName1}
                 />
                 {/* partner/familyBhog => Bhakta Name 2 */}
-                {(packageName === 'partnerPackage' ||
-                  packageName === 'familyBhogPackage') && (
+                {(packageName === 'partnerPackage' || packageName === 'familyBhogPackage') && (
                   <TextInput
                     style={styles.input}
                     placeholder="Bhakta Name 2"
@@ -401,7 +434,7 @@ const PujaDetailPage = ({route}: {route: any}) => {
                     onChangeText={setFullName2}
                   />
                 )}
-                {/* familyBhog => 3..6 */}
+                {/* familyBhog => Bhakta Name 3 to 6 */}
                 {packageName === 'familyBhogPackage' && (
                   <>
                     <TextInput
@@ -432,13 +465,12 @@ const PujaDetailPage = ({route}: {route: any}) => {
                 )}
               </>
             )}
+            {bhaktaNameError ? <Text style={styles.errorText}>{bhaktaNameError}</Text> : null}
           </>
         ) : (
           // Joint Family or VIP => dynamic array of bhaktaNames
           <>
-            <Text style={styles.sectionTitle}>
-              Fill the Names of the Bhakta
-            </Text>
+            <Text style={styles.sectionTitle}>Fill the Names of the Bhakta</Text>
             <Text style={styles.sectionNote}>
               Please enter the names of all Bhaktas participating in the puja.
             </Text>
@@ -456,18 +488,15 @@ const PujaDetailPage = ({route}: {route: any}) => {
                   }}
                 />
                 {index >= 6 && (
-                  <TouchableOpacity
-                    onPress={() => handleRemoveBhakta(index)}
-                    style={styles.removeBtn}>
+                  <TouchableOpacity onPress={() => handleRemoveBhakta(index)} style={styles.removeBtn}>
                     <Text style={{color: 'white'}}>X</Text>
                   </TouchableOpacity>
                 )}
               </View>
             ))}
+            {bhaktaNameError ? <Text style={styles.errorText}>{bhaktaNameError}</Text> : null}
             {bhaktaNames.length < 15 && (
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={handleAddBhakta}>
+              <TouchableOpacity style={styles.addButton} onPress={handleAddBhakta}>
                 <Text style={styles.addButtonText}>+ Add More</Text>
               </TouchableOpacity>
             )}
@@ -475,8 +504,7 @@ const PujaDetailPage = ({route}: {route: any}) => {
         )}
 
         {/* Gotra */}
-        {packageName !== 'jointFamilyPackage' &&
-        packageName !== 'vipPackage' ? (
+        {packageName !== 'jointFamilyPackage' && packageName !== 'vipPackage' ? (
           <>
             <Text style={styles.sectionTitle}>Fill the Gotra</Text>
             <Text style={styles.sectionNote}>
@@ -489,6 +517,7 @@ const PujaDetailPage = ({route}: {route: any}) => {
               onChangeText={setGotra}
               editable={!dontKnowGotra}
             />
+            {gotraFieldError ? <Text style={styles.errorText}>{gotraFieldError}</Text> : null}
             <TouchableOpacity
               style={styles.checkboxContainer}
               onPress={() => setDontKnowGotra(!dontKnowGotra)}>
@@ -523,36 +552,20 @@ const PujaDetailPage = ({route}: {route: any}) => {
         )}
 
         <View style={styles.separator} />
-        <Text style={styles.label}>
-          Would you like to receive the Prasad box?
-        </Text>
+        <Text style={styles.label}>Would you like to receive the Prasad box?</Text>
         <View style={styles.toggleContainer}>
           <TouchableOpacity
-            style={[
-              styles.toggleButton,
-              receivePrasad === 'yes' && styles.activeToggleButton,
-            ]}
+            style={[styles.toggleButton, receivePrasad === 'yes' && styles.activeToggleButton]}
             onPress={() => setReceivePrasad('yes')}>
-            <Text
-              style={[
-                styles.toggleText,
-                receivePrasad === 'yes' && styles.activeToggleText,
-              ]}>
+            <Text style={[styles.toggleText, receivePrasad === 'yes' && styles.activeToggleText]}>
               Yes
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.toggleButton,
-              receivePrasad === 'no' && styles.activeToggleButton,
-            ]}
+            style={[styles.toggleButton, receivePrasad === 'no' && styles.activeToggleButton]}
             onPress={() => setReceivePrasad('no')}>
-            <Text
-              style={[
-                styles.toggleText,
-                receivePrasad === 'no' && styles.activeToggleText,
-              ]}>
+            <Text style={[styles.toggleText, receivePrasad === 'no' && styles.activeToggleText]}>
               No
             </Text>
           </TouchableOpacity>
@@ -574,18 +587,21 @@ const PujaDetailPage = ({route}: {route: any}) => {
               value={firstName}
               onChangeText={setFirstName}
             />
+            {firstNameError ? <Text style={styles.errorText}>{firstNameError}</Text> : null}
             <TextInput
               style={styles.input}
               placeholder="Last Name"
               value={lastName}
               onChangeText={setLastName}
             />
+            {lastNameError ? <Text style={styles.errorText}>{lastNameError}</Text> : null}
             <TextInput
               style={styles.input}
               placeholder="Address 1"
               value={address1}
               onChangeText={setAddress1}
             />
+            {address1Error ? <Text style={styles.errorText}>{address1Error}</Text> : null}
             <TextInput
               style={styles.input}
               placeholder="Address 2"
@@ -599,18 +615,21 @@ const PujaDetailPage = ({route}: {route: any}) => {
               onChangeText={setPincode}
               keyboardType="numeric"
             />
+            {pincodeError ? <Text style={styles.errorText}>{pincodeError}</Text> : null}
             <TextInput
               style={styles.input}
               placeholder="City"
               value={city}
               onChangeText={setCity}
             />
+            {cityError ? <Text style={styles.errorText}>{cityError}</Text> : null}
             <TextInput
               style={styles.input}
               placeholder="State"
               value={stateValue}
               onChangeText={setStateValue}
             />
+            {stateValueError ? <Text style={styles.errorText}>{stateValueError}</Text> : null}
             <TextInput
               style={styles.input}
               placeholder="Country"
@@ -637,9 +656,7 @@ const PujaDetailPage = ({route}: {route: any}) => {
               <View style={styles.checkbox}>
                 {confirmAddress && <View style={styles.checkboxTick} />}
               </View>
-              <Text style={styles.checkboxLabel}>
-                Confirm Your Delivery Address
-              </Text>
+              <Text style={styles.checkboxLabel}>Confirm Your Delivery Address</Text>
             </TouchableOpacity>
           </>
         ) : (
@@ -655,9 +672,7 @@ const PujaDetailPage = ({route}: {route: any}) => {
               onChangeText={setEmail}
               keyboardType="email-address"
             />
-            {emailError ? (
-              <Text style={styles.errorText}>{emailError}</Text>
-            ) : null}
+            {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
             <TextInput
               style={styles.input}
               placeholder="Enter Mobile Number"
@@ -665,9 +680,7 @@ const PujaDetailPage = ({route}: {route: any}) => {
               onChangeText={setMobileNumber}
               keyboardType="phone-pad"
             />
-            {mobileNumberError ? (
-              <Text style={styles.errorText}>{mobileNumberError}</Text>
-            ) : null}
+            {mobileNumberError ? <Text style={styles.errorText}>{mobileNumberError}</Text> : null}
           </>
         )}
 
@@ -694,14 +707,11 @@ const PujaDetailPage = ({route}: {route: any}) => {
         <View style={styles.billDivider} />
         <View style={styles.billRow}>
           <Text style={[styles.billLabel, {fontWeight: 'bold'}]}>Total</Text>
-          <Text style={[styles.billValue, {fontWeight: 'bold'}]}>
-            ₹ {totalPrice}
-          </Text>
+          <Text style={[styles.billValue, {fontWeight: 'bold'}]}>₹ {totalPrice}</Text>
         </View>
 
         {/* Payment button */}
         <TouchableOpacity style={styles.paymentButton} onPress={handlePayment}>
-          {/* <Text style={styles.paymentButtonText}>Pay Now ₹ {totalPrice}</Text> */}
           <Text style={styles.paymentButtonText}>Make Payment</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -760,7 +770,6 @@ const styles = StyleSheet.create({
   note: {
     fontSize: 12,
     color: '#555',
-    // marginBottom: 16,
     paddingLeft: 5,
   },
   noteContainer: {
@@ -793,7 +802,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   toggleButton: {
-    // flex: 1,
     width: 62,
     borderWidth: 1,
     borderColor: '#ccc',
@@ -804,17 +812,16 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   toggleText: {
-    color: 'black', // Default text color for inactive buttons
+    color: 'black',
   },
   activeToggleText: {
-    color: 'white', // Text color when active
+    color: 'white',
   },
   activeToggleButton: {
     backgroundColor: '#FF6505',
     borderColor: '#FF6505',
     color: 'white',
   },
-
   paymentButton: {
     backgroundColor: '#00BD68',
     borderRadius: 80,
