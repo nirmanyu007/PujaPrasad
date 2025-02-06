@@ -1,8 +1,9 @@
 // src/components/GoogleAuth.tsx
-import React, { useState } from 'react';
-import { View, Pressable, Text, ActivityIndicator } from 'react-native';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { useNavigation } from '@react-navigation/native';
+import React, {useState} from 'react';
+import {View, Pressable, Text, ActivityIndicator} from 'react-native';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import {useNavigation} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Configure Google Sign-In
 GoogleSignin.configure({
@@ -24,10 +25,19 @@ type GoogleSignInResponse = {
   };
 };
 
+type GoogleAuthProps = {
+  onSignIn: (user: {name?: string; photo?: string; email?: string}) => void;
+  onSignOut: () => void;
+  isSignedIn: boolean;
+};
+
 // Mock API (for demonstration)
 const authAPI = {
-  validateToken: async (data: { token: string; email: string; }): Promise<{ data: any }> => {
-    return Promise.resolve({ data: { success: true } });
+  validateToken: async (data: {
+    token: string;
+    email: string;
+  }): Promise<{data: any}> => {
+    return Promise.resolve({data: {success: true}});
   },
 };
 
@@ -64,9 +74,31 @@ const GoogleLogin = async (): Promise<GoogleSignInResponse | null> => {
   }
 };
 
-const GoogleAuth: React.FC = () => {
+const GoogleAuth: React.FC<GoogleAuthProps> = ({
+  onSignIn,
+  onSignOut,
+  isSignedIn,
+}) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const saveToLocalStorage = async (key: string, value: any) => {
+    try {
+      await AsyncStorage.setItem(key, JSON.stringify(value));
+      console.log('Data saved to local storage:', key, value);
+    } catch (e) {
+      console.error('Error saving data to local storage:', e);
+    }
+  };
+
+  const removeFromLocalStorage = async (key: string) => {
+    try {
+      await AsyncStorage.removeItem(key);
+      console.log('Data removed from local storage:', key);
+    } catch (e) {
+      console.error('Error removing data from local storage:', e);
+    }
+  };
 
   const handlePostLoginData = async (data: any) => {
     console.log('Post Login Data:', data);
@@ -81,10 +113,22 @@ const GoogleAuth: React.FC = () => {
       const response = await GoogleLogin();
 
       if (response) {
-        const { idToken, user } = response;
+        const {idToken, user} = response;
 
         if (idToken && user.email) {
           console.log('Google Sign-In Successful:', user);
+          // Pass user details to the parent component
+          onSignIn({
+            name: user.name,
+            photo: user.photo,
+            email: user.email,
+          });
+          // Save user details to local storage
+          await saveToLocalStorage('user', {
+            name: user.name,
+            photo: user.photo,
+            email: user.email,
+          });
 
           const apiResponse = await authAPI.validateToken({
             token: idToken,
@@ -107,19 +151,49 @@ const GoogleAuth: React.FC = () => {
     }
   };
 
+  const handleGoogleLogout = async () => {
+    try {
+      await GoogleSignin.signOut();
+      // Remove user details from local storage
+      await removeFromLocalStorage('user');
+      onSignOut();
+    } catch (error) {
+      console.error('Logout Error:', error);
+      setError('An error occurred during logout');
+    }
+  };
+
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Pressable
-        onPress={handleGoogleLogin}
-        style={{
-          backgroundColor: '#4285F4',
-          padding: 10,
-          borderRadius: 5,
-        }}>
-        <Text style={{ color: '#fff' }}>Continue with Google</Text>
-      </Pressable>
+    <View
+      style={{
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingTop: '2%',
+      }}>
+      {isSignedIn ? (
+        <Pressable
+          onPress={handleGoogleLogout}
+          style={{
+            backgroundColor: '#d9534f',
+            padding: 10,
+            width: '50%',
+            borderRadius: 5,
+          }}>
+          <Text style={{color: '#fff', textAlign: 'center'}}>Log Out</Text>
+        </Pressable>
+      ) : (
+        <Pressable
+          onPress={handleGoogleLogin}
+          style={{
+            backgroundColor: '#4285F4',
+            padding: 10,
+            borderRadius: 5,
+          }}>
+          <Text style={{color: '#fff'}}>Sign In with Google</Text>
+        </Pressable>
+      )}
       {loading && <ActivityIndicator size="large" color="#4285F4" />}
-      {error && <Text style={{ color: 'red', marginTop: 10 }}>{error}</Text>}
+      {error && <Text style={{color: 'red', marginTop: 10}}>{error}</Text>}
     </View>
   );
 };

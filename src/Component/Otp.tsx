@@ -22,53 +22,6 @@ const Otp = () => {
       navigation.navigate('TabNavigator'); // Navigate to TabNavigator when Get OTP is clicked
     };
   return (
-    // <ImageBackground
-    //   source={{
-    //     uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/otppp.png',
-    //   }} // Replace with the actual image URL
-    //   style={styles.backgroundImage}
-    //   resizeMode="stretch">
-    //   <View
-    //     style={{
-    //       flexDirection: 'row',
-    //       display: 'flex',
-    //       alignItems: 'center',
-    //       paddingTop: 25,
-    //       paddingLeft: 15,
-    //     }}>
-    //     <Image
-    //       source={{
-    //         uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/HomePage/logoontop.png',
-    //       }}
-    //       style={{width: 25, height: 40}}
-    //     />
-    //     <Text style={styles.logo}>Vedic Vaibhav</Text>
-    //   </View>
-    //   <View>
-    //     <View style={styles.inputContainer}>
-    //       <Text style={styles.label}>Enter Phone Number</Text>
-    //       <View style={styles.phoneInputContainer}>
-    //         <Text style={styles.countryCode}>+91</Text>
-    //         <TextInput
-    //           style={styles.phoneInput}
-    //           placeholder="Enter Phone Number"
-    //           keyboardType="phone-pad"
-    //         />
-    //       </View>
-    //     </View>
-
-    //     <TouchableOpacity style={styles.button} onPress={handleOtpSubmit}>
-    //       <Text style={styles.buttonText}>Get OTP</Text>
-    //     </TouchableOpacity>
-    //   </View>
-
-    //   <Text style={styles.footerText}>
-    //     By signing in, you agree to our{' '}
-    //     <Text style={styles.link}>Terms of Use</Text>,{' '}
-    //     <Text style={styles.link}>Privacy Policy</Text>, and{' '}
-    //     <Text style={styles.link}>Content Policy</Text>.
-    //   </Text>
-    // </ImageBackground>
     <View>
       <View style={{position: 'relative'}}>
         <Image
@@ -118,7 +71,7 @@ const Otp = () => {
             </View>
             <View>
               <Text style={{fontSize: 18, fontWeight: 600, color: '#FF8901'}}>
-                Sign in with Google and get started!
+                वेद वैभवं वन्दे, शाश्वतं सनातनं।
               </Text>
             </View>
 
@@ -138,7 +91,7 @@ const Otp = () => {
                     color: 'white',
                     paddingVertical: '3%',
                   }}>
-                  Google SignIn
+                  Get Started
                 </Text>
               </TouchableOpacity>
             </View>

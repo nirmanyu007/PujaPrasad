@@ -3,7 +3,7 @@ import React from 'react';
 import Antdesign from 'react-native-vector-icons/AntDesign';
 import {DrawerNavigationProp} from '@react-navigation/drawer';
 import {DrawerParamList} from '../../App';
-import {useNavigation} from '@react-navigation/native';
+import {DrawerActions, useNavigation} from '@react-navigation/native';
 
 type PujaNavbarProps = {
   title: string;
@@ -34,7 +34,10 @@ const PujaNavbar : React.FC<PujaNavbarProps> = ({title}) => {
             shadowRadius: 4, // Blur radius
             elevation: 4, // For Android
           }}
-          onPress={() => navigation.openDrawer()}>
+          onPress={() => {
+            // Dispatch directly without getParent()
+            navigation.dispatch(DrawerActions.openDrawer());
+          }}>
           <Antdesign name="bars" size={30} color="#666161" />
         </TouchableOpacity>
         <View style={{display: 'flex', alignItems: 'center'}}>
