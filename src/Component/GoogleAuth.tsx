@@ -1,11 +1,12 @@
 // src/components/GoogleAuth.tsx
-import React, {useState} from 'react';
-import {View, Pressable, Text, ActivityIndicator} from 'react-native';
-import {GoogleSignin} from '@react-native-google-signin/google-signin';
-import {useNavigation} from '@react-navigation/native';
+import React, { useState } from 'react';
+import { View, Pressable, Text, ActivityIndicator, Platform } from 'react-native';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
-// Configure Google Sign-In
+// Configure Google Sign-In (replace the dummy IDs with your actual ones)
 GoogleSignin.configure({
   webClientId:
     '343094080461-5juvar4uilbdecd8t261ifr8qj24nk04.apps.googleusercontent.com', // Web Client ID
@@ -14,7 +15,7 @@ GoogleSignin.configure({
   scopes: ['profile', 'email'],
 });
 
-// Custom type for Google Sign-In response
+// Define the response type from GoogleSignIn
 type GoogleSignInResponse = {
   idToken: string;
   user: {
@@ -22,32 +23,22 @@ type GoogleSignInResponse = {
     name?: string;
     photo?: string;
     id?: string;
+    _id?:string;
   };
 };
 
 type GoogleAuthProps = {
-  onSignIn: (user: {name?: string; photo?: string; email?: string}) => void;
+  onSignIn: (user: { name?: string; photo?: string; email?: string }) => void;
   onSignOut: () => void;
   isSignedIn: boolean;
-};
-
-// Mock API (for demonstration)
-const authAPI = {
-  validateToken: async (data: {
-    token: string;
-    email: string;
-  }): Promise<{data: any}> => {
-    return Promise.resolve({data: {success: true}});
-  },
 };
 
 const GoogleLogin = async (): Promise<GoogleSignInResponse | null> => {
   try {
     await GoogleSignin.hasPlayServices();
     const userInfo = await GoogleSignin.signIn();
-    console.log('Google Sign-In Raw Response:', userInfo); // Debugging Log
-
-    // The response from signIn() now has a "data" property containing the token and user info
+    console.log('Google Sign-In Raw Response:', userInfo);
+    // Adjust based on your version; here we assume the token is in userInfo.data
     if (
       userInfo &&
       userInfo.data &&
@@ -74,13 +65,10 @@ const GoogleLogin = async (): Promise<GoogleSignInResponse | null> => {
   }
 };
 
-const GoogleAuth: React.FC<GoogleAuthProps> = ({
-  onSignIn,
-  onSignOut,
-  isSignedIn,
-}) => {
+const GoogleAuth: React.FC<GoogleAuthProps> = ({ onSignIn, onSignOut, isSignedIn }) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const navigation = useNavigation();
 
   const saveToLocalStorage = async (key: string, value: any) => {
     try {
@@ -102,40 +90,38 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({
 
   const handlePostLoginData = async (data: any) => {
     console.log('Post Login Data:', data);
-    // Handle post-login behavior (e.g., navigation, storing token, etc.)
+    // You can navigate or perform further actions here
   };
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError(null);
-
     try {
       const response = await GoogleLogin();
-
       if (response) {
-        const {idToken, user} = response;
-
+        const { idToken, user } = response;
         if (idToken && user.email) {
           console.log('Google Sign-In Successful:', user);
-          // Pass user details to the parent component
+          // Call the updated API endpoint
+          const apiResponse = await axios.post(
+            "http://192.168.1.7:5001/google-login-for-pooja-aap",
+            { idToken }
+          );
+          console.log('API Response:', apiResponse.data);
+          // If API returns a token and user data, then proceed
           onSignIn({
             name: user.name,
             photo: user.photo,
             email: user.email,
           });
-          // Save user details to local storage
+          // Save the user details and JWT token in AsyncStorage
           await saveToLocalStorage('user', {
             name: user.name,
             photo: user.photo,
             email: user.email,
+            userId: apiResponse.data.user._id
           });
-
-          const apiResponse = await authAPI.validateToken({
-            token: idToken,
-            email: user.email,
-          });
-
-          console.log('API Response:', apiResponse.data);
+          await saveToLocalStorage('jwtToken', apiResponse.data.token);
           await handlePostLoginData(apiResponse.data);
         } else {
           setError('Missing user email or idToken');
@@ -154,7 +140,6 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({
   const handleGoogleLogout = async () => {
     try {
       await GoogleSignin.signOut();
-      // Remove user details from local storage
       await removeFromLocalStorage('user');
       onSignOut();
     } catch (error) {
@@ -164,12 +149,7 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({
   };
 
   return (
-    <View
-      style={{
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingTop: '2%',
-      }}>
+    <View style={{ justifyContent: 'center', alignItems: 'center', paddingTop: '2%' }}>
       {isSignedIn ? (
         <Pressable
           onPress={handleGoogleLogout}
@@ -179,7 +159,7 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({
             width: '50%',
             borderRadius: 5,
           }}>
-          <Text style={{color: '#fff', textAlign: 'center'}}>Log Out</Text>
+          <Text style={{ color: '#fff', textAlign: 'center' }}>Log Out</Text>
         </Pressable>
       ) : (
         <Pressable
@@ -189,11 +169,11 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({
             padding: 10,
             borderRadius: 5,
           }}>
-          <Text style={{color: '#fff'}}>Sign In with Google</Text>
+          <Text style={{ color: '#fff' }}>Sign In with Google</Text>
         </Pressable>
       )}
       {loading && <ActivityIndicator size="large" color="#4285F4" />}
-      {error && <Text style={{color: 'red', marginTop: 10}}>{error}</Text>}
+      {error && <Text style={{ color: 'red', marginTop: 10 }}>{error}</Text>}
     </View>
   );
 };

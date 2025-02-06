@@ -6,11 +6,14 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 type CartBoxProps = {
   item: {
     id: string;
-    title: string;
-    description: string;
-    price: number | string;
+    prasad: any;
+    selectedPackage: {
+      id: string;
+      title: string;
+      price: number;
+      description: string;
+    };
     quantity: number;
-    image: string;
   };
   incrementQuantity: (id: string) => void;
   decrementQuantity: (id: string) => void;
@@ -23,15 +26,6 @@ const CartBox: React.FC<CartBoxProps> = ({
   decrementQuantity,
   deleteItem,
 }) => {
-  const parsePrice = (price: number | string): number => {
-    if (!price) return 0;
-    return typeof price === 'number'
-      ? price
-      : parseFloat(price.replace(/[^0-9.]/g, '')) || 0;
-  };
-
-  const totalPrice = parsePrice(item.price) * item.quantity || 0;
-
   const renderRightActions = () => {
     return (
       <TouchableOpacity
@@ -39,7 +33,7 @@ const CartBox: React.FC<CartBoxProps> = ({
         onPress={() => {
           Alert.alert(
             'Confirm Delete',
-            `Are you sure you want to remove ${item.title}?`,
+            `Are you sure you want to remove ${item.prasad.nameEnglish} - ${item.selectedPackage.title}?`,
             [
               {text: 'Cancel', style: 'cancel'},
               {text: 'Delete', onPress: () => deleteItem(item.id)},
@@ -52,20 +46,21 @@ const CartBox: React.FC<CartBoxProps> = ({
     );
   };
 
+  // For display, use the realtime prasad data and selected package details.
+  const templeName = item.prasad.nameEnglish;
+  const packageTitle = item.selectedPackage.title;
+  const packagePrice = item.selectedPackage.price;
+  const imageUri = item.prasad.prasadCardImage || (item.prasad.images && item.prasad.images[0]) || '';
+
+  const totalPrice = packagePrice * item.quantity;
+
   return (
     <Swipeable renderRightActions={renderRightActions}>
       <View style={styles.cartItem}>
-        <Image
-          source={{
-            uri: item.image || 'https://via.placeholder.com/150',
-          }}
-          style={styles.itemImage}
-        />
+        <Image source={{uri: imageUri}} style={styles.itemImage} />
         <View style={styles.itemDetails}>
-          <Text style={styles.itemTitle}>{item.title || 'Unknown Title'}</Text>
-          <Text style={styles.itemDescription}>
-            {item.description || 'No description available.'}
-          </Text>
+          <Text style={styles.itemTitle}>{templeName}</Text>
+          <Text style={styles.itemDescription}>{packageTitle}</Text>
           <View style={styles.quantityContainer}>
             <View style={styles.quantityWrapper}>
               <TouchableOpacity
@@ -76,9 +71,7 @@ const CartBox: React.FC<CartBoxProps> = ({
                 <Text style={styles.quantityText}>-</Text>
               </TouchableOpacity>
               <Text style={styles.quantity}>{item.quantity}</Text>
-              <TouchableOpacity
-                style={styles.quantityButton}
-                onPress={() => incrementQuantity(item.id)}>
+              <TouchableOpacity style={styles.quantityButton} onPress={() => incrementQuantity(item.id)}>
                 <Text style={styles.quantityText}>+</Text>
               </TouchableOpacity>
             </View>
@@ -107,12 +100,12 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   itemTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    color: 'rgba(0,0,0,0.7)',
+    color: '#000',
   },
   itemDescription: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#666',
     marginBottom: 8,
   },

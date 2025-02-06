@@ -39,8 +39,7 @@ type AddressDetailsType = {
 };
 
 const Address = () => {
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [modalVisible, setModalVisible] = useState(false);
   const [addresses, setAddresses] = useState<AddressDetailsType[]>([]);
   const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);
@@ -208,12 +207,11 @@ const Address = () => {
     }));
   };
 
-  // UPDATED: handleMakePayment now retrieves cart items, maps to prasadDeliveries,
-  // constructs the address object, logs the payload and calls the API.
+  // Updated handleMakePayment: retrieves cart items, maps to prasadDeliveries, builds address payload, logs payload, and calls API.
   const handleMakePayment = async () => {
     if (selectedAddressIndex !== null) {
       const selectedAddress = addresses[selectedAddressIndex];
-      // Retrieve cart items from AsyncStorage (assumed to be stored under 'cartItems')
+      // Retrieve cart items from AsyncStorage
       const storedCart = await AsyncStorage.getItem('cartItems');
       let cartItems = [];
       if (storedCart) cartItems = JSON.parse(storedCart);
@@ -221,38 +219,25 @@ const Address = () => {
         Alert.alert("No items in cart", "Please add prasad items to cart.");
         return;
       }
-      // Map cartItems to the required prasadDeliveries format.
-      // IMPORTANT: We now ensure that the mandirID is valid.
+      // Map cartItems to required prasadDeliveries format.
+      // Here each cart item already has a prasad object (with realtime data) and a selectedPackage.
       const prasadDeliveries = cartItems.map((item: any) => {
-        // Use item._id if available and valid (24 characters), otherwise check item.id.
-        let validMandirID = '';
-        if (item._id && typeof item._id === 'string' && item._id.length === 24) {
-          validMandirID = item._id;
-        } else if (item.id && typeof item.id === 'string' && item.id.length === 24) {
-          validMandirID = item.id;
-        } else {
-          // For testing purposes, assign a dummy valid ObjectId.
-          validMandirID = "000000000000000000000000";
-          console.warn(
-            "Invalid mandirID in cart item. Using dummy ObjectId. Item:",
-            item,
-          );
-        }
         return {
-          mandirID: validMandirID,
-          mandirName: item.title,
-          packageName: "Standard Package", // Customize if needed
-          prasadPrice:
-            typeof item.price === 'number'
-              ? item.price
-              : parseFloat(item.price.replace(/[^0-9.]/g, '')),
-          prasadCount: item.quantity,
+          mandirID: item.prasad._id, // use the realtime _id from prasad object
+          mandirName: item.prasad.nameEnglish,
+          packageName: item.selectedPackage.title,
+          prasadPrice: typeof item.selectedPackage.price === 'number'
+            ? item.selectedPackage.price
+            : parseFloat(item.selectedPackage.price.toString().replace(/[^0-9.]/g, '')),
+          prasadCount: item.quantity || 1,
           prasadStatus: "pending",
           statusDate: new Date(),
-          mandirImage: item.image,
+          mandirImage: item.prasad.prasadCardImage || item.prasad.images[0],
+          // You can pass additional realtime data if required
+          fullMandirData: item.prasad, // optional: complete realtime data
         };
       });
-      // Construct the final address object in the expected structure
+      // Build the final address in the expected structure
       const constructedAddress = {
         name: selectedAddress.name,
         address:
@@ -262,27 +247,30 @@ const Address = () => {
         city: selectedAddress.city,
         state: selectedAddress.state,
         country: "India",
-        email: "", // Add email if required
+        email: "", // add email if needed
         number: selectedAddress.phone,
         pinCode: Number(selectedAddress.pincode),
       };
-      const userID = "12345"; // Replace with actual userID from authentication
+      // Retrieve a dynamic userID if available; for now, we use a dummy value.
+      const storedUserID = await AsyncStorage.getItem('userID');
+      const userID = storedUserID || "12345"; // Replace with your real user id logic
+
       const payloadData = {
         userID,
         address: constructedAddress,
         prasadDeliveries,
-        sangamPrasadDelivery: [], // Empty since we are booking only prasad items
+        sangamPrasadDelivery: [],
       };
       console.log("Final payload data being sent to API:", payloadData);
       try {
         const response = await axios.post("http://192.168.1.7:5001/prasad-booking-for-app", payloadData);
-        if(response.data.paymentUrl){
+        if (response.data.paymentUrl) {
           // Open the payment gateway using the returned URL
           Linking.openURL(response.data.paymentUrl);
         } else {
           Alert.alert("Payment initiation failed", response.data.message || "Unknown error");
         }
-      } catch(error){
+      } catch (error) {
         console.error("Error in payment initiation:", error);
         Alert.alert("Error", "Failed to initiate payment.");
       }
@@ -300,12 +288,7 @@ const Address = () => {
           <>
             <View style={styles.header}>
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Entypo
-                  onPress={() => navigation.goBack()}
-                  name="cross"
-                  size={24}
-                  color="#000"
-                />
+                <Entypo onPress={() => navigation.goBack()} name="cross" size={24} color="#000" />
                 <Text style={styles.headerText}>Address</Text>
               </View>
               <TouchableOpacity style={{flexDirection: 'row'}} onPress={handleClearAddresses}>
@@ -331,19 +314,13 @@ const Address = () => {
                 />
               </View>
             )}
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={() => setModalVisible(true)}>
+            <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
               <Text style={styles.addButtonText}>Add New Address</Text>
             </TouchableOpacity>
           </>
         }
         renderItem={({item, index}) => (
-          <View
-            style={[
-              styles.addressCard,
-              selectedAddressIndex === index && styles.selectedAddressCard,
-            ]}>
+          <View style={[styles.addressCard, selectedAddressIndex === index && styles.selectedAddressCard]}>
             <View style={styles.addressHeader}>
               <Text style={styles.addressName}>
                 {item.name} | <Text style={styles.addressType}>{item.addressType}</Text>
@@ -365,15 +342,8 @@ const Address = () => {
               {item.city}, {item.state} {item.pincode}
             </Text>
             <Text style={styles.addressText}>Mobile: {item.phone}</Text>
-            <TouchableOpacity
-              style={styles.radioOption}
-              onPress={() => setSelectedAddressIndex(index)}>
-              <View
-                style={[
-                  styles.radioCircle,
-                  selectedAddressIndex === index && styles.radioSelected,
-                ]}
-              />
+            <TouchableOpacity style={styles.radioOption} onPress={() => setSelectedAddressIndex(index)}>
+              <View style={[styles.radioCircle, selectedAddressIndex === index && styles.radioSelected]} />
               <Text style={styles.radioLabel}>Deliver Here</Text>
             </TouchableOpacity>
           </View>
@@ -381,20 +351,13 @@ const Address = () => {
       />
       <View style={styles.bottomContainer}>
         <TouchableOpacity
-          style={[
-            styles.makePaymentButton,
-            selectedAddressIndex === null && styles.disabledButton,
-          ]}
+          style={[styles.makePaymentButton, selectedAddressIndex === null && styles.disabledButton]}
           onPress={handleMakePayment}
           disabled={selectedAddressIndex === null}>
           <Text style={styles.makePaymentText}>Make Payment</Text>
         </TouchableOpacity>
       </View>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}>
+      <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
@@ -406,96 +369,33 @@ const Address = () => {
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.modalForm}>
-              <TextInput
-                style={styles.input}
-                placeholder="Name"
-                value={addressDetails.name}
-                onChangeText={text => handleInputChange('name', text)}
-              />
+              <TextInput style={styles.input} placeholder="Name" value={addressDetails.name} onChangeText={text => handleInputChange('name', text)} />
               {errors.name ? <Text style={styles.errorText}>{errors.name}</Text> : null}
-              <TextInput
-                style={styles.input}
-                placeholder="Phone"
-                keyboardType="phone-pad"
-                value={addressDetails.phone}
-                onChangeText={text => handleInputChange('phone', text)}
-              />
+              <TextInput style={styles.input} placeholder="Phone" keyboardType="phone-pad" value={addressDetails.phone} onChangeText={text => handleInputChange('phone', text)} />
               {errors.phone ? <Text style={styles.errorText}>{errors.phone}</Text> : null}
-              <TextInput
-                style={styles.input}
-                placeholder="Address 1"
-                value={addressDetails.address1}
-                onChangeText={text => handleInputChange('address1', text)}
-              />
+              <TextInput style={styles.input} placeholder="Address 1" value={addressDetails.address1} onChangeText={text => handleInputChange('address1', text)} />
               {errors.address1 ? <Text style={styles.errorText}>{errors.address1}</Text> : null}
-              <TextInput
-                style={styles.input}
-                placeholder="Address 2 (Optional)"
-                value={addressDetails.address2}
-                onChangeText={text => handleInputChange('address2', text)}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Landmark (Optional)"
-                value={addressDetails.landmark}
-                onChangeText={text => handleInputChange('landmark', text)}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="State"
-                value={addressDetails.state}
-                onChangeText={text => handleInputChange('state', text)}
-              />
+              <TextInput style={styles.input} placeholder="Address 2 (Optional)" value={addressDetails.address2} onChangeText={text => handleInputChange('address2', text)} />
+              <TextInput style={styles.input} placeholder="Landmark (Optional)" value={addressDetails.landmark} onChangeText={text => handleInputChange('landmark', text)} />
+              <TextInput style={styles.input} placeholder="State" value={addressDetails.state} onChangeText={text => handleInputChange('state', text)} />
               {errors.state ? <Text style={styles.errorText}>{errors.state}</Text> : null}
               <View style={styles.row}>
-                <TextInput
-                  style={[styles.input, styles.halfInput]}
-                  placeholder="Pincode"
-                  keyboardType="numeric"
-                  value={addressDetails.pincode}
-                  onChangeText={text => handleInputChange('pincode', text)}
-                />
+                <TextInput style={[styles.input, styles.halfInput]} placeholder="Pincode" keyboardType="numeric" value={addressDetails.pincode} onChangeText={text => handleInputChange('pincode', text)} />
                 {errors.pincode ? <Text style={styles.errorText}>{errors.pincode}</Text> : null}
-                <TextInput
-                  style={[styles.input, styles.halfInput]}
-                  placeholder="City"
-                  value={addressDetails.city}
-                  onChangeText={text => handleInputChange('city', text)}
-                />
+                <TextInput style={[styles.input, styles.halfInput]} placeholder="City" value={addressDetails.city} onChangeText={text => handleInputChange('city', text)} />
                 {errors.city ? <Text style={styles.errorText}>{errors.city}</Text> : null}
               </View>
               <View style={styles.radioGroup}>
-                <TouchableOpacity
-                  style={styles.radioOption}
-                  onPress={() => handleInputChange('addressType', 'Home')}>
-                  <View
-                    style={[
-                      styles.radioCircle,
-                      addressDetails.addressType === 'Home' && styles.radioSelected,
-                    ]}
-                  />
+                <TouchableOpacity style={styles.radioOption} onPress={() => handleInputChange('addressType', 'Home')}>
+                  <View style={[styles.radioCircle, addressDetails.addressType === 'Home' && styles.radioSelected]} />
                   <Text style={styles.radioLabel}>Home</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.radioOption}
-                  onPress={() => handleInputChange('addressType', 'Work')}>
-                  <View
-                    style={[
-                      styles.radioCircle,
-                      addressDetails.addressType === 'Work' && styles.radioSelected,
-                    ]}
-                  />
+                <TouchableOpacity style={styles.radioOption} onPress={() => handleInputChange('addressType', 'Work')}>
+                  <View style={[styles.radioCircle, addressDetails.addressType === 'Work' && styles.radioSelected]} />
                   <Text style={styles.radioLabel}>Work</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.radioOption}
-                  onPress={() => handleInputChange('addressType', 'Other')}>
-                  <View
-                    style={[
-                      styles.radioCircle,
-                      addressDetails.addressType === 'Other' && styles.radioSelected,
-                    ]}
-                  />
+                <TouchableOpacity style={styles.radioOption} onPress={() => handleInputChange('addressType', 'Other')}>
+                  <View style={[styles.radioCircle, addressDetails.addressType === 'Other' && styles.radioSelected]} />
                   <Text style={styles.radioLabel}>Other</Text>
                 </TouchableOpacity>
               </View>
@@ -509,6 +409,8 @@ const Address = () => {
     </View>
   );
 };
+
+export default Address;
 
 const styles = StyleSheet.create({
   container: {
@@ -698,5 +600,3 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 });
-
-export default Address;

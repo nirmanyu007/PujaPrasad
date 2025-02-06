@@ -151,7 +151,7 @@ const PujaDetail = ({route}: {route: any}) => {
     const fetchPoojaAndTemple = async () => {
       try {
         // 1. Fetch all puja data
-        const res = await fetch(`http://192.168.1.30:5001/fetch-all-pooja`);
+        const res = await fetch(`http://192.168.1.7:5001/fetch-all-pooja`);
         const data = await res.json();
 
         // 2. Find the puja where p._id === id
@@ -175,7 +175,7 @@ const PujaDetail = ({route}: {route: any}) => {
 
         // 4. Fetch the temple data based on mandirId
         const templeRes = await fetch(
-          `http://192.168.1.30:5001/fetch-mandir-by-id/${mandirId}`,
+          `http://192.168.1.7:5001/fetch-mandir-by-id/${mandirId}`,
         );
         const templeJson = await templeRes.json();
         const rawPoojaDate = puja.mandirLists?.[0]?.poojaMandirDates?.[0];
@@ -199,7 +199,7 @@ const PujaDetail = ({route}: {route: any}) => {
     const fetchPujaDetails = async () => {
       try {
         const response = await fetch(
-          `http://192.168.1.30:5001/fetch-all-pooja`,
+          `http://192.168.1.7:5001/fetch-all-pooja`,
         );
         const data = await response.json();
         const selectedPuja = data.poojas.find((p: any) => p._id === pujaId);

@@ -1,44 +1,35 @@
-import {View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView} from 'react-native';
 import React, {useState} from 'react';
+import {View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView} from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {
-  useNavigation,
-  NavigationProp,
-  RouteProp,
-  useRoute,
-} from '@react-navigation/native';
+import {useNavigation, NavigationProp, RouteProp, useRoute} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 type StackParamList = {
   SelectPrasadPackage: {
+    prasad: any; // complete prasad object from API
     imageUri: string;
     templeName: string;
     prasadEntries: {price: number; description: string}[];
+    mandirId: string;
   };
   Cart: undefined;
 };
 
 const SelectPrasadPackage = () => {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
-   const [selectedDescription, setSelectedDescription] = useState<
-     string | null
-   >(null);
-const navigation = useNavigation<NavigationProp<StackParamList>>();
+  const [selectedDescription, setSelectedDescription] = useState<string | null>(null);
+  const navigation = useNavigation<NavigationProp<StackParamList>>();
+  const route = useRoute<RouteProp<StackParamList, 'SelectPrasadPackage'>>();
+  const {prasad, imageUri, templeName, prasadEntries, mandirId} = route.params;
 
-const route = useRoute<RouteProp<StackParamList, 'SelectPrasadPackage'>>();
+  const handleGoBack = () => {
+    navigation.goBack();
+  };
 
-const {imageUri, templeName, prasadEntries} = route.params;
-// console.log(description);
-
-
-   const handleGoBack = () => {
-     navigation.goBack(); // Navigate back to the previous screen
-   };
-
+  // Build package options from prasadEntries
   const packages = prasadEntries.map((entry, index) => ({
-    id: ['basic', 'standard', 'premium', 'deluxe'][index], // Assigning unique IDs
+    id: ['basic', 'standard', 'premium', 'deluxe'][index],
     title: [
       'Basic Package',
       'Standard Package',
@@ -47,28 +38,23 @@ const {imageUri, templeName, prasadEntries} = route.params;
     ][index],
     price: `₹ ${entry.price}/-`,
     description: [
-      `Perfect for individual offerings.\n` +
-        `Includes essential prasad items blessed at the temple.`,
-      `Includes all items in the Basic Package.\n` +
-        `Plus additional offerings like sweets and small puja items.`,
-      `A complete package for special blessings.\n` +
-        `Includes prasad, premium sweets, and extra temple offerings.`,
+      `Perfect for individual offerings.\nIncludes essential prasad items blessed at the temple.`,
+      `Includes all items in the Basic Package.\nPlus additional offerings like sweets and small puja items.`,
+      `A complete package for special blessings.\nIncludes prasad, premium sweets, and extra temple offerings.`,
       'The ultimate divine package! Experience the most sacred offerings, premium prasad, and a complete spiritual experience.',
-    ][index], // Unique static descriptions
+    ][index],
     fullDescription: entry.description,
   }));
 
   const packageColors = {
-    basic: '#4A0ABD', // Basic Package: Purple
-    standard: '#D60724', // Standard Package: Red
-    premium: '#1AA11F', // Premium Package: Green
-    deluxe: '#000000', // Deluxe Package: Default Black
+    basic: '#4A0ABD',
+    standard: '#D60724',
+    premium: '#1AA11F',
+    deluxe: '#000000',
   };
 
   const handlePress = (id: string) => {
     setSelectedPackage(id);
-
-    // Find the selected package description from prasadEntries
     const selectedPkg = packages.find(pkg => pkg.id === id);
     if (selectedPkg) {
       setSelectedDescription(selectedPkg.fullDescription);
@@ -77,88 +63,49 @@ const {imageUri, templeName, prasadEntries} = route.params;
     }
   };
 
-  
+  const handleAddToCart = async () => {
+    if (selectedPackage) {
+      const selectedPackageData = packages.find(pkg => pkg.id === selectedPackage);
+      if (selectedPackageData) {
+        try {
+          // Create a cart item with the realtime prasad data and the selected package.
+          const cartItem = {
+            id: prasad._id, // use realtime mandir _id
+            prasad: prasad, // complete realtime prasad object
+            selectedPackage: {
+              id: selectedPackageData.id,
+              title: selectedPackageData.title,
+              price: parseFloat(selectedPackageData.price.replace(/[^0-9.]/g, '')),
+              description: selectedPackageData.fullDescription,
+            },
+            quantity: 1,
+          };
 
-  
-
- const handleAddToCart = async () => {
-   if (selectedPackage) {
-     const selectedPackageData = packages.find(
-       pkg => pkg.id === selectedPackage,
-     );
-
-     if (selectedPackageData) {
-       try {
-         // New item to be added to the cart
-         const cartItem = {
-           id: new Date().getTime().toString(),
-           title: templeName, // Title of the temple
-           description: selectedPackageData.title, // Package title
-           price: parseFloat(selectedPackageData.price.replace(/[^0-9.]/g, '')), // Numeric price
-           quantity: 1, // Default quantity
-           image: imageUri || '', // Ensure this matches `CartItem.image`
-         };
-
-         const storedCart = await AsyncStorage.getItem('cartItems');
-         let cartArray = storedCart ? JSON.parse(storedCart) : [];
-         cartArray.push(cartItem);
-
-         await AsyncStorage.setItem('cartItems', JSON.stringify(cartArray));
-         Alert.alert('Success', 'Package added to cart!');
-       } catch (error) {
-         Alert.alert('Error', 'Failed to add package to cart.');
-         console.error('Error storing data in AsyncStorage:', error);
-       }
-     }
-   } else {
-     Alert.alert(
-       'No Package Selected',
-       'Please select a package before adding to the cart.',
-     );
-   }
- };
-
-
-
-
+          const storedCart = await AsyncStorage.getItem('cartItems');
+          let cartArray = storedCart ? JSON.parse(storedCart) : [];
+          cartArray.push(cartItem);
+          await AsyncStorage.setItem('cartItems', JSON.stringify(cartArray));
+          Alert.alert('Success', 'Package added to cart!');
+        } catch (error) {
+          Alert.alert('Error', 'Failed to add package to cart.');
+          console.error('Error storing data in AsyncStorage:', error);
+        }
+      }
+    } else {
+      Alert.alert('No Package Selected', 'Please select a package before adding to the cart.');
+    }
+  };
 
   return (
     <View style={styles.container}>
       <ScrollView>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingHorizontal: '2%',
-            // paddingVertical: '2%',
-            paddingBottom: '4%',
-          }}>
-          <AntDesign
-            onPress={handleGoBack}
-            name="arrowleft"
-            size={23}
-            color="black"
-          />
-          <Text
-            style={{
-              paddingLeft: '2%',
-              fontSize: 18,
-              color: 'black',
-              fontWeight: 600,
-            }}>
-            Select Prasad Package
-          </Text>
+        <View style={styles.headerRow}>
+          <AntDesign onPress={handleGoBack} name="arrowleft" size={23} color="black" />
+          <Text style={styles.headerText}>Select Prasad Package</Text>
         </View>
-        <View
-          style={{
-            backgroundColor: '#FFEFDD',
-            borderRadius: 15,
-            borderBottomWidth: 5,
-            borderBlockColor: '#FFC37E',
-          }}>
+        <View style={styles.packageWrapper}>
           <Text style={styles.header}>🌟 Choose Your Prasad Package 🌟</Text>
           <Text style={styles.subHeader}>Click to select package</Text>
-
           {packages.map(pkg => (
             <TouchableOpacity
               key={pkg.id}
@@ -167,31 +114,19 @@ const {imageUri, templeName, prasadEntries} = route.params;
                 selectedPackage === pkg.id && styles.selectedPackage,
               ]}
               onPress={() => handlePress(pkg.id)}>
-              <View
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
+              <View style={styles.packageRow}>
                 <Text
                   style={[
                     styles.packageTitle,
                     selectedPackage === pkg.id && styles.selectedTitle,
-                    {
-                      color:
-                        packageColors[pkg.id as keyof typeof packageColors],
-                    },
+                    {color: packageColors[pkg.id as keyof typeof packageColors]},
                   ]}>
                   {pkg.title}
                 </Text>
                 <Text
                   style={[
                     styles.packagePrice,
-                    {
-                      color:
-                        packageColors[pkg.id as keyof typeof packageColors],
-                    }, // Dynamic Price Color
+                    {color: packageColors[pkg.id as keyof typeof packageColors]},
                   ]}>
                   {pkg.price}
                 </Text>
@@ -199,12 +134,7 @@ const {imageUri, templeName, prasadEntries} = route.params;
               <View style={styles.descriptionContainer}>
                 {pkg.description.split('\n').map((line, index) => (
                   <View key={index} style={styles.descriptionRow}>
-                    <Icon
-                      name="cards-diamond"
-                      size={14}
-                      color="#FFA500"
-                      style={styles.icon}
-                    />
+                    <Icon name="cards-diamond" size={14} color="#FFA500" style={styles.icon} />
                     <Text style={styles.packageDescription}>{line}</Text>
                   </View>
                 ))}
@@ -212,35 +142,16 @@ const {imageUri, templeName, prasadEntries} = route.params;
             </TouchableOpacity>
           ))}
         </View>
-        <View>
-          <Text
-            style={{
-              color: 'black',
-              fontSize: 16,
-              fontWeight: '600',
-              paddingTop: 20,
-            }}>
-            Selected Package
-          </Text>
-          <Text
-            style={{
-              color: 'black',
-              fontSize: 13,
-              fontWeight: '600',
-              opacity: 0.5,
-              paddingTop: 2,
-            }}>
-            {selectedPackage || 'None'}
-          </Text>
+        <View style={styles.selectedSection}>
+          <Text style={styles.selectedLabel}>Selected Package</Text>
+          <Text style={styles.selectedValue}>{selectedPackage || 'None'}</Text>
           <Text style={styles.fullDescription}>
             {selectedDescription || 'No description available.'}
           </Text>
         </View>
       </ScrollView>
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.addToCartButton}
-          onPress={handleAddToCart}>
+        <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
           <Text style={styles.addToCartText}>Add to Cart</Text>
         </TouchableOpacity>
       </View>
@@ -248,23 +159,38 @@ const {imageUri, templeName, prasadEntries} = route.params;
   );
 };
 
+export default SelectPrasadPackage;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
     backgroundColor: '#fff',
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: '2%',
+    paddingBottom: '4%',
+  },
+  headerText: {
+    paddingLeft: '2%',
+    fontSize: 18,
+    color: 'black',
+    fontWeight: '600',
+  },
+  packageWrapper: {
+    backgroundColor: '#FFEFDD',
+    borderRadius: 15,
+    borderBottomWidth: 5,
+    borderColor: '#FFC37E',
+    paddingBottom: 10,
+  },
   header: {
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
     paddingTop: 10,
-  },
-  fullDescription: {
-    paddingTop: 2,
-    lineHeight: 25,
-    color: 'black',
-    fontSize: 14,
   },
   subHeader: {
     fontSize: 14,
@@ -278,33 +204,60 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginHorizontal: 16,
     marginBottom: 16,
-    // shadowColor: '#000',
-    // shadowOffset: {width: 0, height: 2},
-    // shadowOpacity: 0.1,
-    // shadowRadius: 4,
-    // elevation: 4,
   },
   selectedPackage: {
     backgroundColor: 'rgba(0, 0, 0, 0.2)',
+  },
+  packageRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   packageTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
   },
-  selectedTitle: {
-    // color: 'red',
-  },
+  selectedTitle: {},
   packagePrice: {
     fontSize: 14,
     fontWeight: 'bold',
     color: '#FF5733',
     marginVertical: 8,
   },
+  descriptionContainer: {},
+  descriptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  icon: {
+    marginRight: 6,
+  },
   packageDescription: {
     fontSize: 12,
     color: '#555',
-    // marginBottom: 10,
+  },
+  selectedSection: {
+    paddingTop: 20,
+  },
+  selectedLabel: {
+    color: 'black',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  selectedValue: {
+    color: 'black',
+    fontSize: 13,
+    fontWeight: '600',
+    opacity: 0.5,
+    paddingTop: 2,
+  },
+  fullDescription: {
+    paddingTop: 2,
+    lineHeight: 25,
+    color: 'black',
+    fontSize: 14,
   },
   footer: {
     position: 'absolute',
@@ -330,17 +283,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  descriptionContainer: {
-    // marginBottom: 10,
-  },
-  descriptionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4, // Space between each line
-  },
-  icon: {
-    marginRight: 6, // Space between icon and text
-  },
 });
-
-export default SelectPrasadPackage;

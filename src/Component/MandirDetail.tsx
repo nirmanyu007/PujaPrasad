@@ -42,7 +42,7 @@ const MandirDetail = () => {
     const fetchPujas = async () => {
       try {
         const response = await axios.get(
-          'http://192.168.1.30:5001/fetch-all-pooja',
+          'http://192.168.1.7:5001/fetch-all-pooja',
         );
         console.log('Pujas API Response:', response.data); // Debug API response
 

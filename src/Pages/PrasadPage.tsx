@@ -19,9 +19,11 @@ import axios from 'axios';
 type StackParamList = {
   Cart: undefined;
   SelectPrasadPackage: {
+    prasad: any; // the complete prasad data from API
     imageUri: string;
     templeName: string;
     prasadEntries: {price: number; description: string}[];
+    mandirId: string;
   };
 };
 
@@ -41,9 +43,9 @@ const PrasadPage = () => {
           `http://192.168.1.7:5001/fetch-active-mandirs`,
         );
         const data = response.data;
-        console.log(data);
+        console.log("Fetched mandir data:", data);
 
-        // Assuming the API returns an array of mandirs and we filter those with prasad available
+        // Filter mandirs that have prasad available
         const prasadMandirs = data.mandirs.filter(
           (mandir: any) => mandir.isPrasadAvailable,
         );
@@ -58,37 +60,13 @@ const PrasadPage = () => {
     fetchPrasadBoxes();
   }, []);
 
-  const storeData = async (name: string, imageUri: string) => {
-    try {
-      const prasad = {name, imageUri};
-      await AsyncStorage.setItem('selectedPrasad', JSON.stringify(prasad));
-      Alert.alert('Success', 'Prasad saved to local storage!');
-    } catch (error) {
-      console.error('Error saving data', error);
-      Alert.alert('Error', 'Failed to save Prasad to local storage.');
-    }
-  };
-
   return (
     <View style={{paddingHorizontal: 15}}>
       <PrasadNavbar />
-      <View
-        style={{
-          flexDirection: 'row',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingTop: '5%',
-          paddingHorizontal: 15,
-        }}>
+      <View style={styles.topBar}>
         <View style={styles.searchContainer}>
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <Icon
-              name="search"
-              size={24}
-              color="#FF8901"
-              style={styles.searchIcon}
-            />
+            <Icon name="search" size={24} color="#FF8901" style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search for Temple Name"
@@ -105,19 +83,8 @@ const PrasadPage = () => {
             />
           </View>
         </View>
-        <View
-          style={{
-            borderWidth: 1,
-            padding: 10,
-            borderRadius: 10,
-            marginLeft: 10,
-          }}>
-          <Iconn
-            name="shopping-cart"
-            size={24}
-            color="#000"
-            onPress={handleClick}
-          />
+        <View style={styles.cartIconContainer}>
+          <Iconn name="shopping-cart" size={24} color="#000" onPress={handleClick} />
         </View>
       </View>
       <View>
@@ -129,13 +96,16 @@ const PrasadPage = () => {
               <PrasadBox
                 key={prasad._id}
                 name={prasad.nameEnglish}
-                price={`₹${prasad.prasadPrice}/-`} // Use API Price
-                imageUri={prasad.prasadCardImage || prasad.images[0]} // Fallback Image
+                price={`₹${prasad.prasadPrice}/-`}
+                imageUri={prasad.prasadCardImage || prasad.images[0]}
                 onPress={() => {
+                  // Navigate to the SelectPrasadPackage screen, passing the entire prasad object.
                   navigation.navigate('SelectPrasadPackage', {
+                    prasad,
                     imageUri: prasad.prasadCardImage || prasad.images[0],
                     templeName: prasad.nameEnglish,
                     prasadEntries: prasad.prasadEntries,
+                    mandirId: prasad._id,
                   });
                 }}
               />
@@ -160,12 +130,13 @@ const PrasadPage = () => {
 export default PrasadPage;
 
 const styles = StyleSheet.create({
-  scrollContainer: {
-    paddingBottom: 250,
-  },
-  container: {
-    backgroundColor: '#fff',
+  topBar: {
+    flexDirection: 'row',
     display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: '5%',
+    paddingHorizontal: 15,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -189,6 +160,15 @@ const styles = StyleSheet.create({
   rightIcon: {
     width: 24,
     height: 24,
+  },
+  cartIconContainer: {
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 10,
+    marginLeft: 10,
+  },
+  scrollContainer: {
+    paddingBottom: 250,
   },
   loadingText: {
     textAlign: 'center',

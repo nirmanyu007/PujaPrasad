@@ -46,7 +46,7 @@ const Mandir = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `http://192.168.1.30:5001/fetch-active-mandirs`,
+          `http://192.168.1.7:5001/fetch-active-mandirs`,
         );
         setData(response.data);
         setFilteredData(response.data.mandirs);

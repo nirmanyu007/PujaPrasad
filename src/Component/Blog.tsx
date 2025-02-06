@@ -76,7 +76,7 @@ const Blog: React.FC = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch(`http://192.168.1.30:5001/fetch-blogs`);
+        const response = await fetch(`http://192.168.1.7:5001/fetch-blogs`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

@@ -332,7 +332,7 @@ const PujaDetailPage = ({route}: {route: any}) => {
 
       // 6) Call your backend to initiate phonepe using the updated API endpoint
       const response = await axios.post(
-        'http://192.168.1.30:5001/final-payment-phonepe-app',
+        'http://192.168.1.7:5001/final-payment-phonepe-app',
         paymentRequest,
       );
       if (response.data.paymentUrl) {

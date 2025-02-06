@@ -38,7 +38,7 @@ const DifferentMandir: React.FC<DifferentMandirProps> = ({currentMandirId}) => {
     const fetchMandirs = async () => {
       try {
         const response = await axios.get(
-          `http://192.168.1.30:5001/fetch-active-mandirs`,
+          `http://192.168.1.7:5001/fetch-active-mandirs`,
         );
         const allMandirs: Temple[] = response.data.mandirs || [];
 

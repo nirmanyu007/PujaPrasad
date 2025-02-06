@@ -20,12 +20,15 @@ import {
 } from '@react-navigation/native';
 
 type CartItem = {
-  id: string;
-  title: string;
-  description: string;
-  price: number | string;
+  id: string; // this will be the realtime mandirId
+  prasad: any; // the complete prasad object
+  selectedPackage: {
+    id: string;
+    title: string;
+    price: number;
+    description: string;
+  };
   quantity: number;
-  image: string;
 };
 
 type StackParamList = {
@@ -42,15 +45,7 @@ const Cart: React.FC = () => {
     navigation.goBack();
   };
 
-  const [cartItems, setCartItems] = useState<CartItem[]>(
-    initialCartItems.map(item => ({
-      ...item,
-      price:
-        typeof item.price === 'string'
-          ? parseFloat(item.price.replace(/[^0-9.]/g, ''))
-          : item.price,
-    })),
-  );
+  const [cartItems, setCartItems] = useState<CartItem[]>(initialCartItems);
 
   const incrementQuantity = (id: string) => {
     setCartItems(prevItems =>
@@ -66,27 +61,17 @@ const Cart: React.FC = () => {
         const itemToDecrement = prevItems.find(item => item.id === id);
         if (itemToDecrement && itemToDecrement.quantity === 1) {
           const updatedItems = prevItems.filter(item => item.id !== id);
-          if (updatedItems.length === 0) {
-            AsyncStorage.removeItem('cartItems')
-              .then(() => console.log('Cart cleared from AsyncStorage'))
-              .catch(error => console.error('Error clearing cart:', error));
-          } else {
-            AsyncStorage.setItem('cartItems', JSON.stringify(updatedItems))
-              .then(() => console.log('Cart updated in AsyncStorage'))
-              .catch(error =>
-                console.error('Error updating cart in storage:', error),
-              );
-          }
+          AsyncStorage.setItem('cartItems', JSON.stringify(updatedItems)).catch(error =>
+            console.error('Error updating cart in storage:', error),
+          );
           return updatedItems;
         } else {
           const updatedItems = prevItems.map(item =>
             item.id === id ? {...item, quantity: item.quantity - 1} : item,
           );
-          AsyncStorage.setItem('cartItems', JSON.stringify(updatedItems))
-            .then(() => console.log('Cart updated in AsyncStorage'))
-            .catch(error =>
-              console.error('Error updating cart in storage:', error),
-            );
+          AsyncStorage.setItem('cartItems', JSON.stringify(updatedItems)).catch(error =>
+            console.error('Error updating cart in storage:', error),
+          );
           return updatedItems;
         }
       });
@@ -101,10 +86,9 @@ const Cart: React.FC = () => {
 
   const getTotalAmount = () => {
     return cartItems.reduce((total, item) => {
-      const price =
-        typeof item.price === 'string'
-          ? parseFloat(item.price.replace(/[^0-9.]/g, ''))
-          : item.price || 0;
+      // You may decide whether to use prasadPrice or the package price or a sum.
+      // Here, we assume the price is from the selectedPackage.
+      const price = item.selectedPackage.price || 0;
       return total + price * (item.quantity || 1);
     }, 0);
   };
@@ -118,16 +102,7 @@ const Cart: React.FC = () => {
       const storedCartItems = await AsyncStorage.getItem('cartItems');
       if (storedCartItems) {
         const parsedItems: CartItem[] = JSON.parse(storedCartItems);
-        const processedItems: CartItem[] = parsedItems.map(item => ({
-          ...item,
-          price: item.price
-            ? typeof item.price === 'string'
-              ? parseFloat(item.price.replace(/[^0-9.]/g, ''))
-              : item.price
-            : 0,
-          image: item.image || 'https://via.placeholder.com/150',
-        }));
-        setCartItems(processedItems);
+        setCartItems(parsedItems);
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to load cart data.');
@@ -154,24 +129,18 @@ const Cart: React.FC = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
           <Entypo onPress={handleGoBack} name="cross" size={24} color="#000" />
           <Text style={styles.headerText}>Cart</Text>
         </View>
         <TouchableOpacity
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            backgroundColor: '#F1F1F1',
-            padding:5,
-            borderRadius:9
-          }}
+          style={styles.clearCartButton}
           onPress={handleClearCart}>
           <Antdesign name="shoppingcart" size={15} color="black" />
           <Text style={styles.clearButton}>Clear</Text>
         </TouchableOpacity>
       </View>
-      <View style={{alignItems: 'center', paddingVertical: '5%'}}>
+      <View style={styles.cartImageContainer}>
         <Image
           source={{
             uri: 'https://vedic-vaibhav.blr1.cdn.digitaloceanspaces.com/vedic-vaibhav/Puja-Prasad-App/Puja/cart_cart.png',
@@ -220,13 +189,7 @@ const Cart: React.FC = () => {
               <Text style={styles.billLabel}>Total Amount</Text>
               <Text style={styles.totalAmount}>₹{getTotalAmount()}</Text>
             </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                display: 'flex',
-                paddingHorizontal: '5%',
-              }}>
+            <View style={styles.savingsRow}>
               <Text style={styles.savings}>Your total savings</Text>
               <Text style={styles.savings}> ₹50</Text>
             </View>
@@ -247,7 +210,7 @@ const Cart: React.FC = () => {
       ) : (
         <View style={styles.emptyCart}>
           <Text style={styles.emptyCartText}>Your Cart is Empty!</Text>
-          <Text style={{paddingHorizontal: '15%', textAlign: 'center'}}>
+          <Text style={styles.emptyCartSubText}>
             Bring Divine Grace Home. Explore Prasad Options Now
           </Text>
         </View>
@@ -255,6 +218,8 @@ const Cart: React.FC = () => {
     </View>
   );
 };
+
+export default Cart;
 
 const styles = StyleSheet.create({
   container: {
@@ -275,10 +240,21 @@ const styles = StyleSheet.create({
     paddingLeft: '3%',
     color: 'black',
   },
+  clearCartButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F1F1',
+    padding: 5,
+    borderRadius: 9,
+  },
   clearButton: {
     fontSize: 14,
     color: 'black',
-    paddingLeft:5
+    paddingLeft: 5,
+  },
+  cartImageContainer: {
+    alignItems: 'center',
+    paddingVertical: '5%',
   },
   cartSummary: {
     paddingLeft: 16,
@@ -343,13 +319,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FF5733',
   },
+  savingsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: '5%',
+    marginTop: 8,
+    paddingBottom: 16,
+  },
   savings: {
     fontSize: 12,
     color: 'black',
-    marginTop: 8,
-    zIndex: 100,
-    paddingBottom: 16,
-    paddingLeft: '3%',
   },
   checkoutButton: {
     backgroundColor: '#00BD68',
@@ -368,16 +347,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
-    display: 'flex',
   },
   emptyCartText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#666',
-    alignItems: 'center',
-    justifyContent: 'center',
-    display: 'flex',
+    textAlign: 'center',
+  },
+  emptyCartSubText: {
+    paddingHorizontal: '15%',
+    textAlign: 'center',
   },
 });
-
-export default Cart;

@@ -381,7 +381,7 @@ const View_Puja_Booking = ({route}: {route: any}) => {
   useEffect(() => {
     const fetchPoojaAndTemple = async () => {
       try {
-        const res = await fetch(`http://192.168.1.30:5001/fetch-all-pooja`);
+        const res = await fetch(`http://192.168.1.7:5001/fetch-all-pooja`);
         const data = await res.json();
         const puja = data.poojas.find((p: any) => p._id === pujaId);
         if (!puja) return;
@@ -392,7 +392,7 @@ const View_Puja_Booking = ({route}: {route: any}) => {
         if (!mandirId) return;
 
         const templeRes = await fetch(
-          `http://192.168.1.30:5001/fetch-mandir-by-id/${mandirId}`,
+          `http://192.168.1.7:5001/fetch-mandir-by-id/${mandirId}`,
         );
         const templeJson = await templeRes.json();
         setTempleDetails(templeJson.mandir);
