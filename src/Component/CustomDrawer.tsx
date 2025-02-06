@@ -6,15 +6,43 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import {DrawerContentComponentProps} from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import GoogleAuth from './GoogleAuth';
+
+
 
 const CustomDrawer: React.FC<DrawerContentComponentProps> = props => {
   const [isShareExpanded, setShareExpanded] = useState(false);
   const [isMoreExpanded, setMoreExpanded] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(false); // Sign-in state
   const [isMyBookingExpanded, setMyBookingExpanded] = useState(false); // State for "My Booking"
+
+  const [userInfo, setUserInfo] = useState<{
+    name?: string;
+    photo?: string;
+    email?: string;
+  } | null>(null); // User information
+
+  const handleSignIn = (user: {
+    name?: string;
+    photo?: string;
+    email?: string;
+  }) => {
+    setIsSignedIn(true);
+    setUserInfo(user);
+  };
+
+  const handleSignOut = () => {
+    setIsSignedIn(false);
+    setUserInfo(null);
+    Alert.alert('Signed Out', 'You have successfully signed out.');
+  };
+
+  
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -45,80 +73,99 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = props => {
           color="black"
           style={styles.profileImage}
         /> */}
-        <View style={styles.profileImage}></View>
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.username}>UserName</Text>
-          <Text style={styles.completeProfile}>Complete your Profile</Text>
-        </View>
+        {isSignedIn && userInfo ? (
+          <>
+            <Image
+              source={{uri: userInfo.photo || ''}}
+              style={styles.profileImage}
+            />
+            <View style={styles.headerTextContainer}>
+              <Text style={styles.username}>{userInfo.name}</Text>
+              <Text style={styles.completeProfile}>{userInfo.email}</Text>
+            </View>
+          </>
+        ) : (
+          <>
+            <View style={styles.profileImage}></View>
+            <View style={styles.headerTextContainer}>
+              <Text style={styles.username}>UserName</Text>
+              <Text style={styles.completeProfile}>Complete your Profile</Text>
+            </View>
+          </>
+        )}
       </View>
 
       {/* Account Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Account</Text>
-        <TouchableOpacity
-          style={[
-            styles.drawerItem1,
-            {
-              shadowColor: '#000', // Black color
-              shadowOffset: {width: 0, height: 1}, // x: 0, y: 1
-              shadowOpacity: 0.25, // 0.25 opacity
-              shadowRadius: 1, // Blur radius
-              // elevation: 2, // Required for Android
-              borderBottomWidth: 1,
-              borderBottomColor: 'rgba(0,0,0,0.25)',
-              borderRadius: 7,
-            },
-          ]}
-          onPress={() => props.navigation.navigate('Profile')}>
-          <Icon name="person" size={20} color="#FF5704" />
-          <Text style={styles.drawerText}>My Profile</Text>
-        </TouchableOpacity>
-        {/* My Booking with Dropdown */}
-        <TouchableOpacity
-          style={[
-            styles.drawerItem,
-            {
-              shadowColor: '#000', // Black color
-              shadowOffset: {width: 0, height: 1}, // x: 0, y: 1
-              shadowOpacity: 0.25, // 0.25 opacity
-              shadowRadius: 1, // Blur radius
-              // elevation: 2, // Required for Android
-              borderBottomWidth: 1,
-              borderBottomColor: 'rgba(0,0,0,0.25)',
-              borderRadius: 7,
-            },
-          ]}
-          onPress={() => setMyBookingExpanded(!isMyBookingExpanded)}>
-          <View
-            style={{
-              flexDirection: 'row',
-              display: 'flex',
-              alignItems: 'center',
-            }}>
-            <Icon name="bookmark" size={20} color="#FF5704" />
-            <Text style={styles.drawerText}>My Booking</Text>
-          </View>
-          <View>
-            <Icon
-              name={isMyBookingExpanded ? 'chevron-up' : 'chevron-down'}
-              size={20}
-              color="#FF5704"
-            />
-          </View>
-        </TouchableOpacity>
-        {isMyBookingExpanded && (
-          <View style={styles.subItems}>
+        {isSignedIn && (
+          <>
             <TouchableOpacity
-              style={styles.subItem}
-              onPress={() => props.navigation.navigate('MyBooking')}>
-              <Text style={styles.subItemText}>Puja Booking</Text>
+              style={[
+                styles.drawerItem1,
+                {
+                  shadowColor: '#000', // Black color
+                  shadowOffset: {width: 0, height: 1}, // x: 0, y: 1
+                  shadowOpacity: 0.25, // 0.25 opacity
+                  shadowRadius: 1, // Blur radius
+                  // elevation: 2, // Required for Android
+                  borderBottomWidth: 1,
+                  borderBottomColor: 'rgba(0,0,0,0.25)',
+                  borderRadius: 7,
+                },
+              ]}
+              onPress={() => props.navigation.navigate('Profile')}>
+              <Icon name="person" size={20} color="#FF5704" />
+              <Text style={styles.drawerText}>My Profile</Text>
             </TouchableOpacity>
+            {/* My Booking with Dropdown */}
             <TouchableOpacity
-              style={styles.subItem}
-              onPress={() => props.navigation.navigate('MyBooking')}>
-              <Text style={styles.subItemText}>Prasad Booking</Text>
+              style={[
+                styles.drawerItem,
+                {
+                  shadowColor: '#000', // Black color
+                  shadowOffset: {width: 0, height: 1}, // x: 0, y: 1
+                  shadowOpacity: 0.25, // 0.25 opacity
+                  shadowRadius: 1, // Blur radius
+                  // elevation: 2, // Required for Android
+                  borderBottomWidth: 1,
+                  borderBottomColor: 'rgba(0,0,0,0.25)',
+                  borderRadius: 7,
+                },
+              ]}
+              onPress={() => setMyBookingExpanded(!isMyBookingExpanded)}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}>
+                <Icon name="bookmark" size={20} color="#FF5704" />
+                <Text style={styles.drawerText}>My Booking</Text>
+              </View>
+              <View>
+                <Icon
+                  name={isMyBookingExpanded ? 'chevron-up' : 'chevron-down'}
+                  size={20}
+                  color="#FF5704"
+                />
+              </View>
             </TouchableOpacity>
-          </View>
+            {isMyBookingExpanded && (
+              <View style={styles.subItems}>
+                <TouchableOpacity
+                  style={styles.subItem}
+                  onPress={() => props.navigation.navigate('MyBooking')}>
+                  <Text style={styles.subItemText}>Puja Booking</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.subItem}
+                  onPress={() => props.navigation.navigate('MyBooking')}>
+                  <Text style={styles.subItemText}>Prasad Booking</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </>
         )}
 
         {/* Puja Booking Section */}
@@ -265,7 +312,13 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = props => {
           </View>
         )}
       </View>
-
+      <View>
+        <GoogleAuth
+          onSignIn={handleSignIn}
+          onSignOut={handleSignOut}
+          isSignedIn={isSignedIn}
+        />
+      </View>
       {/* Footer */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>ver 2.41</Text>

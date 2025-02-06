@@ -1,8 +1,12 @@
-import {View, Text, Image} from 'react-native';
+import {View, Text, Image, TouchableOpacity} from 'react-native';
 import React from 'react';
 import Antdesign from 'react-native-vector-icons/AntDesign';
+import {DrawerNavigationProp} from '@react-navigation/drawer';
+import {DrawerParamList} from '../../App';
+import {DrawerActions, useNavigation} from '@react-navigation/native';
 
 const PrasadNavbar = () => {
+   const navigation = useNavigation<DrawerNavigationProp<DrawerParamList>>();
   return (
     <View>
       <View
@@ -14,7 +18,11 @@ const PrasadNavbar = () => {
           paddingTop: '3%',
           alignItems: 'center',
         }}>
-        <View
+        <TouchableOpacity
+        onPress={() => {
+                                // Dispatch directly without getParent()
+                                navigation.dispatch(DrawerActions.openDrawer());
+                              }}
           style={{
             backgroundColor: 'white',
             borderRadius: 1000,
@@ -28,7 +36,7 @@ const PrasadNavbar = () => {
             elevation: 4, // For Android
           }}>
           <Antdesign name="bars" size={30} color="#666161" />
-        </View>
+        </TouchableOpacity>
         <View style={{display: 'flex', alignItems: 'center'}}>
           <Text style={{color: '#FE6505', fontSize: 20, fontWeight: 600}}>
             Book Prasad

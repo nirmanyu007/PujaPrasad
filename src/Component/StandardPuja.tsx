@@ -138,21 +138,18 @@ const PujaPage = () => {
     fetchPujaData();
   }, []);
 
-  
+  const filteredPujaData = pujaData.filter(puja => {
+    const matchesSearch = puja.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
 
- const filteredPujaData = pujaData.filter(puja => {
-   const matchesSearch = puja.title
-     .toLowerCase()
-     .includes(searchTerm.toLowerCase());
+    const matchesFilter =
+      activeFilter === 'All Puja' ||
+      puja.poojaID.toLowerCase().includes(activeFilter.toLowerCase()) || // Check if poojaID matches filter
+      puja.title.toLowerCase().includes(activeFilter.toLowerCase()); // Check if title matches filter
 
-   const matchesFilter =
-     activeFilter === 'All Puja' ||
-     puja.poojaID.toLowerCase().includes(activeFilter.toLowerCase()) || // Check if poojaID matches filter
-     puja.title.toLowerCase().includes(activeFilter.toLowerCase()); // Check if title matches filter
-
-   return matchesSearch && matchesFilter;
- });
-
+    return matchesSearch && matchesFilter;
+  });
 
   console.log('Active Filter:', activeFilter);
   console.log('Filtered Data:', filteredPujaData);
@@ -253,7 +250,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     // alignItems: 'center',
     display: 'flex',
-    paddingBottom:400
+    paddingBottom: 400,
   },
   searchContainer: {
     flexDirection: 'row',

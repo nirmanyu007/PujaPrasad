@@ -112,8 +112,6 @@ const PujaDetail = ({route}: {route: any}) => {
     console.log('Shared on WhatsApp!');
   };
 
-  
-
   const navigation = useNavigation<NavigationProp<StackParamList>>(); // Get the navigation object
 
   const handleGoBack = () => {
@@ -798,16 +796,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   stickyNavigationContainer: {
-  // position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  zIndex: 1000, // Keeps navbar above other content
-  backgroundColor: '#fff',
-  borderBottomWidth: 1,
-  borderBottomColor: '#e0e0e0',
-  paddingVertical: 10,
-},
+    // position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000, // Keeps navbar above other content
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    paddingVertical: 10,
+  },
   floatingButton: {
     position: 'absolute',
     bottom: 10,
@@ -910,8 +908,8 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 14,
     color: 'rgba(0,0,0,0.7)',
-    fontStyle:'italic',
-    paddingTop:10
+    fontStyle: 'italic',
+    paddingTop: 10,
   },
   sectionContainer: {
     padding: 16,

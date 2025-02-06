@@ -45,6 +45,7 @@ import PrivacyPolicy from './src/Component/PrivacyPolicy';
 import Splash from './src/Component/Splash';
 import GoogleAuth from './src/Component/GoogleAuth';
 import PrasadCongrets from './src/Component/PrasadCongrets';
+import GoogleAuthScreen from './src/Component/GoogleAuthScreen';
 
 export type RootStackParamList = {
   Otp: undefined;
@@ -76,11 +77,14 @@ export type RootStackParamList = {
 
 
 export type DrawerParamList = {
-  Home: undefined;
+  HomePage: undefined;
   ContactUs: undefined;
   Profile: undefined;
   About: undefined;
-  Puja: undefined;
+  PujaPage: undefined;
+  MandirPage:undefined;
+  PrasadPage:undefined;
+  ExplorePage:undefined;
 };
 
 // Create Bottom Tab Navigator
@@ -92,19 +96,26 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator();
 
 
+type CustomDrawerNavigatorProps = {
+  initialRouteName: keyof DrawerParamList;
+};
 
-const DrawerNavigator: React.FC = () => {
+
+const CustomDrawerNavigator: React.FC<CustomDrawerNavigatorProps> = ({
+  initialRouteName,
+}) => {
   return (
     <Drawer.Navigator
+      initialRouteName={initialRouteName}
       drawerContent={props => <CustomDrawer {...props} />}
       screenOptions={{
         headerShown: false,
       }}>
-      <Drawer.Screen name="Home" component={HomePage} />
-      <Drawer.Screen name="Puja" component={PujaPage} />
-      <Drawer.Screen name="Mandir" component={Mandir} />
-      <Drawer.Screen name="Prasad" component={PrasadPage} />
-      <Drawer.Screen name="Explore" component={Explore} />
+      <Drawer.Screen name="HomePage" component={HomePage} />
+      <Drawer.Screen name="PujaPage" component={PujaPage} />
+      <Drawer.Screen name="MandirPage" component={Mandir} />
+      <Drawer.Screen name="PrasadPage" component={PrasadPage} />
+      <Drawer.Screen name="ExplorePage" component={Explore} />
       <Drawer.Screen name="ContactUs" component={ContactUs} />
       <Drawer.Screen name="Profile" component={Profile} />
       <Drawer.Screen name="About" component={About} />
@@ -125,8 +136,8 @@ const TabNavigator = () => {
         tabBarInactiveTintColor: 'gray',
       }}>
       <Tab.Screen
-        name="PujaPage"
-        component={PujaPage}
+        name="Puja"
+        children={() => <CustomDrawerNavigator initialRouteName="PujaPage" />}
         options={{
           tabBarIcon: ({color, size}) => (
             <Image
@@ -140,7 +151,7 @@ const TabNavigator = () => {
       />
       <Tab.Screen
         name="Prasad"
-        component={PrasadPage}
+        children={() => <CustomDrawerNavigator initialRouteName="PrasadPage" />}
         options={{
           tabBarIcon: ({color, size}) => (
             <Image
@@ -149,12 +160,12 @@ const TabNavigator = () => {
               }}
               style={{width: size, height: size, tintColor: color}}
             />
-          )
+          ),
         }}
       />
       <Tab.Screen
         name="Home"
-        component={DrawerNavigator}
+        children={() => <CustomDrawerNavigator initialRouteName="HomePage" />}
         options={{
           tabBarLabel: '',
           tabBarIcon: ({color}) => (
@@ -169,7 +180,9 @@ const TabNavigator = () => {
       />
       <Tab.Screen
         name="Explore"
-        component={Explore}
+        children={() => (
+          <CustomDrawerNavigator initialRouteName="ExplorePage" />
+        )}
         options={{
           tabBarIcon: ({color, size}) => (
             <Image
@@ -183,7 +196,9 @@ const TabNavigator = () => {
       />
       <Tab.Screen
         name="Mandir"
-        component={Mandir}
+        children={() => (
+          <CustomDrawerNavigator initialRouteName="MandirPage" />
+        )}
         options={{
           tabBarIcon: ({color, size}) => (
             <Image
@@ -205,7 +220,7 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Splash"
+        initialRouteName="Otp"
         screenOptions={{
           headerShown: false,
         }}>
@@ -232,7 +247,7 @@ const App = () => {
         <Stack.Screen name="Splash" component={Splash} />
         <Stack.Screen name="PrasadCongrets" component={PrasadCongrets} />
         <Stack.Screen name="PrasadBooking" component={PrasadBooking} />
-        <Stack.Screen name="Google" component={GoogleAuth} />
+        <Stack.Screen name="Google" component={GoogleAuthScreen} />
         <Stack.Screen
           name="SelectPrasadPackage"
           component={SelectPrasadPackage}
