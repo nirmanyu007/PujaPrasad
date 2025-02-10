@@ -40,10 +40,10 @@ const PrasadPage = () => {
     const fetchPrasadBoxes = async () => {
       try {
         const response = await axios.get(
-          `http://192.168.1.7:5001/fetch-active-mandirs`,
+          `http://192.168.1.30:5001/fetch-active-mandirs`,
         );
         const data = response.data;
-        console.log("Fetched mandir data:", data);
+        console.log('Fetched mandir data:', data);
 
         // Filter mandirs that have prasad available
         const prasadMandirs = data.mandirs.filter(
@@ -66,7 +66,12 @@ const PrasadPage = () => {
       <View style={styles.topBar}>
         <View style={styles.searchContainer}>
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <Icon name="search" size={24} color="#FF8901" style={styles.searchIcon} />
+            <Icon
+              name="search"
+              size={24}
+              color="#FF8901"
+              style={styles.searchIcon}
+            />
             <TextInput
               style={styles.searchInput}
               placeholder="Search for Temple Name"
@@ -84,7 +89,12 @@ const PrasadPage = () => {
           </View>
         </View>
         <View style={styles.cartIconContainer}>
-          <Iconn name="shopping-cart" size={24} color="#000" onPress={handleClick} />
+          <Iconn
+            name="shopping-cart"
+            size={24}
+            color="#000"
+            onPress={handleClick}
+          />
         </View>
       </View>
       <View>

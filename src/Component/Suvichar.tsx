@@ -1,18 +1,18 @@
 // src/pages/Suvichar.tsx
-import React, { useEffect, useRef, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Image, 
+import React, {useEffect, useRef, useState} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
   ActivityIndicator,
   TouchableOpacity,
   Animated,
   Easing,
-  Dimensions
+  Dimensions,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
 import axios from 'axios';
 
 interface DailyQuote {
@@ -33,7 +33,7 @@ interface LanguageToggleProps {
   onToggle: (value: boolean) => void;
 }
 
-const LanguageToggle: React.FC<LanguageToggleProps> = ({ isHindi, onToggle }) => {
+const LanguageToggle: React.FC<LanguageToggleProps> = ({isHindi, onToggle}) => {
   // Animated value for slider position (0 for English, 1 for Hindi)
   const animatedValue = useRef(new Animated.Value(isHindi ? 1 : 0)).current;
 
@@ -58,14 +58,24 @@ const LanguageToggle: React.FC<LanguageToggleProps> = ({ isHindi, onToggle }) =>
       <TouchableOpacity
         style={toggleStyles.touchable}
         onPress={() => onToggle(false)}>
-        <Text style={[toggleStyles.label, !isHindi && toggleStyles.activeLabel]}>English</Text>
+        <Text
+          style={[toggleStyles.label, !isHindi && toggleStyles.activeLabel]}>
+          English
+        </Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={toggleStyles.touchable}
         onPress={() => onToggle(true)}>
-        <Text style={[toggleStyles.label, isHindi && toggleStyles.activeLabel]}>Hindi</Text>
+        <Text style={[toggleStyles.label, isHindi && toggleStyles.activeLabel]}>
+          Hindi
+        </Text>
       </TouchableOpacity>
-      <Animated.View style={[toggleStyles.slider, { transform: [{ translateX: sliderTranslate }] }]} />
+      <Animated.View
+        style={[
+          toggleStyles.slider,
+          {transform: [{translateX: sliderTranslate}]},
+        ]}
+      />
     </View>
   );
 };
@@ -103,13 +113,13 @@ const toggleStyles = StyleSheet.create({
     backgroundColor: '#E6B079',
     opacity: 0.5,
     borderRadius: 20,
-    color: 'white'
+    color: 'white',
   },
 });
 
 const Suvichar: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
-  
+
   // Handler to go back
   const handleGoBack = () => {
     navigation.goBack();
@@ -120,23 +130,29 @@ const Suvichar: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   // Default quotes if no quote exists for today
-  const defaultQuoteEng: string = "Let what comes come. Let what goes go. Find out what remains.";
-  const defaultQuoteHin: string = "जो आता है आने दो. जो चल रहा है उसे जाने दो. पता करो क्या बचा है.";
+  const defaultQuoteEng: string =
+    'Let what comes come. Let what goes go. Find out what remains.';
+  const defaultQuoteHin: string =
+    'जो आता है आने दो. जो चल रहा है उसे जाने दो. पता करो क्या बचा है.';
 
   const fetchDailyQuote = async () => {
     try {
-      const response = await axios.get<DailyQuote[]>("http://192.168.1.7:5001/fetch-daily-quotes");
+      const response = await axios.get<DailyQuote[]>(
+        'http://192.168.1.30:5001/fetch-daily-quotes',
+      );
       const quotes = response.data;
       const todayStr = new Date().toISOString().substring(0, 10);
       // Find the quote whose date starts with today's date
-      const todaysQuote = quotes.find(q => q.date.substring(0, 10) === todayStr);
+      const todaysQuote = quotes.find(
+        q => q.date.substring(0, 10) === todayStr,
+      );
       if (todaysQuote) {
         setQuote(todaysQuote);
       } else {
         setQuote(null);
       }
     } catch (error) {
-      console.error("Error fetching daily quote", error);
+      console.error('Error fetching daily quote', error);
       setQuote(null);
     } finally {
       setLoading(false);
@@ -161,21 +177,25 @@ const Suvichar: React.FC = () => {
 
   // Choose the appropriate quote text (using API response or default)
   const displayedQuote: string = quote
-    ? (isHindi ? quote.descriptionHindi : quote.descriptionEnglish)
-    : (isHindi ? defaultQuoteHin : defaultQuoteEng);
+    ? isHindi
+      ? quote.descriptionHindi
+      : quote.descriptionEnglish
+    : isHindi
+    ? defaultQuoteHin
+    : defaultQuoteEng;
 
   // Strip HTML tags (if stored as HTML)
-  const plainText: string = displayedQuote.replace(/<\/?[^>]+(>|$)/g, "");
+  const plainText: string = displayedQuote.replace(/<\/?[^>]+(>|$)/g, '');
 
   return (
     <View style={styles.container}>
       {/* Header with Back Arrow and Title */}
       <View style={styles.header}>
-        <AntDesign 
-          name="arrowleft" 
-          onPress={handleGoBack} 
-          size={23} 
-          color="black" 
+        <AntDesign
+          name="arrowleft"
+          onPress={handleGoBack}
+          size={23}
+          color="black"
         />
         <Text style={styles.headerText}>Suvichar</Text>
       </View>

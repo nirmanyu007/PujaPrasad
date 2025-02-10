@@ -15,6 +15,21 @@ type StackParamList = {
   };
 };
 
+const decodeHtmlEntities = (text: string): string => {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'") // Add more as needed
+    .replace(/&nbsp;/g, '');
+};
+
+const stripHtmlTagsAndDecode = (html: string): string => {
+  const withoutHtmlTags = html.replace(/<\/?[^>]+(>|$)/g, ''); // Strip HTML tags
+  return decodeHtmlEntities(withoutHtmlTags); // Decode HTML entities
+};
+
 const BlogCardDetail: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<StackParamList, 'BlogDetail'>>();
@@ -68,9 +83,9 @@ const BlogCardDetail: React.FC = () => {
 
         {/* Blog Content */}
         <Text style={styles.content}>
-          {description} {'\n\n'}
-          {description2} {'\n\n'}
-          {description3}
+          {stripHtmlTagsAndDecode(description)} {'\n\n'}
+          {stripHtmlTagsAndDecode(description2)} {'\n\n'}
+          {stripHtmlTagsAndDecode(description3)}
         </Text>
       </ScrollView>
     </View>

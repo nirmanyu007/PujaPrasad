@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,8 @@ import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import GoogleAuth from '../Component/GoogleAuth';
+import {AuthContext} from '../Component/AuthContext';
 
 type RootStackParamList = {
   Address: undefined;
@@ -39,10 +41,14 @@ type AddressDetailsType = {
 };
 
 const Address = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const auth = useContext(AuthContext);
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [modalVisible, setModalVisible] = useState(false);
   const [addresses, setAddresses] = useState<AddressDetailsType[]>([]);
-  const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);
+  const [selectedAddressIndex, setSelectedAddressIndex] = useState<
+    number | null
+  >(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [addressDetails, setAddressDetails] = useState<AddressDetailsType>({
     name: '',
@@ -63,6 +69,28 @@ const Address = () => {
     pincode: '',
     city: '',
   });
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [googleAuthModalVisible, setGoogleAuthModalVisible] = useState(false);
+
+  if (!auth) {
+    return null;
+  }
+
+  useEffect(() => {
+    const checkSignInStatus = async () => {
+      try {
+        const storedUserID = await AsyncStorage.getItem('userID');
+        if (storedUserID) {
+          setIsSignedIn(true);
+        } else {
+          setIsSignedIn(false);
+        }
+      } catch (error) {
+        console.error('Error checking sign-in status:', error);
+      }
+    };
+    checkSignInStatus();
+  }, []);
 
   useEffect(() => {
     const loadAddresses = async () => {
@@ -78,7 +106,9 @@ const Address = () => {
     loadAddresses();
   }, []);
 
-  const saveAddressesToStorage = async (updatedAddresses: AddressDetailsType[]) => {
+  const saveAddressesToStorage = async (
+    updatedAddresses: AddressDetailsType[],
+  ) => {
     try {
       await AsyncStorage.setItem('addresses', JSON.stringify(updatedAddresses));
     } catch (error) {
@@ -92,7 +122,9 @@ const Address = () => {
       phone: /^[0-9]{10}$/.test(addressDetails.phone.trim())
         ? ''
         : 'Please enter a valid 10-digit phone number',
-      address1: addressDetails.address1.trim() ? '' : 'Please enter address line 1',
+      address1: addressDetails.address1.trim()
+        ? ''
+        : 'Please enter address line 1',
       state: addressDetails.state.trim() ? '' : 'Please enter state',
       pincode: /^[0-9]{6}$/.test(addressDetails.pincode.trim())
         ? ''
@@ -196,7 +228,10 @@ const Address = () => {
     }
   };
 
-  const handleInputChange = (field: keyof AddressDetailsType, value: string) => {
+  const handleInputChange = (
+    field: keyof AddressDetailsType,
+    value: string,
+  ) => {
     setAddressDetails(prevDetails => ({
       ...prevDetails,
       [field]: value,
@@ -209,6 +244,10 @@ const Address = () => {
 
   // Updated handleMakePayment: retrieves cart items, maps to prasadDeliveries, builds address payload, logs payload, and calls API.
   const handleMakePayment = async () => {
+    if (!auth.isSignedIn) {
+      setGoogleAuthModalVisible(true);
+      return;
+    }
     if (selectedAddressIndex !== null) {
       const selectedAddress = addresses[selectedAddressIndex];
       // Retrieve cart items from AsyncStorage
@@ -216,25 +255,29 @@ const Address = () => {
       let cartItems = [];
       if (storedCart) cartItems = JSON.parse(storedCart);
       if (cartItems.length === 0) {
-        Alert.alert("No items in cart", "Please add prasad items to cart.");
+        Alert.alert('No items in cart', 'Please add prasad items to cart.');
         return;
       }
       // Map cartItems to required prasadDeliveries format.
       // Here each cart item already has a prasad object (with realtime data) and a selectedPackage.
       const prasadDeliveries = cartItems.map((item: any) => {
         return {
-          mandirID: item.prasad._id, // use the realtime _id from prasad object
-          mandirName: item.prasad.nameEnglish,
-          packageName: item.selectedPackage.title,
-          prasadPrice: typeof item.selectedPackage.price === 'number'
-            ? item.selectedPackage.price
-            : parseFloat(item.selectedPackage.price.toString().replace(/[^0-9.]/g, '')),
+          mandirID: item.prasad?._id || 'UNKNOWN_ID', // Ensure ID is present
+          mandirName: item.prasad?.nameEnglish || 'Unknown Mandir',
+          packageName: item.selectedPackage?.title || 'Default Package',
+          prasadPrice: item.selectedPackage?.price
+            ? typeof item.selectedPackage.price === 'number'
+              ? item.selectedPackage.price
+              : parseFloat(
+                  item.selectedPackage.price.toString().replace(/[^0-9.]/g, ''),
+                )
+            : 0, // Default to 0 if price is missing
           prasadCount: item.quantity || 1,
-          prasadStatus: "pending",
+          prasadStatus: 'pending',
           statusDate: new Date(),
-          mandirImage: item.prasad.prasadCardImage || item.prasad.images[0],
-          // You can pass additional realtime data if required
-          fullMandirData: item.prasad, // optional: complete realtime data
+          mandirImage:
+            item.prasad?.prasadCardImage || item.prasad?.images?.[0] || '',
+          fullMandirData: item.prasad || {}, // Ensure prasad object is not undefined
         };
       });
       // Build the final address in the expected structure
@@ -246,14 +289,14 @@ const Address = () => {
         landmark: selectedAddress.landmark || '',
         city: selectedAddress.city,
         state: selectedAddress.state,
-        country: "India",
-        email: "", // add email if needed
+        country: 'India',
+        email: '', // add email if needed
         number: selectedAddress.phone,
         pinCode: Number(selectedAddress.pincode),
       };
       // Retrieve a dynamic userID if available; for now, we use a dummy value.
       const storedUserID = await AsyncStorage.getItem('userID');
-      const userID = storedUserID || "12345"; // Replace with your real user id logic
+      const userID = storedUserID || '12345'; // Replace with your real user id logic
 
       const payloadData = {
         userID,
@@ -261,21 +304,38 @@ const Address = () => {
         prasadDeliveries,
         sangamPrasadDelivery: [],
       };
-      console.log("Final payload data being sent to API:", payloadData);
+      console.log('Final payload data being sent to API:', payloadData);
       try {
-        const response = await axios.post("http://192.168.1.7:5001/prasad-booking-for-app", payloadData);
+        const response = await axios.post(
+          'http://192.168.1.30:5001/prasad-booking-for-app',
+          payloadData,
+        );
+
         if (response.data.paymentUrl) {
-          // Open the payment gateway using the returned URL
           Linking.openURL(response.data.paymentUrl);
         } else {
-          Alert.alert("Payment initiation failed", response.data.message || "Unknown error");
+          console.error('Server Response:', response.data);
+          Alert.alert(
+            'Payment initiation failed',
+            response.data.message || 'Unknown error',
+          );
         }
       } catch (error) {
-        console.error("Error in payment initiation:", error);
-        Alert.alert("Error", "Failed to initiate payment.");
+        if (axios.isAxiosError(error)) {
+          console.error(
+            'Axios Error:',
+            error.response?.status,
+            error.response?.data,
+          );
+          Alert.alert(
+            'API Error',
+            `Request failed with status: ${error.response?.status}`,
+          );
+        }
       }
     } else {
-      Alert.alert('No Address Selected', 'Please select an address to proceed.');
+      console.error('Unknown Error:', errors);
+      Alert.alert('Error', 'Failed to initiate payment.');
     }
   };
 
@@ -288,10 +348,17 @@ const Address = () => {
           <>
             <View style={styles.header}>
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Entypo onPress={() => navigation.goBack()} name="cross" size={24} color="#000" />
+                <Entypo
+                  onPress={() => navigation.goBack()}
+                  name="cross"
+                  size={24}
+                  color="#000"
+                />
                 <Text style={styles.headerText}>Address</Text>
               </View>
-              <TouchableOpacity style={{flexDirection: 'row'}} onPress={handleClearAddresses}>
+              <TouchableOpacity
+                style={{flexDirection: 'row'}}
+                onPress={handleClearAddresses}>
                 <Antdesign name="delete" size={20} color="black" />
                 <Text style={styles.clearButton}>Clear</Text>
               </TouchableOpacity>
@@ -314,50 +381,117 @@ const Address = () => {
                 />
               </View>
             )}
-            <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => setModalVisible(true)}>
               <Text style={styles.addButtonText}>Add New Address</Text>
             </TouchableOpacity>
           </>
         }
         renderItem={({item, index}) => (
-          <View style={[styles.addressCard, selectedAddressIndex === index && styles.selectedAddressCard]}>
+          <View
+            style={[
+              styles.addressCard,
+              selectedAddressIndex === index && styles.selectedAddressCard,
+            ]}>
             <View style={styles.addressHeader}>
               <Text style={styles.addressName}>
-                {item.name} | <Text style={styles.addressType}>{item.addressType}</Text>
+                {item.name} |{' '}
+                <Text style={styles.addressType}>{item.addressType}</Text>
               </Text>
               <View style={styles.actionButtons}>
-                <TouchableOpacity onPress={() => handleEditAddress(index)} style={styles.editButton}>
+                <TouchableOpacity
+                  onPress={() => handleEditAddress(index)}
+                  style={styles.editButton}>
                   <Feather name="edit" size={16} color="#007BFF" />
                   <Text style={styles.editButtonText}>Edit</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.deleteButton} onPress={() => confirmDeleteAddress(index)}>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => confirmDeleteAddress(index)}>
                   <Feather name="trash" size={16} color="#FF0000" />
                   <Text style={styles.deleteButtonText}>Delete</Text>
                 </TouchableOpacity>
               </View>
             </View>
             <Text style={styles.addressText}>{item.address1}</Text>
-            {item.address2 ? <Text style={styles.addressText}>{item.address2}</Text> : null}
+            {item.address2 ? (
+              <Text style={styles.addressText}>{item.address2}</Text>
+            ) : null}
             <Text style={styles.addressText}>
               {item.city}, {item.state} {item.pincode}
             </Text>
             <Text style={styles.addressText}>Mobile: {item.phone}</Text>
-            <TouchableOpacity style={styles.radioOption} onPress={() => setSelectedAddressIndex(index)}>
-              <View style={[styles.radioCircle, selectedAddressIndex === index && styles.radioSelected]} />
+            <TouchableOpacity
+              style={styles.radioOption}
+              onPress={() => setSelectedAddressIndex(index)}>
+              <View
+                style={[
+                  styles.radioCircle,
+                  selectedAddressIndex === index && styles.radioSelected,
+                ]}
+              />
               <Text style={styles.radioLabel}>Deliver Here</Text>
             </TouchableOpacity>
           </View>
         )}
       />
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={googleAuthModalVisible}
+        onRequestClose={() => setGoogleAuthModalVisible(false)}>
+        <View style={styles.modalContainer1}>
+          <View style={styles.modalContent1}>
+            <Text style={styles.modalTitle1}>Sign in to continue</Text>
+            <Text style={{textAlign: 'center', marginVertical: 10}}>
+              You need to sign in to proceed with the payment.
+            </Text>
+
+            {/* Google Auth Component */}
+            <GoogleAuth
+              onSignIn={user => {
+                if (user.email) {
+                  // Ensure user.email is defined
+                  setIsSignedIn(true);
+                  setGoogleAuthModalVisible(false);
+                  AsyncStorage.setItem('userID', user.email); // Store user identifier
+                } else {
+                  console.error('Sign-in error: user email is undefined.');
+                  Alert.alert(
+                    'Sign-in Error',
+                    'User email is missing. Please try again.',
+                  );
+                }
+              }}
+              onSignOut={() => setIsSignedIn(false)}
+              isSignedIn={isSignedIn}
+            />
+
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setGoogleAuthModalVisible(false)}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       <View style={styles.bottomContainer}>
         <TouchableOpacity
-          style={[styles.makePaymentButton, selectedAddressIndex === null && styles.disabledButton]}
+          style={[
+            styles.makePaymentButton,
+            selectedAddressIndex === null && styles.disabledButton,
+          ]}
           onPress={handleMakePayment}
           disabled={selectedAddressIndex === null}>
           <Text style={styles.makePaymentText}>Make Payment</Text>
         </TouchableOpacity>
       </View>
-      <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
@@ -369,38 +503,118 @@ const Address = () => {
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.modalForm}>
-              <TextInput style={styles.input} placeholder="Name" value={addressDetails.name} onChangeText={text => handleInputChange('name', text)} />
-              {errors.name ? <Text style={styles.errorText}>{errors.name}</Text> : null}
-              <TextInput style={styles.input} placeholder="Phone" keyboardType="phone-pad" value={addressDetails.phone} onChangeText={text => handleInputChange('phone', text)} />
-              {errors.phone ? <Text style={styles.errorText}>{errors.phone}</Text> : null}
-              <TextInput style={styles.input} placeholder="Address 1" value={addressDetails.address1} onChangeText={text => handleInputChange('address1', text)} />
-              {errors.address1 ? <Text style={styles.errorText}>{errors.address1}</Text> : null}
-              <TextInput style={styles.input} placeholder="Address 2 (Optional)" value={addressDetails.address2} onChangeText={text => handleInputChange('address2', text)} />
-              <TextInput style={styles.input} placeholder="Landmark (Optional)" value={addressDetails.landmark} onChangeText={text => handleInputChange('landmark', text)} />
-              <TextInput style={styles.input} placeholder="State" value={addressDetails.state} onChangeText={text => handleInputChange('state', text)} />
-              {errors.state ? <Text style={styles.errorText}>{errors.state}</Text> : null}
+              <TextInput
+                style={styles.input}
+                placeholder="Name"
+                value={addressDetails.name}
+                onChangeText={text => handleInputChange('name', text)}
+              />
+              {errors.name ? (
+                <Text style={styles.errorText}>{errors.name}</Text>
+              ) : null}
+              <TextInput
+                style={styles.input}
+                placeholder="Phone"
+                keyboardType="phone-pad"
+                value={addressDetails.phone}
+                onChangeText={text => handleInputChange('phone', text)}
+              />
+              {errors.phone ? (
+                <Text style={styles.errorText}>{errors.phone}</Text>
+              ) : null}
+              <TextInput
+                style={styles.input}
+                placeholder="Address 1"
+                value={addressDetails.address1}
+                onChangeText={text => handleInputChange('address1', text)}
+              />
+              {errors.address1 ? (
+                <Text style={styles.errorText}>{errors.address1}</Text>
+              ) : null}
+              <TextInput
+                style={styles.input}
+                placeholder="Address 2 (Optional)"
+                value={addressDetails.address2}
+                onChangeText={text => handleInputChange('address2', text)}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Landmark (Optional)"
+                value={addressDetails.landmark}
+                onChangeText={text => handleInputChange('landmark', text)}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="State"
+                value={addressDetails.state}
+                onChangeText={text => handleInputChange('state', text)}
+              />
+              {errors.state ? (
+                <Text style={styles.errorText}>{errors.state}</Text>
+              ) : null}
               <View style={styles.row}>
-                <TextInput style={[styles.input, styles.halfInput]} placeholder="Pincode" keyboardType="numeric" value={addressDetails.pincode} onChangeText={text => handleInputChange('pincode', text)} />
-                {errors.pincode ? <Text style={styles.errorText}>{errors.pincode}</Text> : null}
-                <TextInput style={[styles.input, styles.halfInput]} placeholder="City" value={addressDetails.city} onChangeText={text => handleInputChange('city', text)} />
-                {errors.city ? <Text style={styles.errorText}>{errors.city}</Text> : null}
+                <TextInput
+                  style={[styles.input, styles.halfInput]}
+                  placeholder="Pincode"
+                  keyboardType="numeric"
+                  value={addressDetails.pincode}
+                  onChangeText={text => handleInputChange('pincode', text)}
+                />
+                {errors.pincode ? (
+                  <Text style={styles.errorText}>{errors.pincode}</Text>
+                ) : null}
+                <TextInput
+                  style={[styles.input, styles.halfInput]}
+                  placeholder="City"
+                  value={addressDetails.city}
+                  onChangeText={text => handleInputChange('city', text)}
+                />
+                {errors.city ? (
+                  <Text style={styles.errorText}>{errors.city}</Text>
+                ) : null}
               </View>
               <View style={styles.radioGroup}>
-                <TouchableOpacity style={styles.radioOption} onPress={() => handleInputChange('addressType', 'Home')}>
-                  <View style={[styles.radioCircle, addressDetails.addressType === 'Home' && styles.radioSelected]} />
+                <TouchableOpacity
+                  style={styles.radioOption}
+                  onPress={() => handleInputChange('addressType', 'Home')}>
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      addressDetails.addressType === 'Home' &&
+                        styles.radioSelected,
+                    ]}
+                  />
                   <Text style={styles.radioLabel}>Home</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.radioOption} onPress={() => handleInputChange('addressType', 'Work')}>
-                  <View style={[styles.radioCircle, addressDetails.addressType === 'Work' && styles.radioSelected]} />
+                <TouchableOpacity
+                  style={styles.radioOption}
+                  onPress={() => handleInputChange('addressType', 'Work')}>
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      addressDetails.addressType === 'Work' &&
+                        styles.radioSelected,
+                    ]}
+                  />
                   <Text style={styles.radioLabel}>Work</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.radioOption} onPress={() => handleInputChange('addressType', 'Other')}>
-                  <View style={[styles.radioCircle, addressDetails.addressType === 'Other' && styles.radioSelected]} />
+                <TouchableOpacity
+                  style={styles.radioOption}
+                  onPress={() => handleInputChange('addressType', 'Other')}>
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      addressDetails.addressType === 'Other' &&
+                        styles.radioSelected,
+                    ]}
+                  />
                   <Text style={styles.radioLabel}>Other</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
-            <TouchableOpacity style={styles.saveButton} onPress={handleSaveAddress}>
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={handleSaveAddress}>
               <Text style={styles.saveButtonText}>Save Address</Text>
             </TouchableOpacity>
           </View>
@@ -598,5 +812,36 @@ const styles = StyleSheet.create({
     color: 'red',
     fontSize: 12,
     marginBottom: 8,
+  },
+  modalContainer1: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent1: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 20,
+    width: '90%',
+    alignItems: 'center',
+  },
+  modalTitle1: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  cancelButton: {
+    marginTop: 10,
+    backgroundColor: '#ccc',
+    padding: 10,
+    borderRadius: 8,
+    width: '100%',
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    color: 'black',
+    fontWeight: 'bold',
   },
 });

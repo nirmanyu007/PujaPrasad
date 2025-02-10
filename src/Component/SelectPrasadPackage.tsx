@@ -16,6 +16,21 @@ type StackParamList = {
   Cart: undefined;
 };
 
+const decodeHtmlEntities = (text: string): string => {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'") // Add more as needed
+    .replace(/&nbsp;/g, '');
+};
+
+const stripHtmlTagsAndDecode = (html: string): string => {
+  const withoutHtmlTags = html.replace(/<\/?[^>]+(>|$)/g, ''); // Strip HTML tags
+  return decodeHtmlEntities(withoutHtmlTags); // Decode HTML entities
+};
+
 const SelectPrasadPackage = () => {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [selectedDescription, setSelectedDescription] = useState<string | null>(null);
@@ -146,7 +161,7 @@ const SelectPrasadPackage = () => {
           <Text style={styles.selectedLabel}>Selected Package</Text>
           <Text style={styles.selectedValue}>{selectedPackage || 'None'}</Text>
           <Text style={styles.fullDescription}>
-            {selectedDescription || 'No description available.'}
+            {stripHtmlTagsAndDecode(selectedDescription || 'No description available.')}
           </Text>
         </View>
       </ScrollView>

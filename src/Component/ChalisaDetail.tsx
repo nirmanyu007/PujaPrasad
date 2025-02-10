@@ -1,21 +1,26 @@
 // src/pages/ChalisaDetail.tsx
-import React, { useEffect, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  Image, 
-  TouchableOpacity, 
-  StyleSheet, 
-  ScrollView, 
-  ActivityIndicator, 
-  Animated, 
-  Easing 
+import React, {useEffect, useState} from 'react';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  Animated,
+  Easing,
 } from 'react-native';
 import axios from 'axios';
-import { useNavigation, NavigationProp, useRoute, RouteProp } from '@react-navigation/native';
+import {
+  useNavigation,
+  NavigationProp,
+  useRoute,
+  RouteProp,
+} from '@react-navigation/native';
 
 type StackParamList = {
-  ChalisaDetail: { libraryId: string };
+  ChalisaDetail: {libraryId: string};
 };
 
 interface LibraryItem {
@@ -32,9 +37,14 @@ interface LibraryItem {
   __v: number;
 }
 
-const LanguageToggle: React.FC<{ isHindi: boolean; onToggle: (value: boolean) => void }> = ({ isHindi, onToggle }) => {
-  const animatedValue = React.useRef(new Animated.Value(isHindi ? 1 : 0)).current;
-  
+const LanguageToggle: React.FC<{
+  isHindi: boolean;
+  onToggle: (value: boolean) => void;
+}> = ({isHindi, onToggle}) => {
+  const animatedValue = React.useRef(
+    new Animated.Value(isHindi ? 1 : 0),
+  ).current;
+
   useEffect(() => {
     Animated.timing(animatedValue, {
       toValue: isHindi ? 1 : 0,
@@ -51,13 +61,27 @@ const LanguageToggle: React.FC<{ isHindi: boolean; onToggle: (value: boolean) =>
 
   return (
     <View style={toggleStyles.container}>
-      <TouchableOpacity style={toggleStyles.touchable} onPress={() => onToggle(false)}>
-        <Text style={[toggleStyles.label, !isHindi && toggleStyles.activeLabel]}>English</Text>
+      <TouchableOpacity
+        style={toggleStyles.touchable}
+        onPress={() => onToggle(false)}>
+        <Text
+          style={[toggleStyles.label, !isHindi && toggleStyles.activeLabel]}>
+          English
+        </Text>
       </TouchableOpacity>
-      <TouchableOpacity style={toggleStyles.touchable} onPress={() => onToggle(true)}>
-        <Text style={[toggleStyles.label, isHindi && toggleStyles.activeLabel]}>Hindi</Text>
+      <TouchableOpacity
+        style={toggleStyles.touchable}
+        onPress={() => onToggle(true)}>
+        <Text style={[toggleStyles.label, isHindi && toggleStyles.activeLabel]}>
+          Hindi
+        </Text>
       </TouchableOpacity>
-      <Animated.View style={[toggleStyles.slider, { transform: [{ translateX: sliderTranslate }] }]} />
+      <Animated.View
+        style={[
+          toggleStyles.slider,
+          {transform: [{translateX: sliderTranslate}]},
+        ]}
+      />
     </View>
   );
 };
@@ -101,7 +125,7 @@ const toggleStyles = StyleSheet.create({
 
 const ChalisaDetail: React.FC = () => {
   const route = useRoute<RouteProp<StackParamList, 'ChalisaDetail'>>();
-  const { libraryId } = route.params;
+  const {libraryId} = route.params;
   const navigation = useNavigation<NavigationProp<StackParamList>>();
 
   const [isHindi, setIsHindi] = useState<boolean>(false);
@@ -110,10 +134,12 @@ const ChalisaDetail: React.FC = () => {
 
   const fetchLibraryItem = async () => {
     try {
-      const response = await axios.get<{ library: LibraryItem }>(`http://192.168.1.7:5001/fetch-library-data-by-id/${libraryId}`);
+      const response = await axios.get<{library: LibraryItem}>(
+        `http://192.168.1.30:5001/fetch-library-data-by-id/${libraryId}`,
+      );
       setLibraryItem(response.data.library);
     } catch (error) {
-      console.error("Error fetching library item", error);
+      console.error('Error fetching library item', error);
     } finally {
       setLoading(false);
     }
@@ -143,16 +169,22 @@ const ChalisaDetail: React.FC = () => {
     );
   }
 
-  const description: string = isHindi ? libraryItem.descriptionHindi : libraryItem.descriptionEnglish;
-  const plainDescription: string = description.replace(/<\/?[^>]+(>|$)/g, "");
+  const description: string = isHindi
+    ? libraryItem.descriptionHindi
+    : libraryItem.descriptionEnglish;
+  const plainDescription: string = description.replace(/<\/?[^>]+(>|$)/g, '');
 
   return (
     <ScrollView style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={styles.backButton}>
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
-      <Image source={{ uri: libraryItem.aartiImage }} style={styles.image} />
-      <Text style={styles.title}>{isHindi ? libraryItem.nameHindi : libraryItem.nameEnglish}</Text>
+      <Image source={{uri: libraryItem.aartiImage}} style={styles.image} />
+      <Text style={styles.title}>
+        {isHindi ? libraryItem.nameHindi : libraryItem.nameEnglish}
+      </Text>
       <Text style={styles.godName}>{libraryItem.godName}</Text>
       <LanguageToggle isHindi={isHindi} onToggle={setIsHindi} />
       <View style={styles.descriptionContainer}>
@@ -163,15 +195,15 @@ const ChalisaDetail: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 15, backgroundColor: '#fff' },
-  center: { flex:1, justifyContent:'center', alignItems:'center' },
-  backButton: { marginBottom: 10 },
-  backText: { fontSize: 16, color: '#007AFF' },
-  image: { width: '100%', height: 200, resizeMode: 'cover', borderRadius: 10 },
-  title: { fontSize: 24, fontWeight: 'bold', marginVertical: 10 },
-  godName: { fontSize: 18, color: '#888', marginBottom: 10 },
-  descriptionContainer: { marginTop: 10 },
-  descriptionText: { fontSize: 16, lineHeight: 24 },
+  container: {flex: 1, padding: 15, backgroundColor: '#fff'},
+  center: {flex: 1, justifyContent: 'center', alignItems: 'center'},
+  backButton: {marginBottom: 10},
+  backText: {fontSize: 16, color: '#007AFF'},
+  image: {width: '100%', height: 200, resizeMode: 'cover', borderRadius: 10},
+  title: {fontSize: 24, fontWeight: 'bold', marginVertical: 10},
+  godName: {fontSize: 18, color: '#888', marginBottom: 10},
+  descriptionContainer: {marginTop: 10},
+  descriptionText: {fontSize: 16, lineHeight: 24},
 });
 
 export default ChalisaDetail;

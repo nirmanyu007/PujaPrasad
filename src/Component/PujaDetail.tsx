@@ -95,8 +95,19 @@ interface PujaDetails {
   images: string[];
 }
 
-const stripHtmlTags = (htmlString: string): string => {
-  return htmlString.replace(/<\/?[^>]+(>|$)/g, '');
+const decodeHtmlEntities = (text: string): string => {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'") // Add more as needed
+    .replace(/&nbsp;/g, '');
+};
+
+const stripHtmlTagsAndDecode = (html: string): string => {
+  const withoutHtmlTags = html.replace(/<\/?[^>]+(>|$)/g, ''); // Strip HTML tags
+  return decodeHtmlEntities(withoutHtmlTags); // Decode HTML entities
 };
 
 const {width: screenWidth} = Dimensions.get('window');
@@ -151,7 +162,7 @@ const PujaDetail = ({route}: {route: any}) => {
     const fetchPoojaAndTemple = async () => {
       try {
         // 1. Fetch all puja data
-        const res = await fetch(`http://192.168.1.7:5001/fetch-all-pooja`);
+        const res = await fetch(`http://192.168.1.30:5001/fetch-all-pooja`);
         const data = await res.json();
 
         // 2. Find the puja where p._id === id
@@ -175,7 +186,7 @@ const PujaDetail = ({route}: {route: any}) => {
 
         // 4. Fetch the temple data based on mandirId
         const templeRes = await fetch(
-          `http://192.168.1.7:5001/fetch-mandir-by-id/${mandirId}`,
+          `http://192.168.1.30:5001/fetch-mandir-by-id/${mandirId}`,
         );
         const templeJson = await templeRes.json();
         const rawPoojaDate = puja.mandirLists?.[0]?.poojaMandirDates?.[0];
@@ -199,7 +210,7 @@ const PujaDetail = ({route}: {route: any}) => {
     const fetchPujaDetails = async () => {
       try {
         const response = await fetch(
-          `http://192.168.1.7:5001/fetch-all-pooja`,
+          `http://192.168.1.30:5001/fetch-all-pooja`,
         );
         const data = await response.json();
         const selectedPuja = data.poojas.find((p: any) => p._id === pujaId);
@@ -243,7 +254,7 @@ const PujaDetail = ({route}: {route: any}) => {
       </View>
 
       <View>
-        <AboutPujaBox description={description} />
+        <AboutPujaBox description={stripHtmlTagsAndDecode(description)} />
       </View>
     </View>
   );
@@ -595,7 +606,8 @@ const PujaDetail = ({route}: {route: any}) => {
               <View style={styles.detailsContainer}>
                 <Text style={styles.title}>{selectedPuja.title}</Text>
                 <Text style={styles.title}>
-                  {selectedPuja.poojaCardBenefit.replace(/<\/?[^>]+(>|$)/g, '')}
+                  {/* {selectedPuja.poojaCardBenefit.replace(/<\/?[^>]+(>|$)/g, '')} */}
+                  {stripHtmlTagsAndDecode(selectedPuja.poojaCardBenefit)}
                 </Text>
                 <View style={styles.detailRow}>
                   <Image

@@ -46,6 +46,7 @@ import Splash from './src/Component/Splash';
 import GoogleAuth from './src/Component/GoogleAuth';
 import PrasadCongrets from './src/Component/PrasadCongrets';
 import GoogleAuthScreen from './src/Component/GoogleAuthScreen';
+import { AuthProvider } from './src/Component/AuthContext';
 
 export type RootStackParamList = {
   Otp: undefined;
@@ -218,42 +219,44 @@ const TabNavigator = () => {
 
 const App = () => {
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Otp"
-        screenOptions={{
-          headerShown: false,
-        }}>
-        <Stack.Screen name="TabNavigator" component={TabNavigator} />
-        {/* <Stack.Screen name="MainDrawer" component={DrawerNavigator} /> */}
-        <Stack.Screen name="Otp" component={Otp} />
-        <Stack.Screen name="ContactUs" component={ContactUs} />
-        <Stack.Screen name="About" component={About} />
-        <Stack.Screen name="PujaDetails" component={PujaDetail} />
-        <Stack.Screen name="Congratulation" component={Congratulation} />
-        <Stack.Screen name="ViewPujaBooking" component={View_Puja_Booking} />
-        <Stack.Screen name="Blogs" component={Blog} />
-        <Stack.Screen name="Libreary" component={Library} />
-        <Stack.Screen name="Suvichar" component={Suvichar} />
-        <Stack.Screen name="BlogDetail" component={BlogCardDetail} />
-        <Stack.Screen name="Arti" component={Arti} />
-        <Stack.Screen name="Chalisa" component={Chalisa} />
-        <Stack.Screen name="ArtiDetail" component={ArtiDetail} />
-        <Stack.Screen name="ChalisaDetail" component={ChalisaDetail} />
-        <Stack.Screen name="MandirDetail" component={MandirDetail} />
-        <Stack.Screen name="Cart" component={Cart} />
-        <Stack.Screen name="Address" component={Address} />
-        <Stack.Screen name="PujaDetailPage" component={PujaDetailPage} />
-        <Stack.Screen name="Splash" component={Splash} />
-        <Stack.Screen name="PrasadCongrets" component={PrasadCongrets} />
-        <Stack.Screen name="PrasadBooking" component={PrasadBooking} />
-        <Stack.Screen name="Google" component={GoogleAuthScreen} />
-        <Stack.Screen
-          name="SelectPrasadPackage"
-          component={SelectPrasadPackage}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <AuthProvider>
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Otp"
+          screenOptions={{
+            headerShown: false,
+          }}>
+          <Stack.Screen name="TabNavigator" component={TabNavigator} />
+          {/* <Stack.Screen name="MainDrawer" component={DrawerNavigator} /> */}
+          <Stack.Screen name="Otp" component={Otp} />
+          <Stack.Screen name="ContactUs" component={ContactUs} />
+          <Stack.Screen name="About" component={About} />
+          <Stack.Screen name="PujaDetails" component={PujaDetail} />
+          <Stack.Screen name="Congratulation" component={Congratulation} />
+          <Stack.Screen name="ViewPujaBooking" component={View_Puja_Booking} />
+          <Stack.Screen name="Blogs" component={Blog} />
+          <Stack.Screen name="Libreary" component={Library} />
+          <Stack.Screen name="Suvichar" component={Suvichar} />
+          <Stack.Screen name="BlogDetail" component={BlogCardDetail} />
+          <Stack.Screen name="Arti" component={Arti} />
+          <Stack.Screen name="Chalisa" component={Chalisa} />
+          <Stack.Screen name="ArtiDetail" component={ArtiDetail} />
+          <Stack.Screen name="ChalisaDetail" component={ChalisaDetail} />
+          <Stack.Screen name="MandirDetail" component={MandirDetail} />
+          <Stack.Screen name="Cart" component={Cart} />
+          <Stack.Screen name="Address" component={Address} />
+          <Stack.Screen name="PujaDetailPage" component={PujaDetailPage} />
+          <Stack.Screen name="Splash" component={Splash} />
+          <Stack.Screen name="PrasadCongrets" component={PrasadCongrets} />
+          <Stack.Screen name="PrasadBooking" component={PrasadBooking} />
+          <Stack.Screen name="Google" component={GoogleAuthScreen} />
+          <Stack.Screen
+            name="SelectPrasadPackage"
+            component={SelectPrasadPackage}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </AuthProvider>
   );
 };
 

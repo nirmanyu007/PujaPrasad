@@ -1,5 +1,29 @@
-import React from 'react';
-import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  FlatList,
+} from 'react-native';
+import PujaBookingCard from './PujaBookingCard';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+
+interface Booking {
+  _id: string;
+  poojaname: string;
+  totalPrice: number;
+  mandirname: string;
+  state?: string;
+  poojadate: string;
+  package: string;
+  completed: boolean;
+  poojatime: string;
+}
 
 const pujaData = [
   {
@@ -18,48 +42,82 @@ const pujaData = [
 ];
 
 const PujaBooking = () => {
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const userDetails = await AsyncStorage.getItem('user');
+        const parsedUser = userDetails ? JSON.parse(userDetails) : null;
+        const userId = parsedUser?.userId;
+
+        if (!userId) {
+          Alert.alert('Error', 'User not found.');
+          setLoading(false);
+          return;
+        }
+
+        const response = await axios.get(
+          `http://192.168.1.30:5001/fetch-booked-pooja-by-user-id/${userId}`,
+        );
+        console.log(response.data);
+
+        if (response.data && Array.isArray(response.data.poojaBooked)) {
+          setBookings(response.data.poojaBooked);
+        } else {
+          Alert.alert('Info', 'No Pooja bookings found.');
+          setBookings([]);
+        }
+      } catch (error) {
+        console.error('Error fetching pooja bookings:', error);
+        Alert.alert('Error', 'Failed to fetch pooja bookings.');
+        setBookings([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  if (!bookings.length) {
+    return (
+      <View style={styles.noBookingsContainer}>
+        <Text style={styles.noBookingsText}>No Pooja bookings found.</Text>
+      </View>
+    );
+  }
   return (
-    <View style={styles.container}>
-      {pujaData.map((puja, index) => (
-        <View key={index}>
-          {/* Status Section */}
-          <View style={styles.statusContainer}>
-            <View style={styles.statusIcon}>
-              <Image source={{uri: puja.iconUri}} style={styles.iconImage} />
-            </View>
-            <View style={styles.statusTextContainer}>
-              <Text style={styles.statusText}>{puja.status}</Text>
-              <Text style={styles.statusSubText}>{puja.statusSubText}</Text>
-            </View>
-          </View>
+    <View>
+      <FlatList
+        data={bookings}
+        keyExtractor={item => item._id}
+        renderItem={({item}) => {
+          console.log('Booking ID:', item._id);
+          console.log('Puja Time:', item.poojatime); // ✅ Correct field name
 
-          {/* Puja Details Section */}
-          <View style={styles.detailsContainer}>
-            <Text style={styles.pujaTitle}>{puja.pujaTitle}</Text>
-            <Text style={styles.pujaDescription}>{puja.pujaDescription}</Text>
-            <Text style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Package:</Text>{' '}
-              <Text style={styles.detailValue}>{puja.packageType}</Text>
-            </Text>
-            <Text style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Date & Day of Puja:</Text>{' '}
-              <Text style={styles.detailValue}>{puja.pujaDate}</Text>
-            </Text>
-            <Text style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Temple:</Text>{' '}
-              <Text style={styles.detailValue}>{puja.temple}</Text>
-            </Text>
-          </View>
-
-          {/* Pricing and Action Section */}
-          <View style={styles.actionContainer}>
-            <Text style={styles.priceText}>{puja.price}</Text>
-            <TouchableOpacity style={styles.trackButton}>
-              <Text style={styles.trackButtonText}>Track Prasad</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      ))}
+          return (
+            <PujaBookingCard
+              poojaName={item.poojaname}
+              totalPrice={item.totalPrice}
+              mandirName={item.mandirname}
+              state={item.state || 'N/A'}
+              poojaDate={item.poojadate}
+              packageType={item.package}
+              completed={item.completed}
+              pujatime={item.poojatime ? item.poojatime : 'Not Available'} // ✅ Use `poojatime`
+            />
+          );
+        }}
+      />
     </View>
   );
 };
@@ -75,81 +133,20 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
   },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  statusIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FFEDD5',
+
+  loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  iconImage: {
-    width: 25,
-    height: 25,
-  },
-  statusTextContainer: {
-    marginLeft: 10,
-  },
-  statusText: {
-    color: '#1AA11F',
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  statusSubText: {
-    color: '#666',
-    fontSize: 11,
-    marginTop: 2,
-  },
-  detailsContainer: {
-    marginBottom: 15,
-  },
-  pujaTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#000',
-    marginBottom: 5,
-  },
-  pujaDescription: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 10,
-  },
-  detailRow: {
-    fontSize: 14,
-    marginBottom: 5,
-  },
-  detailLabel: {
-    fontWeight: '600',
-    color: '#000',
-  },
-  detailValue: {
-    color: '#FF5704',
-  },
-  actionContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  noBookingsContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  priceText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#002776',
-  },
-  trackButton: {
-    backgroundColor: '#E7F4EA',
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-  },
-  trackButtonText: {
-    color: '#00A944',
-    fontSize: 14,
-    fontWeight: '700',
+  noBookingsText: {
+    fontSize: 16,
+    color: 'gray',
   },
 });
 

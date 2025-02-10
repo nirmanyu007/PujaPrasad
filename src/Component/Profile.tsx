@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 // import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
 import * as ImagePicker from 'react-native-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type StackParamList = {
   PujaDetailPage: undefined;
@@ -25,11 +26,31 @@ const Profile = () => {
   const [addressType, setAddressType] = React.useState<string>('Home');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isFormVisible, setFormVisible] = useState(false);
-  const navigation = useNavigation<NavigationProp<StackParamList>>(); 
+  const [name, setName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const navigation = useNavigation<NavigationProp<StackParamList>>();
 
   const toggleAddressForm = () => {
     setFormVisible(!isFormVisible);
   };
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('user');
+        if (userData) {
+          const parsedData = JSON.parse(userData);
+          setName(parsedData.name || '');
+          setEmail(parsedData.email || '');
+          setSelectedImage(parsedData.photo || null);
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    };
+
+    loadUserData();
+  }, []);
 
   const handleGoBack = () => {
     navigation.goBack(); // Navigate back to the previous screen
@@ -102,7 +123,12 @@ const Profile = () => {
 
       {/* Basic Details */}
       <Text style={styles.sectionHeader}>Basic Details</Text>
-      <TextInput placeholder="First Name" style={styles.input} />
+      <TextInput
+        placeholder="First Name"
+        style={styles.input}
+        value={name}
+        onChangeText={setName}
+      />
       <TextInput placeholder="Last Name" style={styles.input} />
 
       {/* Gender */}
@@ -155,6 +181,8 @@ const Profile = () => {
         placeholder="Email ID"
         style={styles.input}
         keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
       />
       <TextInput
         placeholder="Mobile"

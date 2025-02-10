@@ -1,33 +1,19 @@
-import React, {useState} from 'react';
+import React, {useContext} from 'react';
 import GoogleAuth from './GoogleAuth';
+import {AuthContext} from './AuthContext';
 
 const GoogleAuthScreen = () => {
-  const [isSignedIn, setIsSignedIn] = useState(false);
-  const [user, setUser] = useState<{
-    name?: string;
-    photo?: string;
-    email?: string;
-  } | null>(null);
+  const auth = useContext(AuthContext);
 
-  const handleSignIn = (userData: {
-    name?: string;
-    photo?: string;
-    email?: string;
-  }) => {
-    setUser(userData);
-    setIsSignedIn(true);
-  };
-
-  const handleSignOut = () => {
-    setUser(null);
-    setIsSignedIn(false);
-  };
+  if (!auth) {
+    throw new Error('AuthContext must be used within an AuthProvider');
+  }
 
   return (
     <GoogleAuth
-      onSignIn={handleSignIn}
-      onSignOut={handleSignOut}
-      isSignedIn={isSignedIn}
+      onSignIn={auth.login}
+      onSignOut={auth.logout}
+      isSignedIn={auth.isSignedIn}
     />
   );
 };

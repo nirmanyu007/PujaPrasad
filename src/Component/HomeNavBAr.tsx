@@ -5,6 +5,7 @@ import {useNavigation} from '@react-navigation/native';
 import {DrawerNavigationProp} from '@react-navigation/drawer';
 import {DrawerParamList} from '../../App';
 
+
 type HomeNavBarProps = {
   title: string;
 };

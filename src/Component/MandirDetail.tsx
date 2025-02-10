@@ -21,6 +21,21 @@ type StackParamList = {
   };
 };
 
+const decodeHtmlEntities = (text: string): string => {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'") // Add more as needed
+    .replace(/&nbsp;/g, '');
+};
+
+const stripHtmlTagsAndDecode = (html: string): string => {
+  const withoutHtmlTags = html.replace(/<\/?[^>]+(>|$)/g, ''); // Strip HTML tags
+  return decodeHtmlEntities(withoutHtmlTags); // Decode HTML entities
+};
+
 const MandirDetail = () => {
   const route = useRoute<RouteProp<StackParamList, 'MandirDetail'>>();
   const {id, templeData} = route.params;
@@ -42,7 +57,7 @@ const MandirDetail = () => {
     const fetchPujas = async () => {
       try {
         const response = await axios.get(
-          'http://192.168.1.7:5001/fetch-all-pooja',
+          'http://192.168.1.30:5001/fetch-all-pooja',
         );
         console.log('Pujas API Response:', response.data); // Debug API response
 
@@ -139,14 +154,14 @@ const MandirDetail = () => {
         <View style={styles.section}>
           <MandirIntro
             description={
-              templeData.mandirSectionIntro || 'No introduction available.'
+              stripHtmlTagsAndDecode(templeData.mandirSectionIntro || 'No introduction available.')
             }
           />
         </View>
         <View style={styles.section}>
           <MandirHistory
-            description={
-              templeData.mandirSectionHistory || 'No introduction available.'
+            description={stripHtmlTagsAndDecode(
+              templeData.mandirSectionHistory || 'No introduction available.')
             }
           />
         </View>

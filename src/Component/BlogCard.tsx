@@ -23,6 +23,20 @@ interface BlogCardProps {
   author: string;
   date: string;
 }
+const decodeHtmlEntities = (text: string): string => {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'") // Add more as needed
+    .replace(/&nbsp;/g, '');
+};
+
+const stripHtmlTagsAndDecode = (html: string): string => {
+  const withoutHtmlTags = html.replace(/<\/?[^>]+(>|$)/g, ''); // Strip HTML tags
+  return decodeHtmlEntities(withoutHtmlTags); // Decode HTML entities
+};
 
 const BlogCard: React.FC<BlogCardProps> = ({
   title,
@@ -59,7 +73,9 @@ const BlogCard: React.FC<BlogCardProps> = ({
       <View style={styles.textContainer}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.description} numberOfLines={3}>
-          {description} {description2} {description3}
+          {stripHtmlTagsAndDecode(description)}{' '}
+          {stripHtmlTagsAndDecode(description2)}{' '}
+          {stripHtmlTagsAndDecode(description3)}
         </Text>
         <Text style={styles.readMore}>Read more...</Text>
         <View style={{borderWidth: 0.2, borderColor: '#B3B3B3'}}></View>

@@ -18,6 +18,21 @@ import {RootStackParamList} from '../../App';
 //   PujaDetailPage: undefined;
 // };
 
+const decodeHtmlEntities = (text: string): string => {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'") // Add more as needed
+    .replace(/&nbsp;/g, '');
+};
+
+const stripHtmlTagsAndDecode = (html: string): string => {
+  const withoutHtmlTags = html.replace(/<\/?[^>]+(>|$)/g, ''); // Strip HTML tags
+  return decodeHtmlEntities(withoutHtmlTags); // Decode HTML entities
+};
+
 const View_Puja_Booking = ({route}: {route: any}) => {
   const {pujaId} = route.params;
   const {packagename} = route.params;
@@ -381,7 +396,7 @@ const View_Puja_Booking = ({route}: {route: any}) => {
   useEffect(() => {
     const fetchPoojaAndTemple = async () => {
       try {
-        const res = await fetch(`http://192.168.1.7:5001/fetch-all-pooja`);
+        const res = await fetch(`http://192.168.1.30:5001/fetch-all-pooja`);
         const data = await res.json();
         const puja = data.poojas.find((p: any) => p._id === pujaId);
         if (!puja) return;
@@ -392,7 +407,7 @@ const View_Puja_Booking = ({route}: {route: any}) => {
         if (!mandirId) return;
 
         const templeRes = await fetch(
-          `http://192.168.1.7:5001/fetch-mandir-by-id/${mandirId}`,
+          `http://192.168.1.30:5001/fetch-mandir-by-id/${mandirId}`,
         );
         const templeJson = await templeRes.json();
         setTempleDetails(templeJson.mandir);
@@ -443,7 +458,7 @@ const View_Puja_Booking = ({route}: {route: any}) => {
             <View style={styles.card}>
               <Text style={styles.title}>{selectedPuja.title}</Text>
               <Text style={styles.description}>
-                {selectedPuja.poojaCardBenefit}
+                {stripHtmlTagsAndDecode(selectedPuja.poojaCardBenefit)}
               </Text>
               <View
                 style={{

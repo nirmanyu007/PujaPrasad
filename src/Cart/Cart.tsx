@@ -86,29 +86,36 @@ const Cart: React.FC = () => {
 
   const getTotalAmount = () => {
     return cartItems.reduce((total, item) => {
-      // You may decide whether to use prasadPrice or the package price or a sum.
-      // Here, we assume the price is from the selectedPackage.
-      const price = item.selectedPackage.price || 0;
+      const price = item.selectedPackage?.price ?? 0; // Ensure it doesn't break
       return total + price * (item.quantity || 1);
     }, 0);
   };
+
 
   const getTotalItems = () => {
     return cartItems.reduce((total, item) => total + (item.quantity || 0), 0);
   };
 
-  const fetchCartData = async () => {
-    try {
-      const storedCartItems = await AsyncStorage.getItem('cartItems');
-      if (storedCartItems) {
-        const parsedItems: CartItem[] = JSON.parse(storedCartItems);
-        setCartItems(parsedItems);
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to load cart data.');
-      console.error('Error fetching cart data:', error);
-    }
-  };
+ const fetchCartData = async () => {
+   try {
+     const storedCartItems = await AsyncStorage.getItem('cartItems');
+     if (storedCartItems) {
+       let parsedItems: CartItem[] = JSON.parse(storedCartItems);
+
+       // Filter out invalid items
+       parsedItems = parsedItems.filter(
+         item =>
+           item.selectedPackage && item.selectedPackage.price !== undefined,
+       );
+
+       setCartItems(parsedItems);
+     }
+   } catch (error) {
+     Alert.alert('Error', 'Failed to load cart data.');
+     console.error('Error fetching cart data:', error);
+   }
+ };
+
 
   useEffect(() => {
     fetchCartData();

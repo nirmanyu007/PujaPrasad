@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -10,11 +10,15 @@ import {
   KeyboardAvoidingView,
   Platform,
   Linking,
+  Modal,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {useNavigation} from '@react-navigation/native';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import GoogleAuth from './GoogleAuth';
+import {AuthContext} from '../Component/AuthContext';
 
 // ------------------------------------------------------------------
 // Example placeholders. Replace them with real data in your context.
@@ -24,6 +28,22 @@ const userDetails = {
     _id: 'USER123',
   },
 };
+
+const decodeHtmlEntities = (text: string): string => {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'") // Add more as needed
+    .replace(/&nbsp;/g, '');
+};
+
+const stripHtmlTagsAndDecode = (html: string): string => {
+  const withoutHtmlTags = html.replace(/<\/?[^>]+(>|$)/g, ''); // Strip HTML tags
+  return decodeHtmlEntities(withoutHtmlTags); // Decode HTML entities
+};
+
 const templeDetails = {
   _id: 'TEMPLE123',
   nameEnglish: 'Sample Temple',
@@ -46,9 +66,14 @@ const poojaTime = '10:00 AM';
  */
 
 const PujaDetailPage = ({route}: {route: any}) => {
+  const auth = useContext(AuthContext);
   // 1) Extract props from route.params
   const {packageName, price} = route.params;
 
+  //google auth
+  const [isSignedIn, setIsSignedIn] = useState(false);
+    const [googleAuthModalVisible, setGoogleAuthModalVisible] = useState(false);
+const [modalVisible, setModalVisible] = useState(false);
   // 2) Basic states for single/partner/familyBhog (up to 6 Bhakta names)
   const [fullName1, setFullName1] = useState('');
   const [fullName2, setFullName2] = useState('');
@@ -58,7 +83,14 @@ const PujaDetailPage = ({route}: {route: any}) => {
   const [fullName6, setFullName6] = useState('');
 
   // 3) For jointFamilyPackage / vipPackage => dynamic array
-  const [bhaktaNames, setBhaktaNames] = useState<string[]>(['', '', '', '', '', '']);
+  const [bhaktaNames, setBhaktaNames] = useState<string[]>([
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+  ]);
   const [gotras, setGotras] = useState<string[]>(['', '', '', '', '', '']);
 
   // 4) Single gotra for simpler packages
@@ -113,7 +145,8 @@ const PujaDetailPage = ({route}: {route: any}) => {
   ]);
 
   // 12) Sum up total
-  const totalPrice = price + additionalRows.reduce((acc, row) => acc + row.price, 0);
+  const totalPrice =
+    price + additionalRows.reduce((acc, row) => acc + row.price, 0);
 
   const navigation = useNavigation();
 
@@ -185,7 +218,9 @@ const PujaDetailPage = ({route}: {route: any}) => {
     // Validate Gotra: For non-joint packages, gotra is compulsory unless user checks "I don't know my gotra"
     if (packageName !== 'jointFamilyPackage' && packageName !== 'vipPackage') {
       if (!dontKnowGotra && gotra.trim() === '') {
-        setGotraFieldError("Gotra is required or check 'I don't know my gotra'.");
+        setGotraFieldError(
+          "Gotra is required or check 'I don't know my gotra'.",
+        );
         valid = false;
       } else {
         setGotraFieldError('');
@@ -234,7 +269,9 @@ const PujaDetailPage = ({route}: {route: any}) => {
 
     return valid;
   };
-
+if (!auth) {
+  return null;
+}
   // -----------------------------
   // Handle Payment (PhonePe)
   // -----------------------------
@@ -243,10 +280,17 @@ const PujaDetailPage = ({route}: {route: any}) => {
     //   Alert.alert('Validation Error', 'Please fill in all required fields correctly.');
     //   return;
     // }
+    if (!auth.isSignedIn) {
+      setGoogleAuthModalVisible(true);
+      return;
+    }
     try {
       // 1) Build finalBhaktaNames
       let finalBhaktaNames: string[] = [];
-      if (packageName === 'jointFamilyPackage' || packageName === 'vipPackage') {
+      if (
+        packageName === 'jointFamilyPackage' ||
+        packageName === 'vipPackage'
+      ) {
         finalBhaktaNames = bhaktaNames.filter(n => n.trim() !== '');
       } else {
         const rawNames =
@@ -260,7 +304,10 @@ const PujaDetailPage = ({route}: {route: any}) => {
 
       // 2) Build finalGotras
       let finalGotras: string[] = [];
-      if (packageName === 'jointFamilyPackage' || packageName === 'vipPackage') {
+      if (
+        packageName === 'jointFamilyPackage' ||
+        packageName === 'vipPackage'
+      ) {
         finalGotras = gotras.filter(g => g.trim() !== '');
       } else {
         if (!dontKnowGotra && gotra.trim() !== '') {
@@ -332,7 +379,7 @@ const PujaDetailPage = ({route}: {route: any}) => {
 
       // 6) Call your backend to initiate phonepe using the updated API endpoint
       const response = await axios.post(
-        'http://192.168.1.7:5001/final-payment-phonepe-app',
+        'http://192.168.1.30:5001/final-payment-phonepe-app',
         paymentRequest,
       );
       if (response.data.paymentUrl) {
@@ -367,6 +414,21 @@ const PujaDetailPage = ({route}: {route: any}) => {
       setGotras(newGotra);
     }
   };
+  useEffect(() => {
+    const checkSignInStatus = async () => {
+      try {
+        const storedUserID = await AsyncStorage.getItem('userID');
+        if (storedUserID) {
+          setIsSignedIn(true);
+        } else {
+          setIsSignedIn(false);
+        }
+      } catch (error) {
+        console.error('Error checking sign-in status:', error);
+      }
+    };
+    checkSignInStatus();
+  }, []);
 
   return (
     <KeyboardAvoidingView
@@ -375,7 +437,12 @@ const PujaDetailPage = ({route}: {route: any}) => {
       <ScrollView contentContainerStyle={styles.container}>
         {/* Heading + Back Arrow */}
         <View style={styles.headingRow}>
-          <AntDesign onPress={handleGoBack} name="arrowleft" size={23} color="black" />
+          <AntDesign
+            onPress={handleGoBack}
+            name="arrowleft"
+            size={23}
+            color="black"
+          />
           <Text style={styles.heading}>Fill Your Details</Text>
         </View>
 
@@ -407,7 +474,8 @@ const PujaDetailPage = ({route}: {route: any}) => {
         */}
 
         {/* Dynamic Bhakta Names */}
-        {packageName !== 'jointFamilyPackage' && packageName !== 'vipPackage' ? (
+        {packageName !== 'jointFamilyPackage' &&
+        packageName !== 'vipPackage' ? (
           <>
             <Text style={styles.sectionTitle}>Fill the name of the Bhakta</Text>
             <Text style={styles.sectionNote}>
@@ -426,7 +494,8 @@ const PujaDetailPage = ({route}: {route: any}) => {
                   onChangeText={setFullName1}
                 />
                 {/* partner/familyBhog => Bhakta Name 2 */}
-                {(packageName === 'partnerPackage' || packageName === 'familyBhogPackage') && (
+                {(packageName === 'partnerPackage' ||
+                  packageName === 'familyBhogPackage') && (
                   <TextInput
                     style={styles.input}
                     placeholder="Bhakta Name 2"
@@ -465,12 +534,16 @@ const PujaDetailPage = ({route}: {route: any}) => {
                 )}
               </>
             )}
-            {bhaktaNameError ? <Text style={styles.errorText}>{bhaktaNameError}</Text> : null}
+            {bhaktaNameError ? (
+              <Text style={styles.errorText}>{bhaktaNameError}</Text>
+            ) : null}
           </>
         ) : (
           // Joint Family or VIP => dynamic array of bhaktaNames
           <>
-            <Text style={styles.sectionTitle}>Fill the Names of the Bhakta</Text>
+            <Text style={styles.sectionTitle}>
+              Fill the Names of the Bhakta
+            </Text>
             <Text style={styles.sectionNote}>
               Please enter the names of all Bhaktas participating in the puja.
             </Text>
@@ -488,15 +561,21 @@ const PujaDetailPage = ({route}: {route: any}) => {
                   }}
                 />
                 {index >= 6 && (
-                  <TouchableOpacity onPress={() => handleRemoveBhakta(index)} style={styles.removeBtn}>
+                  <TouchableOpacity
+                    onPress={() => handleRemoveBhakta(index)}
+                    style={styles.removeBtn}>
                     <Text style={{color: 'white'}}>X</Text>
                   </TouchableOpacity>
                 )}
               </View>
             ))}
-            {bhaktaNameError ? <Text style={styles.errorText}>{bhaktaNameError}</Text> : null}
+            {bhaktaNameError ? (
+              <Text style={styles.errorText}>{bhaktaNameError}</Text>
+            ) : null}
             {bhaktaNames.length < 15 && (
-              <TouchableOpacity style={styles.addButton} onPress={handleAddBhakta}>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={handleAddBhakta}>
                 <Text style={styles.addButtonText}>+ Add More</Text>
               </TouchableOpacity>
             )}
@@ -504,7 +583,8 @@ const PujaDetailPage = ({route}: {route: any}) => {
         )}
 
         {/* Gotra */}
-        {packageName !== 'jointFamilyPackage' && packageName !== 'vipPackage' ? (
+        {packageName !== 'jointFamilyPackage' &&
+        packageName !== 'vipPackage' ? (
           <>
             <Text style={styles.sectionTitle}>Fill the Gotra</Text>
             <Text style={styles.sectionNote}>
@@ -517,7 +597,9 @@ const PujaDetailPage = ({route}: {route: any}) => {
               onChangeText={setGotra}
               editable={!dontKnowGotra}
             />
-            {gotraFieldError ? <Text style={styles.errorText}>{gotraFieldError}</Text> : null}
+            {gotraFieldError ? (
+              <Text style={styles.errorText}>{gotraFieldError}</Text>
+            ) : null}
             <TouchableOpacity
               style={styles.checkboxContainer}
               onPress={() => setDontKnowGotra(!dontKnowGotra)}>
@@ -552,20 +634,36 @@ const PujaDetailPage = ({route}: {route: any}) => {
         )}
 
         <View style={styles.separator} />
-        <Text style={styles.label}>Would you like to receive the Prasad box?</Text>
+        <Text style={styles.label}>
+          Would you like to receive the Prasad box?
+        </Text>
         <View style={styles.toggleContainer}>
           <TouchableOpacity
-            style={[styles.toggleButton, receivePrasad === 'yes' && styles.activeToggleButton]}
+            style={[
+              styles.toggleButton,
+              receivePrasad === 'yes' && styles.activeToggleButton,
+            ]}
             onPress={() => setReceivePrasad('yes')}>
-            <Text style={[styles.toggleText, receivePrasad === 'yes' && styles.activeToggleText]}>
+            <Text
+              style={[
+                styles.toggleText,
+                receivePrasad === 'yes' && styles.activeToggleText,
+              ]}>
               Yes
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.toggleButton, receivePrasad === 'no' && styles.activeToggleButton]}
+            style={[
+              styles.toggleButton,
+              receivePrasad === 'no' && styles.activeToggleButton,
+            ]}
             onPress={() => setReceivePrasad('no')}>
-            <Text style={[styles.toggleText, receivePrasad === 'no' && styles.activeToggleText]}>
+            <Text
+              style={[
+                styles.toggleText,
+                receivePrasad === 'no' && styles.activeToggleText,
+              ]}>
               No
             </Text>
           </TouchableOpacity>
@@ -587,21 +685,27 @@ const PujaDetailPage = ({route}: {route: any}) => {
               value={firstName}
               onChangeText={setFirstName}
             />
-            {firstNameError ? <Text style={styles.errorText}>{firstNameError}</Text> : null}
+            {firstNameError ? (
+              <Text style={styles.errorText}>{firstNameError}</Text>
+            ) : null}
             <TextInput
               style={styles.input}
               placeholder="Last Name"
               value={lastName}
               onChangeText={setLastName}
             />
-            {lastNameError ? <Text style={styles.errorText}>{lastNameError}</Text> : null}
+            {lastNameError ? (
+              <Text style={styles.errorText}>{lastNameError}</Text>
+            ) : null}
             <TextInput
               style={styles.input}
               placeholder="Address 1"
               value={address1}
               onChangeText={setAddress1}
             />
-            {address1Error ? <Text style={styles.errorText}>{address1Error}</Text> : null}
+            {address1Error ? (
+              <Text style={styles.errorText}>{address1Error}</Text>
+            ) : null}
             <TextInput
               style={styles.input}
               placeholder="Address 2"
@@ -615,21 +719,27 @@ const PujaDetailPage = ({route}: {route: any}) => {
               onChangeText={setPincode}
               keyboardType="numeric"
             />
-            {pincodeError ? <Text style={styles.errorText}>{pincodeError}</Text> : null}
+            {pincodeError ? (
+              <Text style={styles.errorText}>{pincodeError}</Text>
+            ) : null}
             <TextInput
               style={styles.input}
               placeholder="City"
               value={city}
               onChangeText={setCity}
             />
-            {cityError ? <Text style={styles.errorText}>{cityError}</Text> : null}
+            {cityError ? (
+              <Text style={styles.errorText}>{cityError}</Text>
+            ) : null}
             <TextInput
               style={styles.input}
               placeholder="State"
               value={stateValue}
               onChangeText={setStateValue}
             />
-            {stateValueError ? <Text style={styles.errorText}>{stateValueError}</Text> : null}
+            {stateValueError ? (
+              <Text style={styles.errorText}>{stateValueError}</Text>
+            ) : null}
             <TextInput
               style={styles.input}
               placeholder="Country"
@@ -656,7 +766,9 @@ const PujaDetailPage = ({route}: {route: any}) => {
               <View style={styles.checkbox}>
                 {confirmAddress && <View style={styles.checkboxTick} />}
               </View>
-              <Text style={styles.checkboxLabel}>Confirm Your Delivery Address</Text>
+              <Text style={styles.checkboxLabel}>
+                Confirm Your Delivery Address
+              </Text>
             </TouchableOpacity>
           </>
         ) : (
@@ -672,7 +784,9 @@ const PujaDetailPage = ({route}: {route: any}) => {
               onChangeText={setEmail}
               keyboardType="email-address"
             />
-            {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+            {emailError ? (
+              <Text style={styles.errorText}>{emailError}</Text>
+            ) : null}
             <TextInput
               style={styles.input}
               placeholder="Enter Mobile Number"
@@ -680,7 +794,9 @@ const PujaDetailPage = ({route}: {route: any}) => {
               onChangeText={setMobileNumber}
               keyboardType="phone-pad"
             />
-            {mobileNumberError ? <Text style={styles.errorText}>{mobileNumberError}</Text> : null}
+            {mobileNumberError ? (
+              <Text style={styles.errorText}>{mobileNumberError}</Text>
+            ) : null}
           </>
         )}
 
@@ -707,13 +823,55 @@ const PujaDetailPage = ({route}: {route: any}) => {
         <View style={styles.billDivider} />
         <View style={styles.billRow}>
           <Text style={[styles.billLabel, {fontWeight: 'bold'}]}>Total</Text>
-          <Text style={[styles.billValue, {fontWeight: 'bold'}]}>₹ {totalPrice}</Text>
+          <Text style={[styles.billValue, {fontWeight: 'bold'}]}>
+            ₹ {totalPrice}
+          </Text>
         </View>
 
         {/* Payment button */}
         <TouchableOpacity style={styles.paymentButton} onPress={handlePayment}>
           <Text style={styles.paymentButtonText}>Make Payment</Text>
         </TouchableOpacity>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={googleAuthModalVisible}
+          onRequestClose={() => setGoogleAuthModalVisible(false)}>
+          <View style={styles.modalContainer1}>
+            <View style={styles.modalContent1}>
+              <Text style={styles.modalTitle1}>Sign in to continue</Text>
+              <Text style={{textAlign: 'center', marginVertical: 10}}>
+                You need to sign in to proceed with the payment.
+              </Text>
+
+              {/* Google Auth Component */}
+              <GoogleAuth
+                onSignIn={user => {
+                  if (user.email) {
+                    // Ensure user.email is defined
+                    setIsSignedIn(true);
+                    setGoogleAuthModalVisible(false);
+                    AsyncStorage.setItem('userID', user.email); // Store user identifier
+                  } else {
+                    console.error('Sign-in error: user email is undefined.');
+                    Alert.alert(
+                      'Sign-in Error',
+                      'User email is missing. Please try again.',
+                    );
+                  }
+                }}
+                onSignOut={() => setIsSignedIn(false)}
+                isSignedIn={isSignedIn}
+              />
+
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setGoogleAuthModalVisible(false)}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -895,5 +1053,36 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#ccc',
     marginVertical: 8,
+  },
+  modalContainer1: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent1: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 20,
+    width: '90%',
+    alignItems: 'center',
+  },
+  modalTitle1: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  cancelButton: {
+    marginTop: 10,
+    backgroundColor: '#ccc',
+    padding: 10,
+    borderRadius: 8,
+    width: '100%',
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    color: 'black',
+    fontWeight: 'bold',
   },
 });

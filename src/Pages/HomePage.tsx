@@ -80,7 +80,7 @@ const HomePage: React.FC = () => {
     const fetchPujaData = async () => {
       try {
         const response = await axios.get(
-          `http://192.168.1.7:5001/fetch-all-poojas-exclusive`,
+          `http://192.168.1.30:5001/fetch-all-poojas-exclusive`,
         );
         const processedPoojas: Puja[] = response.data.poojas.map(
           (puja: any) => ({
@@ -102,7 +102,7 @@ const HomePage: React.FC = () => {
 
         const fetchMandirs = uniqueMandirIds.map(id =>
           axios
-            .get(`http://192.168.1.7:5001/fetch-mandir-by-id/${id}`)
+            .get(`http://192.168.1.30:5001/fetch-mandir-by-id/${id}`)
             .then(res => res.data.mandir as Mandir)
             .catch(err => {
               console.error(`Error fetching mandir with ID ${id}:`, err);

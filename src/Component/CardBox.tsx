@@ -15,6 +15,21 @@ type CardBoxProps = {
   // onPress: () => void;
 };
 
+const decodeHtmlEntities = (text: string): string => {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'") // Add more as needed
+    .replace(/&nbsp;/g, '');
+};
+
+const stripHtmlTagsAndDecode = (html: string): string => {
+  const withoutHtmlTags = html.replace(/<\/?[^>]+(>|$)/g, ''); // Strip HTML tags
+  return decodeHtmlEntities(withoutHtmlTags); // Decode HTML entities
+};
+
 const CardBox: React.FC<CardBoxProps> = ({
   title,
   description,
@@ -46,7 +61,7 @@ const CardBox: React.FC<CardBoxProps> = ({
         {/* Text Content */}
         <View style={styles.contentContainer}>
           <Text style={styles.title}>{title}</Text>
-          <Text style={styles.description}>{description}</Text>
+          <Text style={styles.description}>{stripHtmlTagsAndDecode(description)}</Text>
 
           {/* Location Section */}
           <View style={styles.infoRow}>
